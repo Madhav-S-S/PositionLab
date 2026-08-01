@@ -747,6 +747,10 @@
                 processTrade();
             } else if (currentId === 'cl-save-btn') {
                 processCapitalTx();
+            } else {
+                // FIXED: Explicitly blur elements that don't have a "next" input to jump to
+                const currentEl = document.getElementById(currentId);
+                if (currentEl) currentEl.blur();
             }
         }
 
@@ -846,7 +850,6 @@
                 });
             };
             
-            // FIX applied here: call renderList("") to always show all options on initial focus
             input.addEventListener('focus', () => { renderList(""); list.classList.add('active'); focusedIndex = -1; });
             input.addEventListener('input', (e) => { 
                 renderList(e.target.value); list.classList.add('active'); 
@@ -895,7 +898,7 @@
                                 currentVals.push(val); 
                             }
                             input.value = currentVals.join(', ');
-                            renderList(""); // refresh visually
+                            renderList(""); 
                         } else {
                             input.value = val; if (inputId === 'cl-type') updateInputColor(input, val); 
                         }
@@ -1170,10 +1173,13 @@
             const customContainer = document.getElementById('dash-custom-range-container');
                          
             flatpickr("#dash-custom-range", { mode: "range", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", onClose: (sel) => { if(sel.length === 2) { customDateStart = sel[0]; customDateEnd = sel[1]; updateDashboard(); } } });
+            
+            // FIXED: Explicitly blur the input after selection so the next click counts as a fresh focus
             document.getElementById('dash-filter-input').addEventListener('change', (e) => {
                 const val = e.target.value; dashFilterMode = dashOptionsMap[val] || 'all'; periodOffset = 0; 
                 if(dashFilterMode === 'custom') customContainer.classList.remove('hidden'); else customContainer.classList.add('hidden');
                 updateDashboard();
+                e.target.blur(); 
             });
         }
 
