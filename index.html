@@ -382,7 +382,7 @@
 
     <script>
         // --- GOOGLE DRIVE OAUTH CONFIGURATION ---
-        const CLIENT_ID = '103823176648-enn9gklk8f4m7quadr2jufpr023ng7k1.apps.googleusercontent.com'; // Replace with your actual Client ID
+        const CLIENT_ID = '103823176648-enn9gklk8f4m7quadr2jufpr023ng7k1.apps.googleusercontent.com'; 
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
         const FILE_NAME = 'tradecompass_data.json';
         
@@ -401,6 +401,54 @@
         const capitalTypes = ["Deposit Fund", "Withdraw Fund", "Liquid Fund -> Trade Ledger", "Trade Ledger -> Liquid Fund", "Liquid Fund -> Slice Reserve", "Slice Reserve -> Liquid Fund", "Trade Ledger -> Slice Reserve", "Slice Reserve -> Trade Ledger"];
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
+        // --- Auth Token Persistence Logic ---
+        function setToken(token, expiresIn) {
+            accessToken = token;
+            localStorage.setItem('pt_gdrive_token', token);
+            localStorage.setItem('pt_gdrive_expiry', Date.now() + (expiresIn * 1000));
+            updateSyncUI(true);
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('pt_gdrive_token');
+            const expiry = localStorage.getItem('pt_gdrive_expiry');
+            // Check if token exists and is valid (with a 5 min safety buffer)
+            if (token && expiry && Date.now() < (parseInt(expiry) - 300000)) {
+                accessToken = token;
+                updateSyncUI(true);
+                return true;
+            }
+            return false;
+        }
+
+        function updateSyncUI(isConnected) {
+            const btn = document.getElementById('driveSyncBtn');
+            const status = document.getElementById('syncStatus');
+            if (isConnected) {
+                btn.className = "px-3 py-1.5 rounded-lg border border-long/40 bg-long/10 text-long hover:bg-long/20 text-xs font-semibold flex items-center gap-2 transition";
+                if(status) status.textContent = "Synced";
+            } else {
+                btn.className = "px-3 py-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-2 transition";
+                if(status) status.textContent = "Connect Drive";
+            }
+        }
+
+        // --- Safe Fetch Wrapper for 401 Expiry ---
+        async function apiFetch(url, options = {}) {
+            if(!options.headers) options.headers = {};
+            options.headers['Authorization'] = `Bearer ${accessToken}`;
+            const res = await fetch(url, options);
+            if(res.status === 401) {
+                accessToken = null; 
+                localStorage.removeItem('pt_gdrive_token');
+                localStorage.removeItem('pt_gdrive_expiry');
+                updateSyncUI(false);
+                document.getElementById('syncStatus').textContent = "Session Expired";
+                throw new Error("Unauthorized");
+            }
+            return res;
+        }
+
         // --- Google Drive Sync Logic ---
         function initGoogleDrive() {
             tokenClient = google.accounts.oauth2.initTokenClient({
@@ -408,10 +456,7 @@
                 scope: SCOPES,
                 callback: async (resp) => {
                     if (resp.error) { console.error(resp); return; }
-                    accessToken = resp.access_token;
-                    document.getElementById('syncStatus').textContent = "Synced";
-                    document.getElementById('driveSyncBtn').classList.replace('border-brand-500/30', 'border-long/40');
-                    document.getElementById('driveSyncBtn').classList.replace('text-brand-400', 'text-long');
+                    setToken(resp.access_token, resp.expires_in);
                     await loadFromDrive();
                 },
             });
@@ -419,49 +464,80 @@
 
         function handleAuthClick() {
             if (!tokenClient) initGoogleDrive();
+            if(accessToken) {
+                 loadFromDrive(); // Force manual sync pull if already logged in
+                 return;
+            }
             tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
         async function loadFromDrive() {
             if (!accessToken) return;
+            document.getElementById('syncStatus').textContent = "Loading...";
             try {
-                // Search for existing file
-                let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
+                // Ensure we get the exact latest version of the file
+                const qParams = new URLSearchParams({
+                    q: `name='${FILE_NAME}' and trashed=false`,
+                    orderBy: 'modifiedTime desc'
+                }).toString();
+                
+                let res = await apiFetch(`https://www.googleapis.com/drive/v3/files?${qParams}`);
                 let data = await res.json();
                 
                 if (data.files && data.files.length > 0) {
                     driveFileId = data.files[0].id;
-                    let fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`, {
-                        headers: { Authorization: `Bearer ${accessToken}` }
-                    });
+                    let fileRes = await apiFetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`);
                     let cloudData = await fileRes.json();
-                    balances = cloudData.balances || balances;
-                    tradesDB = cloudData.tradesDB || tradesDB;
-                    capitalLedger = cloudData.capitalLedger || capitalLedger;
-                    customStrategies = cloudData.customStrategies || customStrategies;
-                    customVerdicts = cloudData.customVerdicts || customVerdicts;
+                    
+                    if (cloudData) {
+                        if (cloudData.balances) balances = cloudData.balances;
+                        if (cloudData.tradesDB) tradesDB = cloudData.tradesDB;
+                        if (cloudData.capitalLedger) capitalLedger = cloudData.capitalLedger;
+                        
+                        // Empty and refill dropdown arrays to preserve variable references
+                        if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
+                        if (cloudData.customVerdicts) { customVerdicts.length = 0; cloudData.customVerdicts.forEach(x => customVerdicts.push(x)); }
+                    }
+                    
+                    // Save to local storage without triggering an immediate re-upload
                     saveGlobalState(false);
-                    recalculateTimeline();
+                    recalculateTimeline(false);
+                    document.getElementById('syncStatus').textContent = "Synced";
                 } else {
+                    // No file exists on drive, so let's upload current local state to start it
                     await uploadToDrive();
                 }
             } catch (err) {
-                console.error("Drive sync error:", err);
+                console.error("Drive load error:", err);
+                if(accessToken) document.getElementById('syncStatus').textContent = "Sync Error";
             }
         }
 
         async function uploadToDrive() {
             if (!accessToken) return;
-            const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategies, customVerdicts });
-            const blob = new Blob([content], { type: 'application/json' });
+            document.getElementById('syncStatus').textContent = "Saving...";
             
             try {
+                // Pre-check for duplicate files before creating a new one
+                if (!driveFileId) {
+                    const qParams = new URLSearchParams({
+                        q: `name='${FILE_NAME}' and trashed=false`,
+                        orderBy: 'modifiedTime desc'
+                    }).toString();
+                    let searchRes = await apiFetch(`https://www.googleapis.com/drive/v3/files?${qParams}`);
+                    let searchData = await searchRes.json();
+                    if (searchData.files && searchData.files.length > 0) {
+                        driveFileId = searchData.files[0].id;
+                    }
+                }
+
+                const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategies, customVerdicts });
+                const blob = new Blob([content], { type: 'application/json' });
+                
                 if (driveFileId) {
-                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+                    await apiFetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
                         method: 'PATCH',
-                        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json' },
                         body: blob
                     });
                 } else {
@@ -470,9 +546,8 @@
                     form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
                     form.append('file', blob);
 
-                    let res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    let res = await apiFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
                         method: 'POST',
-                        headers: { Authorization: `Bearer ${accessToken}` },
                         body: form
                     });
                     let fileData = await res.json();
@@ -481,6 +556,7 @@
                 document.getElementById('syncStatus').textContent = "Synced";
             } catch (err) {
                 console.error("Upload error:", err);
+                if(accessToken) document.getElementById('syncStatus').textContent = "Sync Error";
             }
         }
 
@@ -491,7 +567,6 @@
             localStorage.setItem('pt_strategies', JSON.stringify(customStrategies));
             localStorage.setItem('pt_verdicts', JSON.stringify(customVerdicts));
             if (syncCloud && accessToken) {
-                document.getElementById('syncStatus').textContent = "Saving...";
                 uploadToDrive();
             }
         }
@@ -533,6 +608,11 @@
             setupCustomDropdown('cl-type', 'cl-type-list', null, capitalTypes, false, capitalFlow);
                          
             bindKeyboardFlows(); updateViews(); initDashboardFilters();
+
+            // Auto-sync if token is still alive
+            if (checkToken()) {
+                loadFromDrive();
+            }
         });
 
         function bindKeyboardFlows() {
@@ -583,7 +663,6 @@
                 filtered.forEach(o => {
                     let color = ""; if(o === "Deposit Fund") color = "text-long font-bold"; else if(o === "Withdraw Fund") color = "text-short font-bold";
                     
-                    // Add delete button ONLY if this list allows adding/editing
                     let delBtn = allowAdd ? `<span class="delete-opt text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${o}" title="Delete">✕</span>` : '';
                     
                     list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${color}" data-val="${o}">
@@ -601,7 +680,6 @@
             list.addEventListener('mousedown', (e) => {
                 e.preventDefault(); 
                 
-                // Handle Delete Click
                 if (e.target.classList.contains('delete-opt')) {
                     e.stopPropagation();
                     const valToDelete = e.target.getAttribute('data-del');
@@ -613,10 +691,9 @@
                             renderList(input.value);
                         }
                     }
-                    return; // Stop event from selecting the deleted item
+                    return; 
                 }
 
-                // Handle Selection Click
                 const item = e.target.closest('.custom-dropdown-item');
                 if (item) {
                     const val = item.getAttribute('data-val');
@@ -786,7 +863,7 @@
             document.getElementById('cl-type').value = ''; updateInputColor(document.getElementById('cl-type'), ''); document.getElementById('cl-type').focus();
         }
 
-        function recalculateTimeline() {
+        function recalculateTimeline(syncCloud = true) {
             balances = { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 };
             const timeline = [];
             tradesDB.forEach(t => timeline.push({ ...t, evType: 'TRADE' })); capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
@@ -799,7 +876,7 @@
                     if (rType === "depositfund") balances.liquidFund += a; else if (rType === "withdrawfund") balances.liquidFund -= a;
                     else if (rType === "liquidfundtradeledger") { balances.liquidFund -= a; balances.tradeLedger += a; } else if (rType === "tradeledgerliquidfund") { balances.tradeLedger -= a; balances.liquidFund += a; }
                     else if (rType === "liquidfundslicereserve") { balances.liquidFund -= a; balances.sliceReserve += a; } else if (rType === "slicereserveliquidfund") { balances.sliceReserve -= a; balances.liquidFund += a; }
-                    else if (rType === "tradeledgerslicereserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } else if (rType === "slicereservetradeledger") { balances.sliceReserve -= a; balances.liquidFund += a; }
+                    else if (rType === "tradeledgerslicereserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } else if (rType === "slicereservetradeledger") { balances.sliceReserve -= a; balances.tradeLedger += a; }
                     const ref = capitalLedger.find(c => c.id === ev.id);
                     if(ref) { ref.tradeLedger = balances.tradeLedger; ref.liquidFund = balances.liquidFund; ref.sliceReserve = balances.sliceReserve; ref.netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; }
                 } else if (ev.evType === 'TRADE') {
@@ -811,7 +888,7 @@
             });
             tradesDB.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id);
             capitalLedger.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id);
-            saveGlobalState(); updateViews();
+            saveGlobalState(syncCloud); updateViews();
         }
 
         // --- Rendering Logic ---
