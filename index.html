@@ -106,14 +106,32 @@
             </div>
 
             <div class="flex items-center gap-2 md:gap-4 overflow-x-auto">
-                <button id="driveSyncBtn" onclick="handleAuthClick()" class="px-3 py-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-2 transition">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-                    <span id="syncStatus">Connect Drive</span>
-                </button>
-                <button class="nav-btn active" data-target="view-calculator">Calculator</button>
-                <button class="nav-btn" data-target="view-dashboard">Dashboard</button>
-                <button class="nav-btn" data-target="view-trades">Journal</button>
-                <button class="nav-btn" data-target="view-capital">Ledger</button>
+                <div id="authContainer" class="flex items-center gap-2">
+                    <button id="driveSyncBtn" onclick="handleAuthClick()" class="px-3 py-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-2 transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                        <span id="syncStatus">Connect Drive</span>
+                    </button>
+                    <!-- User Profile Menu -->
+                    <div id="userProfile" class="hidden relative ml-1">
+                        <button onclick="toggleProfileMenu()" class="w-8 h-8 rounded-full overflow-hidden border-2 border-brand-500 focus:outline-none transition transform hover:scale-105">
+                            <img id="profileImg" src="" alt="Profile" class="w-full h-full object-cover">
+                        </button>
+                        <div id="profileMenu" class="absolute right-0 mt-2 w-48 bg-dark-800 rounded-lg shadow-xl border border-white/10 hidden z-50">
+                            <div class="px-4 py-3 border-b border-white/10">
+                                <p id="profileName" class="text-sm font-semibold text-white truncate"></p>
+                            </div>
+                            <button onclick="logoutDrive()" class="w-full text-left px-4 py-2 text-sm text-short hover:bg-white/5 transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="nav-btn active" data-target="view-calculator">CALCULATOR</button>
+                <button class="nav-btn" data-target="view-dashboard">DASHBOARD</button>
+                <button class="nav-btn" data-target="view-trades">JOURNAL</button>
+                <button class="nav-btn" data-target="view-capital">LEDGER</button>
             </div>
         </div>
     </nav>
@@ -124,7 +142,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <section class="lg:col-span-4 space-y-6">
                     <div class="glass-card rounded-2xl p-6 relative z-50">
-                        <div class="mb-6"><h2 class="text-lg font-semibold">Trade Setup</h2></div>
+                        <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider">TRADE SETUP</h2></div>
                         <div class="space-y-4">
                             <div><label class="block text-sm text-gray-400 mb-1">Entry Price (₹)</label><input type="number" id="entry" step="0.01" class="input-field" placeholder="0.00"></div>
                             <div><label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label><input type="number" id="stopLoss" step="0.01" class="input-field" placeholder="0.00"></div>
@@ -173,8 +191,8 @@
         <!-- DASHBOARD TAB -->
         <div id="view-dashboard" class="view-section space-y-6 privacy-enabled">
             <div class="flex flex-col md:flex-row justify-between items-center px-2 gap-4">
-                <h2 class="text-xl font-bold text-gray-100 flex items-center gap-3">
-                    Analytics Overview
+                <h2 class="text-xl font-bold text-gray-100 flex items-center gap-3 uppercase tracking-wider">
+                    CORPUS OVERVIEW
                     <button id="dash-privacy-btn" class="privacy-btn bg-transparent border-none p-1 hover:bg-white/5" onclick="togglePrivacy('view-dashboard', 'dash-privacy-btn')" title="Toggle Privacy">
                         <svg class="w-5 h-5 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                         <svg class="w-5 h-5 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
@@ -182,15 +200,10 @@
                 </h2>
             </div>
             
-            <!-- Added 5th column grid for XIRR -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="glass-card rounded-2xl p-6 border-l-4 border-l-brand-500 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-xl lg:text-2xl xl:text-3xl font-bold tracking-tight sensitive-data">₹0.00</h3>
-                </div>
-                <div class="glass-card rounded-2xl p-6 relative">
-                    <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Net XIRR</p><h3 id="dash-xirr" class="text-xl font-bold tracking-tight sensitive-data">0.00%</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-3xl font-bold tracking-tight sensitive-data">₹0.00</h3>
                 </div>
                 <div class="glass-card rounded-2xl p-6 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
@@ -207,7 +220,7 @@
             </div>
 
             <div class="flex flex-col md:flex-row justify-between items-center px-2 mt-8 mb-2 gap-4 relative z-50">
-                <h3 class="text-lg font-semibold text-gray-100">Performance Metrics</h3>
+                <h3 class="text-lg font-semibold text-gray-100 tracking-wider">PERFORMANCE METRICS</h3>
                 <div class="flex items-center gap-2">
                     <button id="dash-prev-btn" onclick="changePeriod(-1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -227,11 +240,14 @@
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Total Trades</p><h2 id="dash-total-trades" class="text-4xl font-bold sensitive-data">0</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Win Rate</p><h2 id="dash-win-rate" class="text-4xl font-bold text-brand-500 sensitive-data">0.0%</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Net P&L</p><h2 id="dash-total-pnl" class="text-4xl font-bold sensitive-data">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Timeframe XIRR</p><h2 id="dash-xirr" class="text-4xl font-bold sensitive-data">0.00%</h2></div>
             </div>
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="glass-card rounded-2xl p-6 lg:col-span-2">
                     <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Net P&L Over Time</h3>
@@ -248,7 +264,7 @@
         <div id="view-trades" class="view-section space-y-6">
             <div id="trade-input-panel" class="glass-card rounded-2xl p-6 relative z-50 scroll-mt-24">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-semibold text-brand-500">Log Completed Trade</h2>
+                    <h2 class="text-lg font-semibold text-brand-500 tracking-wider">JOURNAL ENTRY</h2>
                     <span id="tj-edit-badge" class="hidden text-xs font-bold bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full border border-brand-500/30">EDITING MODE</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -323,7 +339,7 @@
         <div id="view-capital" class="view-section space-y-6">
             <div id="ledger-stats-container" class="privacy-enabled">
                 <div class="flex justify-between items-center mb-4 px-1">
-                    <h2 class="text-lg font-semibold text-gray-100">Capital Balances</h2>
+                    <h2 class="text-lg font-semibold text-gray-100 tracking-wider">CAPITAL BALANCES</h2>
                     <button id="led-stats-privacy-btn" class="privacy-btn" onclick="togglePrivacy('ledger-stats-container', 'led-stats-privacy-btn')">
                         <svg class="w-4 h-4 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                         <svg class="w-4 h-4 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
@@ -338,7 +354,7 @@
             </div>
             <div id="capital-input-panel" class="glass-card rounded-2xl p-6 relative z-50 scroll-mt-24">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-semibold text-brand-500">Capital Transfer</h2>
+                    <h2 class="text-lg font-semibold text-brand-500 tracking-wider">CAPITAL TRANSFER</h2>
                     <span id="cl-edit-badge" class="hidden text-xs font-bold bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full border border-brand-500/30">EDITING MODE</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -390,7 +406,7 @@
     <script>
         // --- GOOGLE DRIVE OAUTH CONFIGURATION ---
         const CLIENT_ID = '103823176648-enn9gklk8f4m7quadr2jufpr023ng7k1.apps.googleusercontent.com'; 
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile';
         const FILE_NAME = 'tradecompass_data.json';
         
         let tokenClient;
@@ -406,7 +422,6 @@
         let editingTradeId = null; let editingCapitalId = null;
         let selectedTrades = new Set(); let selectedCapital = new Set();
         
-        // ADDED Liquid Fund Interest HERE
         const capitalTypes = ["Deposit Fund", "Withdraw Fund", "Liquid Fund Interest", "Liquid Fund -> Trade Ledger", "Trade Ledger -> Liquid Fund", "Liquid Fund -> Slice Reserve", "Slice Reserve -> Liquid Fund", "Trade Ledger -> Slice Reserve", "Slice Reserve -> Trade Ledger"];
         
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
@@ -417,6 +432,7 @@
             localStorage.setItem('pt_gdrive_token', token);
             localStorage.setItem('pt_gdrive_expiry', Date.now() + (expiresIn * 1000));
             updateSyncUI(true);
+            fetchUserProfile();
         }
 
         function checkToken() {
@@ -425,6 +441,7 @@
             if (token && expiry && Date.now() < (parseInt(expiry) - 300000)) {
                 accessToken = token;
                 updateSyncUI(true);
+                fetchUserProfile();
                 return true;
             }
             return false;
@@ -439,6 +456,7 @@
             } else {
                 btn.className = "px-3 py-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-2 transition";
                 if(status) status.textContent = "Connect Drive";
+                document.getElementById('userProfile').classList.add('hidden');
             }
         }
 
@@ -455,6 +473,40 @@
                 throw new Error("Unauthorized");
             }
             return res;
+        }
+
+        // --- User Profile Logic ---
+        async function fetchUserProfile() {
+            if (!accessToken) return;
+            try {
+                let res = await apiFetch('https://www.googleapis.com/oauth2/v3/userinfo');
+                let user = await res.json();
+                document.getElementById('profileName').textContent = user.name;
+                document.getElementById('profileImg').src = user.picture;
+                document.getElementById('userProfile').classList.remove('hidden');
+            } catch(e) { console.error("Profile fetch error", e); }
+        }
+
+        function toggleProfileMenu() {
+            document.getElementById('profileMenu').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const userProfile = document.getElementById('userProfile');
+            if (userProfile && !userProfile.contains(e.target)) {
+                document.getElementById('profileMenu').classList.add('hidden');
+            }
+        });
+
+        function logoutDrive() {
+            if (accessToken) {
+                google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked'); });
+                accessToken = null;
+                localStorage.removeItem('pt_gdrive_token');
+                localStorage.removeItem('pt_gdrive_expiry');
+                updateSyncUI(false);
+                document.getElementById('profileMenu').classList.add('hidden');
+            }
         }
 
         // --- Google Drive Sync Logic ---
@@ -574,24 +626,79 @@
             }
         }
 
-        // --- XIRR CALCULATION ENGINE ---
-        function calculateXIRR() {
+        // --- TIMEFRAME XIRR CALCULATION ENGINE ---
+        function calculateTimeframeXIRR(rangeStart, rangeEnd) {
+            let today = new Date();
+            today.setHours(23,59,59,999);
+            let actualEnd = rangeEnd ? (rangeEnd > today ? today : rangeEnd) : today;
+            
             let cfs = [];
+            let tempLiquid = 0, tempTrade = 0, tempReserve = 0;
+            
+            const timeline = [];
+            tradesDB.forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
+            capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
+            timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
+            
+            let actualStart = rangeStart;
+            if (!rangeStart) {
+                if (timeline.length > 0) actualStart = new Date(timeline[0].date);
+                else return 0;
+                actualStart.setHours(0,0,0,0);
+            }
+
+            let corpusAtStart = 0;
+            let corpusAtEnd = 0;
+            
+            // Replay history to find exact portfolio value at start and end dates
+            timeline.forEach(ev => {
+                let evDate = new Date(ev.date);
+                evDate.setHours(0,0,0,0);
+                
+                if (ev.evType === 'CAPITAL') {
+                    const rType = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(); const a = ev.amount;
+                    if (rType === "depositfund" || rType === "liquidfundinterest") tempLiquid += a; 
+                    else if (rType === "withdrawfund") tempLiquid -= a;
+                    else if (rType === "liquidfundtradeledger") { tempLiquid -= a; tempTrade += a; } 
+                    else if (rType === "tradeledgerliquidfund") { tempTrade -= a; tempLiquid += a; }
+                    else if (rType === "liquidfundslicereserve") { tempLiquid -= a; tempReserve += a; } 
+                    else if (rType === "slicereserveliquidfund") { tempReserve -= a; tempLiquid += a; }
+                    else if (rType === "tradeledgerslicereserve") { tempTrade -= a; tempReserve += a; } 
+                    else if (rType === "slicereservetradeledger") { tempReserve -= a; tempTrade += a; }
+                } else if (ev.evType === 'TRADE') {
+                    tempTrade += ev.netPnl;
+                }
+                
+                let currentCorpus = tempTrade + tempLiquid + tempReserve;
+                
+                // Track value right before the start date
+                if (rangeStart && evDate < rangeStart) {
+                    corpusAtStart = currentCorpus;
+                }
+                // Track value up to the end date
+                if (evDate <= actualEnd) {
+                    corpusAtEnd = currentCorpus;
+                }
+            });
+
+            // Initial Investment (Negative CF)
+            if (corpusAtStart > 0 && rangeStart) {
+                cfs.push({ amount: -corpusAtStart, date: actualStart });
+            }
+
+            // External Deposits / Withdrawals during timeframe
             capitalLedger.forEach(c => {
                 let d = new Date(c.date);
                 d.setHours(0,0,0,0);
-                // Note: Liquid Fund Interest is excluded intentionally. It acts purely as growth, pushing XIRR up!
-                if (c.type === "Deposit Fund") cfs.push({ amount: -c.amount, date: d });
-                else if (c.type === "Withdraw Fund") cfs.push({ amount: c.amount, date: d });
+                if ((!rangeStart || d >= actualStart) && d <= actualEnd) {
+                    if (c.type === "Deposit Fund") cfs.push({ amount: -c.amount, date: d });
+                    else if (c.type === "Withdraw Fund") cfs.push({ amount: c.amount, date: d });
+                }
             });
             
-            if (cfs.length === 0) return 0;
-            
-            let netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
-            let today = new Date();
-            today.setHours(0,0,0,0);
-            cfs.push({ amount: netCorpus, date: today });
-            
+            // Final Portfolio Value (Positive CF)
+            cfs.push({ amount: corpusAtEnd, date: actualEnd });
+
             // Consolidate identical dates to stabilize math
             let consolidated = {};
             cfs.forEach(cf => {
@@ -602,7 +709,7 @@
 
             // Require at least one negative cash flow (investment)
             let hasInvestment = finalCfs.some(c => c.amount < 0);
-            if (!hasInvestment) return 0;
+            if (!hasInvestment || finalCfs.length === 0) return 0;
             if (finalCfs[finalCfs.length - 1].date === finalCfs[0].date) return 0;
 
             const xnpv = (rate) => finalCfs.reduce((sum, cf) => sum + cf.amount / Math.pow(1 + rate, (cf.date - finalCfs[0].date) / 86400000 / 365), 0);
@@ -1036,28 +1143,41 @@
         let equityChartInstance, winChartInstance;
         function updateDashboard() {
             const netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
-            
-            // XIRR Implementation Set
-            const xirrValue = calculateXIRR();
-            const xirrEl = document.getElementById('dash-xirr');
-            xirrEl.textContent = xirrValue.toFixed(2) + '%';
-            xirrEl.className = `text-xl font-bold tracking-tight sensitive-data ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : '')}`;
 
             document.getElementById('dash-total-corpus').textContent = formatMoney(netCorpus); document.getElementById('dash-trade-ledger').textContent = formatMoney(balances.tradeLedger);
             document.getElementById('dash-liquid').textContent = formatMoney(balances.liquidFund); document.getElementById('dash-reserve').textContent = formatMoney(balances.sliceReserve);
             document.getElementById('led-total').textContent = formatMoney(netCorpus); document.getElementById('led-trade').textContent = formatMoney(balances.tradeLedger);
             document.getElementById('led-liquid').textContent = formatMoney(balances.liquidFund); document.getElementById('led-reserve').textContent = formatMoney(balances.sliceReserve);
-            let filteredTrades = [...tradesDB]; let rangeLabel = "";
+            
+            let filteredTrades = [...tradesDB]; 
+            let rangeLabel = "";
+            let rangeStart = null, rangeEnd = null;
+
             const btnPrev = document.getElementById('dash-prev-btn'), btnNext = document.getElementById('dash-next-btn'), lbl = document.getElementById('dash-period-label');
                          
             if (dashFilterMode !== 'all' && dashFilterMode !== 'custom') {
-                const range = getPeriodRange(dashFilterMode, periodOffset); rangeLabel = range.label;
+                const range = getPeriodRange(dashFilterMode, periodOffset); 
+                rangeLabel = range.label;
+                rangeStart = range.start; 
+                rangeEnd = range.end;
+                
                 btnPrev.classList.remove('hidden'); btnNext.classList.remove('hidden'); lbl.classList.remove('hidden');
                 filteredTrades = tradesDB.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= range.start && d <= range.end; });
             } else {
                 btnPrev.classList.add('hidden'); btnNext.classList.add('hidden'); lbl.classList.add('hidden');
-                if (dashFilterMode === 'custom' && customDateStart && customDateEnd) { filteredTrades = tradesDB.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= customDateStart && d <= customDateEnd; }); }
+                if (dashFilterMode === 'custom' && customDateStart && customDateEnd) { 
+                    rangeStart = customDateStart; 
+                    rangeEnd = customDateEnd;
+                    filteredTrades = tradesDB.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= customDateStart && d <= customDateEnd; }); 
+                }
             }
+            
+            // Execute Timeframe-Aware XIRR
+            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd);
+            const xirrEl = document.getElementById('dash-xirr');
+            xirrEl.textContent = xirrValue.toFixed(2) + '%';
+            xirrEl.className = `text-4xl font-bold sensitive-data ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : '')}`;
+
             lbl.textContent = rangeLabel;
             let totalPnl = 0, wins = 0; filteredTrades.forEach(t => { totalPnl += t.netPnl; if (t.result === 'WIN') wins++; });
             const winRate = filteredTrades.length > 0 ? ((wins / filteredTrades.length) * 100).toFixed(1) : 0;
@@ -1065,10 +1185,12 @@
                          
             const pnlEl = document.getElementById('dash-total-pnl'); pnlEl.textContent = formatMoney(totalPnl);
             pnlEl.className = `text-4xl font-bold sensitive-data ${totalPnl > 0 ? 'text-long' : (totalPnl < 0 ? 'text-short' : '')}`;
+            
             let formatStr;
             if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
             else if (['3months', '6months', 'year', '3years'].includes(dashFilterMode)) formatStr = d => d.toLocaleDateString('en-US', { month:'short', year:'numeric' });
             else formatStr = d => d.getFullYear().toString();
+            
             let grouped = {};
             [...filteredTrades].sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => { let key = formatStr(new Date(t.date)); if(!grouped[key]) grouped[key] = 0; grouped[key] += t.netPnl; });
             const tColor = '#9ca3af'; const gColor = 'rgba(255,255,255,0.05)';
