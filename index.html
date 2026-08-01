@@ -689,7 +689,8 @@
                 let d = new Date(c.date);
                 d.setHours(0,0,0,0);
                 if ((!rangeStart || d >= actualStart) && d <= actualEnd) {
-                    if (c.type === "Deposit Fund") cfs.push({ amount: -c.amount, date: d });
+                    // FIX: "Liquid Fund Interest" is now treated as a new external investment just like "Deposit Fund"
+                    if (c.type === "Deposit Fund" || c.type === "Liquid Fund Interest") cfs.push({ amount: -c.amount, date: d });
                     else if (c.type === "Withdraw Fund") cfs.push({ amount: c.amount, date: d });
                 }
             });
@@ -748,7 +749,6 @@
             } else if (currentId === 'cl-save-btn') {
                 processCapitalTx();
             } else {
-                // FIXED: Explicitly blur elements that don't have a "next" input to jump to
                 const currentEl = document.getElementById(currentId);
                 if (currentEl) currentEl.blur();
             }
@@ -1174,7 +1174,6 @@
                          
             flatpickr("#dash-custom-range", { mode: "range", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", onClose: (sel) => { if(sel.length === 2) { customDateStart = sel[0]; customDateEnd = sel[1]; updateDashboard(); } } });
             
-            // FIXED: Explicitly blur the input after selection so the next click counts as a fresh focus
             document.getElementById('dash-filter-input').addEventListener('change', (e) => {
                 const val = e.target.value; dashFilterMode = dashOptionsMap[val] || 'all'; periodOffset = 0; 
                 if(dashFilterMode === 'custom') customContainer.classList.remove('hidden'); else customContainer.classList.add('hidden');
