@@ -765,7 +765,6 @@
             flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry-time').focus();} } });
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-type').focus();} } });
             
-            // NOTE: tj-verdict is now configured with isMulti = true
             setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow, false);
             setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, journalFlow, true);
             setupCustomDropdown('cl-type', 'cl-type-list', null, capitalTypes, false, capitalFlow, false);
@@ -816,14 +815,13 @@
             const dl = document.getElementById('nse-stocks'); nseStocks.forEach(s => { const opt = document.createElement('option'); opt.value = s; dl.appendChild(opt); });
         }
 
-        // --- Updated: Custom Dropdown logic now supports isMulti toggle ---
+        // --- Custom Dropdown logic ---
         function setupCustomDropdown(inputId, listId, storageKey, optionsArray, allowAdd, flowArray, isMulti = false) {
             const input = document.getElementById(inputId); const list = document.getElementById(listId); let focusedIndex = -1;
             
             const renderList = (filter = "") => {
                 let searchStr = filter;
                 if (isMulti) {
-                    // For multi-select, we only filter by what's typed after the last comma
                     const parts = filter.split(',');
                     searchStr = parts[parts.length - 1].trim();
                 }
@@ -848,7 +846,8 @@
                 });
             };
             
-            input.addEventListener('focus', () => { renderList(input.value); list.classList.add('active'); focusedIndex = -1; });
+            // FIX applied here: call renderList("") to always show all options on initial focus
+            input.addEventListener('focus', () => { renderList(""); list.classList.add('active'); focusedIndex = -1; });
             input.addEventListener('input', (e) => { 
                 renderList(e.target.value); list.classList.add('active'); 
                 if (inputId === 'cl-type') updateInputColor(input, e.target.value); 
@@ -865,7 +864,7 @@
                         if (idx > -1) {
                             optionsArray.splice(idx, 1);
                             saveGlobalState();
-                            renderList(input.value);
+                            renderList("");
                         }
                     }
                     return; 
@@ -891,12 +890,12 @@
                         if (isMulti) {
                             let currentVals = input.value.split(',').map(s => s.trim()).filter(s => optionsArray.includes(s));
                             if (currentVals.includes(val)) {
-                                currentVals = currentVals.filter(s => s !== val); // Toggle off
+                                currentVals = currentVals.filter(s => s !== val); 
                             } else {
-                                currentVals.push(val); // Toggle on
+                                currentVals.push(val); 
                             }
                             input.value = currentVals.join(', ');
-                            renderList(input.value); // refresh checkmarks visually immediately
+                            renderList(""); // refresh visually
                         } else {
                             input.value = val; if (inputId === 'cl-type') updateInputColor(input, val); 
                         }
@@ -906,7 +905,6 @@
                     if (!isMulti) {
                         list.classList.remove('active'); focusNextElement(input.id, flowArray);
                     } else {
-                        // In multi-select, keep focus in the input for more typing/selecting
                         setTimeout(() => input.focus(), 0);
                     }
                 }
@@ -945,7 +943,6 @@
 
         function initNavigation() {
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                // Ensure we don't accidentally attach regular tab logic to the logout button
                 if (btn.id === 'logoutBtn') return;
                 
                 btn.addEventListener('click', (e) => {
@@ -1056,7 +1053,6 @@
             } else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); }
             recalculateTimeline();
             ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = '');
-            // keep tj-verdict if they want to repeat, or clear it depending on preference. (Currently not cleared per your original script).
             document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field font-bold text-gray-400 transition-colors";
             document.getElementById('tj-entry-time').focus();
         }
