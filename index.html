@@ -422,6 +422,13 @@
         
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
+        // --- ADDED: Date Formatter Helper ---
+        const formatToDDMMYYYY = (dateStr) => {
+            if (!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        };
+
         // --- Auth Token Persistence Logic ---
         function setToken(token, expiresIn) {
             accessToken = token;
@@ -755,8 +762,8 @@
         window.addEventListener('DOMContentLoaded', () => {
             initCalculator(); initNavigation(); initStocks();
                          
-            flatpickr("#tj-date", { dateFormat: "Y-m-d", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry-time').focus();} } });
-            flatpickr("#cl-date", { dateFormat: "Y-m-d", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-type').focus();} } });
+            flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry-time').focus();} } });
+            flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-type').focus();} } });
             setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow);
             setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, journalFlow);
             setupCustomDropdown('cl-type', 'cl-type-list', null, capitalTypes, false, capitalFlow);
@@ -1052,6 +1059,7 @@
         }
 
         function updateViews() { renderTradesTable(); renderCapitalTable(); updateDashboard(); }
+        
         function renderTradesTable() {
             const tbody = document.getElementById('tradesBody');
             if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
@@ -1059,7 +1067,7 @@
             tbody.innerHTML = tradesDB.map(t => `
                 <tr class="hover:bg-white/5 align-top">
                     <td class="px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox chk-trades" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
-                    <td class="whitespace-nowrap">${t.date} <br><span class="text-gray-500 text-xs">${t.session || ''}</span></td>
+                    <td class="whitespace-nowrap">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-xs">${t.session || ''}</span></td>
                     <td class="font-bold whitespace-nowrap">${t.symbol}</td>
                     <td class="text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>
                     <td class="font-semibold whitespace-nowrap ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>
@@ -1088,7 +1096,7 @@
                 return `
                 <tr class="hover:bg-white/5 align-top">
                     <td class="px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox chk-cap" onclick="toggleSelection(${c.id}, 'cap')" ${selectedCapital.has(c.id) ? 'checked' : ''}></td>
-                    <td class="whitespace-nowrap text-gray-300">${c.date}</td>
+                    <td class="whitespace-nowrap text-gray-300">${formatToDDMMYYYY(c.date)}</td>
                     <td class="whitespace-nowrap"><span class="text-xs font-semibold px-2 py-1 rounded border ${badgeClass}">${c.type}</span></td>
                     <td class="font-bold whitespace-nowrap ${amountColor}">${formattedAmount}</td>
                     <td class="text-gray-200 whitespace-nowrap font-medium">${formatMoney(c.netCorpus)}</td>
@@ -1113,7 +1121,7 @@
             document.getElementById('dash-filter-input').value = "All Time";
             const customContainer = document.getElementById('dash-custom-range-container');
                          
-            flatpickr("#dash-custom-range", { mode: "range", dateFormat: "Y-m-d", onClose: (sel) => { if(sel.length === 2) { customDateStart = sel[0]; customDateEnd = sel[1]; updateDashboard(); } } });
+            flatpickr("#dash-custom-range", { mode: "range", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", onClose: (sel) => { if(sel.length === 2) { customDateStart = sel[0]; customDateEnd = sel[1]; updateDashboard(); } } });
             document.getElementById('dash-filter-input').addEventListener('change', (e) => {
                 const val = e.target.value; dashFilterMode = dashOptionsMap[val] || 'all'; periodOffset = 0; 
                 if(dashFilterMode === 'custom') customContainer.classList.remove('hidden'); else customContainer.classList.add('hidden');
@@ -1182,8 +1190,8 @@
             pnlEl.className = `text-4xl font-bold sensitive-data ${totalPnl > 0 ? 'text-long' : (totalPnl < 0 ? 'text-short' : '')}`;
             
             let formatStr;
-            if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-            else if (['3months', '6months', 'year', '3years'].includes(dashFilterMode)) formatStr = d => d.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+            if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+            else if (['3months', '6months', 'year', '3years'].includes(dashFilterMode)) formatStr = d => `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
             else formatStr = d => d.getFullYear().toString();
             
             let grouped = {};
