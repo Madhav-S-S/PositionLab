@@ -105,26 +105,16 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 md:gap-4 overflow-x-auto">
+            <div class="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0">
                 <div id="authContainer" class="flex items-center gap-2">
                     <button id="driveSyncBtn" onclick="handleAuthClick()" class="px-3 py-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-2 transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
                         <span id="syncStatus">Connect Drive</span>
                     </button>
-                    <!-- User Profile Menu -->
-                    <div id="userProfile" class="hidden relative ml-1">
-                        <button onclick="toggleProfileMenu()" class="w-8 h-8 rounded-full overflow-hidden border-2 border-brand-500 focus:outline-none transition transform hover:scale-105">
-                            <img id="profileImg" src="" alt="Profile" class="w-full h-full object-cover">
-                        </button>
-                        <div id="profileMenu" class="absolute right-0 mt-2 w-48 bg-dark-800 rounded-lg shadow-xl border border-white/10 hidden z-50">
-                            <div class="px-4 py-3 border-b border-white/10">
-                                <p id="profileName" class="text-sm font-semibold text-white truncate"></p>
-                            </div>
-                            <button onclick="logoutDrive()" class="w-full text-left px-4 py-2 text-sm text-short hover:bg-white/5 transition flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                Logout
-                            </button>
-                        </div>
+                    <!-- Inline User Profile Pill -->
+                    <div id="userProfile" class="hidden items-center gap-2 pl-1 pr-3 py-1 bg-white/5 border border-white/10 rounded-full transition-all">
+                        <img id="profileImg" src="" alt="Profile" class="w-6 h-6 rounded-full object-cover border border-brand-500/50">
+                        <span id="profileName" class="text-xs font-medium text-gray-200 tracking-wide whitespace-nowrap"></span>
                     </div>
                 </div>
                 
@@ -132,6 +122,12 @@
                 <button class="nav-btn" data-target="view-dashboard">DASHBOARD</button>
                 <button class="nav-btn" data-target="view-trades">JOURNAL</button>
                 <button class="nav-btn" data-target="view-capital">LEDGER</button>
+                
+                <!-- Dedicated Logout Tab -->
+                <button id="logoutBtn" onclick="logoutDrive()" class="hidden nav-btn !text-short hover:!text-red-400 hover:!bg-short/10 items-center gap-1 font-bold">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    LOGOUT
+                </button>
             </div>
         </div>
     </nav>
@@ -450,13 +446,18 @@
         function updateSyncUI(isConnected) {
             const btn = document.getElementById('driveSyncBtn');
             const status = document.getElementById('syncStatus');
+            const profileDiv = document.getElementById('userProfile');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
             if (isConnected) {
                 btn.className = "px-3 py-1.5 rounded-lg border border-long/40 bg-long/10 text-long hover:bg-long/20 text-xs font-semibold flex items-center gap-2 transition";
                 if(status) status.textContent = "Synced";
+                if(logoutBtn) { logoutBtn.classList.remove('hidden'); logoutBtn.classList.add('flex'); }
             } else {
                 btn.className = "px-3 py-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-2 transition";
                 if(status) status.textContent = "Connect Drive";
-                document.getElementById('userProfile').classList.add('hidden');
+                if(profileDiv) { profileDiv.classList.add('hidden'); profileDiv.classList.remove('flex'); }
+                if(logoutBtn) { logoutBtn.classList.add('hidden'); logoutBtn.classList.remove('flex'); }
             }
         }
 
@@ -483,20 +484,11 @@
                 let user = await res.json();
                 document.getElementById('profileName').textContent = user.name;
                 document.getElementById('profileImg').src = user.picture;
-                document.getElementById('userProfile').classList.remove('hidden');
+                const profileDiv = document.getElementById('userProfile');
+                profileDiv.classList.remove('hidden');
+                profileDiv.classList.add('flex');
             } catch(e) { console.error("Profile fetch error", e); }
         }
-
-        function toggleProfileMenu() {
-            document.getElementById('profileMenu').classList.toggle('hidden');
-        }
-
-        document.addEventListener('click', (e) => {
-            const userProfile = document.getElementById('userProfile');
-            if (userProfile && !userProfile.contains(e.target)) {
-                document.getElementById('profileMenu').classList.add('hidden');
-            }
-        });
 
         function logoutDrive() {
             if (accessToken) {
@@ -505,7 +497,6 @@
                 localStorage.removeItem('pt_gdrive_token');
                 localStorage.removeItem('pt_gdrive_expiry');
                 updateSyncUI(false);
-                document.getElementById('profileMenu').classList.add('hidden');
             }
         }
 
@@ -896,8 +887,12 @@
 
         function initNavigation() {
             document.querySelectorAll('.nav-btn').forEach(btn => {
+                // Ensure we don't accidentally attach regular tab logic to the logout button
+                if (btn.id === 'logoutBtn') return;
+                
                 btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active');
+                    document.querySelectorAll('.nav-btn:not(#logoutBtn)').forEach(b => b.classList.remove('active')); 
+                    e.target.classList.add('active');
                     const targetId = e.target.getAttribute('data-target');
                     document.querySelectorAll('.view-section').forEach(sec => { sec.classList.remove('active'); if(sec.id === targetId) sec.classList.add('active'); });
                     if(targetId === 'view-dashboard') updateDashboard();
