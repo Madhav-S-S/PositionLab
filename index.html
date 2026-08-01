@@ -241,7 +241,7 @@
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Total Trades</p><h2 id="dash-total-trades" class="text-4xl font-bold sensitive-data">0</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Win Rate</p><h2 id="dash-win-rate" class="text-4xl font-bold text-brand-500 sensitive-data">0.0%</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Net P&L</p><h2 id="dash-total-pnl" class="text-4xl font-bold sensitive-data">₹0.00</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Timeframe XIRR</p><h2 id="dash-xirr" class="text-4xl font-bold sensitive-data">0.00%</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">XIRR</p><h2 id="dash-xirr" class="text-4xl font-bold sensitive-data">0.00%</h2></div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -286,9 +286,9 @@
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm text-gray-400 mb-1">Verdict</label>
+                        <label class="block text-sm text-gray-400 mb-1">Verdict(s)</label>
                         <div class="custom-dropdown">
-                            <input type="text" id="tj-verdict" class="input-field" placeholder="Select Verdict..." autocomplete="off">
+                            <input type="text" id="tj-verdict" class="input-field" placeholder="Select Verdicts..." autocomplete="off">
                             <ul id="tj-verdict-list" class="custom-dropdown-list"></ul>
                         </div>
                     </div>
@@ -422,7 +422,7 @@
         
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
-        // --- ADDED: Date Formatter Helper ---
+        // --- Date Formatter Helper ---
         const formatToDDMMYYYY = (dateStr) => {
             if (!dateStr) return '';
             const [y, m, d] = dateStr.split('-');
@@ -764,9 +764,11 @@
                          
             flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry-time').focus();} } });
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-type').focus();} } });
-            setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow);
-            setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, journalFlow);
-            setupCustomDropdown('cl-type', 'cl-type-list', null, capitalTypes, false, capitalFlow);
+            
+            // NOTE: tj-verdict is now configured with isMulti = true
+            setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow, false);
+            setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, journalFlow, true);
+            setupCustomDropdown('cl-type', 'cl-type-list', null, capitalTypes, false, capitalFlow, false);
                          
             bindKeyboardFlows(); updateViews(); initDashboardFilters();
 
@@ -814,23 +816,39 @@
             const dl = document.getElementById('nse-stocks'); nseStocks.forEach(s => { const opt = document.createElement('option'); opt.value = s; dl.appendChild(opt); });
         }
 
-        function setupCustomDropdown(inputId, listId, storageKey, optionsArray, allowAdd, flowArray) {
+        // --- Updated: Custom Dropdown logic now supports isMulti toggle ---
+        function setupCustomDropdown(inputId, listId, storageKey, optionsArray, allowAdd, flowArray, isMulti = false) {
             const input = document.getElementById(inputId); const list = document.getElementById(listId); let focusedIndex = -1;
+            
             const renderList = (filter = "") => {
-                const filtered = optionsArray.filter(o => o.toLowerCase().includes(filter.toLowerCase()));
+                let searchStr = filter;
+                if (isMulti) {
+                    // For multi-select, we only filter by what's typed after the last comma
+                    const parts = filter.split(',');
+                    searchStr = parts[parts.length - 1].trim();
+                }
+                const filtered = optionsArray.filter(o => o.toLowerCase().includes(searchStr.toLowerCase()));
                 list.innerHTML = ""; if(allowAdd) list.innerHTML += `<li class="custom-dropdown-item custom-dropdown-add" data-val="_add_">+ Add New...</li>`;
+                
+                const currentSelected = isMulti ? input.value.split(',').map(s => s.trim()).filter(Boolean) : [input.value.trim()];
+
                 filtered.forEach(o => {
                     let color = ""; if(o === "Deposit Fund" || o === "Liquid Fund Interest") color = "text-long font-bold"; else if(o === "Withdraw Fund") color = "text-short font-bold";
                     
                     let delBtn = allowAdd ? `<span class="delete-opt text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${o}" title="Delete">✕</span>` : '';
                     
-                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${color}" data-val="${o}">
-                        <span class="pointer-events-none">${o}</span>
+                    let isSelected = currentSelected.includes(o);
+                    let bgClass = isSelected ? 'bg-brand-500/20 text-brand-400 font-bold' : '';
+                    let checkmark = isSelected ? '✓ ' : '';
+
+                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${color} ${bgClass}" data-val="${o}">
+                        <span class="pointer-events-none">${checkmark}${o}</span>
                         ${delBtn}
                     </li>`;
                 });
             };
-            input.addEventListener('focus', () => { renderList(); list.classList.add('active'); focusedIndex = -1; });
+            
+            input.addEventListener('focus', () => { renderList(input.value); list.classList.add('active'); focusedIndex = -1; });
             input.addEventListener('input', (e) => { 
                 renderList(e.target.value); list.classList.add('active'); 
                 if (inputId === 'cl-type') updateInputColor(input, e.target.value); 
@@ -860,15 +878,40 @@
                         const newVal = prompt("Enter new option:");
                         if (newVal && newVal.trim() !== '') { 
                             optionsArray.unshift(newVal.trim()); saveGlobalState(); 
-                            input.value = newVal.trim(); input.dispatchEvent(new Event('change'));
+                            if (isMulti) {
+                                let currentVals = input.value.split(',').map(s => s.trim()).filter(s => optionsArray.includes(s));
+                                currentVals.push(newVal.trim());
+                                input.value = currentVals.join(', ');
+                            } else {
+                                input.value = newVal.trim(); 
+                            }
+                            input.dispatchEvent(new Event('change'));
                         }
                     } else { 
-                        input.value = val; if (inputId === 'cl-type') updateInputColor(input, val); 
+                        if (isMulti) {
+                            let currentVals = input.value.split(',').map(s => s.trim()).filter(s => optionsArray.includes(s));
+                            if (currentVals.includes(val)) {
+                                currentVals = currentVals.filter(s => s !== val); // Toggle off
+                            } else {
+                                currentVals.push(val); // Toggle on
+                            }
+                            input.value = currentVals.join(', ');
+                            renderList(input.value); // refresh checkmarks visually immediately
+                        } else {
+                            input.value = val; if (inputId === 'cl-type') updateInputColor(input, val); 
+                        }
                         input.dispatchEvent(new Event('change')); 
                     }
-                    list.classList.remove('active'); focusNextElement(input.id, flowArray);
+                    
+                    if (!isMulti) {
+                        list.classList.remove('active'); focusNextElement(input.id, flowArray);
+                    } else {
+                        // In multi-select, keep focus in the input for more typing/selecting
+                        setTimeout(() => input.focus(), 0);
+                    }
                 }
             });
+            
             input.addEventListener('keydown', (e) => {
                 const items = list.querySelectorAll('li');
                 if (list.classList.contains('active')) {
@@ -876,9 +919,17 @@
                     else if (e.key === 'ArrowUp') { e.preventDefault(); focusedIndex = (focusedIndex - 1 + items.length) % items.length; updateFocus(items); } 
                     else if (e.key === 'Enter') {
                         e.preventDefault();
-                        if (focusedIndex > -1 && items[focusedIndex]) { const evt = new MouseEvent('mousedown', {bubbles:true}); items[focusedIndex].dispatchEvent(evt); } 
-                        else if (items.length > (allowAdd ? 1 : 0)) { const evt = new MouseEvent('mousedown', {bubbles:true}); items[allowAdd ? 1 : 0].dispatchEvent(evt); } 
-                        else { list.classList.remove('active'); focusNextElement(input.id, flowArray); }
+                        if (focusedIndex > -1 && items[focusedIndex]) { 
+                            const evt = new MouseEvent('mousedown', {bubbles:true}); items[focusedIndex].dispatchEvent(evt); 
+                            if (!isMulti) { list.classList.remove('active'); focusNextElement(input.id, flowArray); }
+                        } 
+                        else if (items.length > (allowAdd ? 1 : 0) && !isMulti) { 
+                            const evt = new MouseEvent('mousedown', {bubbles:true}); items[allowAdd ? 1 : 0].dispatchEvent(evt); 
+                            if (!isMulti) { list.classList.remove('active'); focusNextElement(input.id, flowArray); }
+                        } 
+                        else { 
+                            list.classList.remove('active'); focusNextElement(input.id, flowArray); 
+                        }
                     }
                 } else { if (e.key === 'Enter') { e.preventDefault(); focusNextElement(input.id, flowArray); } }
             });
@@ -1005,6 +1056,7 @@
             } else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); }
             recalculateTimeline();
             ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = '');
+            // keep tj-verdict if they want to repeat, or clear it depending on preference. (Currently not cleared per your original script).
             document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field font-bold text-gray-400 transition-colors";
             document.getElementById('tj-entry-time').focus();
         }
@@ -1114,7 +1166,7 @@
         }
 
         let dashFilterMode = 'all'; let periodOffset = 0; let customDateStart = null, customDateEnd = null;
-        const dashOptionsMap = { "All Time": "all", "Today": "today", "This Week": "week", "This Month": "month", "3 Months": "3months", "6 Months": "6months", "This Year": "year", "3 Years": "3years", "5 Years": "5years", "Custom Range": "custom" };
+        const dashOptionsMap = { "All Time": "all", "1 Day": "today", "1 Week": "week", "1 Month": "month", "3 Months": "3months", "6 Months": "6months", "1 Year": "year", "3 Years": "3years", "5 Years": "5years", "Custom Range": "custom" };
         
         function initDashboardFilters() {
             setupCustomDropdown('dash-filter-input', 'dash-filter-list', null, Object.keys(dashOptionsMap), false, []);
