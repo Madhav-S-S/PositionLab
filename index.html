@@ -181,10 +181,16 @@
                     </button>
                 </h2>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <!-- Added 5th column grid for XIRR -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 <div class="glass-card rounded-2xl p-6 border-l-4 border-l-brand-500 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-3xl font-bold tracking-tight sensitive-data">₹0.00</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-xl lg:text-2xl xl:text-3xl font-bold tracking-tight sensitive-data">₹0.00</h3>
+                </div>
+                <div class="glass-card rounded-2xl p-6 relative">
+                    <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Net XIRR</p><h3 id="dash-xirr" class="text-xl font-bold tracking-tight sensitive-data">0.00%</h3>
                 </div>
                 <div class="glass-card rounded-2xl p-6 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
@@ -199,6 +205,7 @@
                     <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Slice Reserve</p><h3 id="dash-reserve" class="text-xl font-bold tracking-tight sensitive-data">₹0.00</h3>
                 </div>
             </div>
+
             <div class="flex flex-col md:flex-row justify-between items-center px-2 mt-8 mb-2 gap-4 relative z-50">
                 <h3 class="text-lg font-semibold text-gray-100">Performance Metrics</h3>
                 <div class="flex items-center gap-2">
@@ -398,7 +405,10 @@
         let customVerdicts = JSON.parse(localStorage.getItem('pt_verdicts')) || ["Followed Rules", "FOMO", "Early Exit"];
         let editingTradeId = null; let editingCapitalId = null;
         let selectedTrades = new Set(); let selectedCapital = new Set();
-        const capitalTypes = ["Deposit Fund", "Withdraw Fund", "Liquid Fund -> Trade Ledger", "Trade Ledger -> Liquid Fund", "Liquid Fund -> Slice Reserve", "Slice Reserve -> Liquid Fund", "Trade Ledger -> Slice Reserve", "Slice Reserve -> Trade Ledger"];
+        
+        // ADDED Liquid Fund Interest HERE
+        const capitalTypes = ["Deposit Fund", "Withdraw Fund", "Liquid Fund Interest", "Liquid Fund -> Trade Ledger", "Trade Ledger -> Liquid Fund", "Liquid Fund -> Slice Reserve", "Slice Reserve -> Liquid Fund", "Trade Ledger -> Slice Reserve", "Slice Reserve -> Trade Ledger"];
+        
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
         // --- Auth Token Persistence Logic ---
@@ -412,7 +422,6 @@
         function checkToken() {
             const token = localStorage.getItem('pt_gdrive_token');
             const expiry = localStorage.getItem('pt_gdrive_expiry');
-            // Check if token exists and is valid (with a 5 min safety buffer)
             if (token && expiry && Date.now() < (parseInt(expiry) - 300000)) {
                 accessToken = token;
                 updateSyncUI(true);
@@ -433,7 +442,6 @@
             }
         }
 
-        // --- Safe Fetch Wrapper for 401 Expiry ---
         async function apiFetch(url, options = {}) {
             if(!options.headers) options.headers = {};
             options.headers['Authorization'] = `Bearer ${accessToken}`;
@@ -465,7 +473,7 @@
         function handleAuthClick() {
             if (!tokenClient) initGoogleDrive();
             if(accessToken) {
-                 loadFromDrive(); // Force manual sync pull if already logged in
+                 loadFromDrive(); 
                  return;
             }
             tokenClient.requestAccessToken({ prompt: 'consent' });
@@ -475,7 +483,6 @@
             if (!accessToken) return;
             document.getElementById('syncStatus').textContent = "Loading...";
             try {
-                // Ensure we get the exact latest version of the file
                 const qParams = new URLSearchParams({
                     q: `name='${FILE_NAME}' and trashed=false`,
                     orderBy: 'modifiedTime desc'
@@ -494,17 +501,14 @@
                         if (cloudData.tradesDB) tradesDB = cloudData.tradesDB;
                         if (cloudData.capitalLedger) capitalLedger = cloudData.capitalLedger;
                         
-                        // Empty and refill dropdown arrays to preserve variable references
                         if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
                         if (cloudData.customVerdicts) { customVerdicts.length = 0; cloudData.customVerdicts.forEach(x => customVerdicts.push(x)); }
                     }
                     
-                    // Save to local storage without triggering an immediate re-upload
                     saveGlobalState(false);
                     recalculateTimeline(false);
                     document.getElementById('syncStatus').textContent = "Synced";
                 } else {
-                    // No file exists on drive, so let's upload current local state to start it
                     await uploadToDrive();
                 }
             } catch (err) {
@@ -518,7 +522,6 @@
             document.getElementById('syncStatus').textContent = "Saving...";
             
             try {
-                // Pre-check for duplicate files before creating a new one
                 if (!driveFileId) {
                     const qParams = new URLSearchParams({
                         q: `name='${FILE_NAME}' and trashed=false`,
@@ -571,6 +574,61 @@
             }
         }
 
+        // --- XIRR CALCULATION ENGINE ---
+        function calculateXIRR() {
+            let cfs = [];
+            capitalLedger.forEach(c => {
+                let d = new Date(c.date);
+                d.setHours(0,0,0,0);
+                // Note: Liquid Fund Interest is excluded intentionally. It acts purely as growth, pushing XIRR up!
+                if (c.type === "Deposit Fund") cfs.push({ amount: -c.amount, date: d });
+                else if (c.type === "Withdraw Fund") cfs.push({ amount: c.amount, date: d });
+            });
+            
+            if (cfs.length === 0) return 0;
+            
+            let netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+            let today = new Date();
+            today.setHours(0,0,0,0);
+            cfs.push({ amount: netCorpus, date: today });
+            
+            // Consolidate identical dates to stabilize math
+            let consolidated = {};
+            cfs.forEach(cf => {
+                let t = cf.date.getTime();
+                consolidated[t] = (consolidated[t] || 0) + cf.amount;
+            });
+            let finalCfs = Object.keys(consolidated).map(t => ({ date: parseInt(t), amount: consolidated[t] })).sort((a,b) => a.date - b.date);
+
+            // Require at least one negative cash flow (investment)
+            let hasInvestment = finalCfs.some(c => c.amount < 0);
+            if (!hasInvestment) return 0;
+            if (finalCfs[finalCfs.length - 1].date === finalCfs[0].date) return 0;
+
+            const xnpv = (rate) => finalCfs.reduce((sum, cf) => sum + cf.amount / Math.pow(1 + rate, (cf.date - finalCfs[0].date) / 86400000 / 365), 0);
+            const xnpvDerivative = (rate) => finalCfs.reduce((sum, cf) => {
+                const t = (cf.date - finalCfs[0].date) / 86400000 / 365;
+                if (t === 0) return sum;
+                return sum - (t * cf.amount) / Math.pow(1 + rate, t + 1);
+            }, 0);
+
+            let rate = 0.1;
+            for (let i = 0; i < 100; i++) {
+                const f = xnpv(rate);
+                const df = xnpvDerivative(rate);
+                if (Math.abs(df) < 1e-10) break;
+                let nextRate = rate - f / df;
+                nextRate = Math.max(-0.9999, nextRate); // Bound negative drops
+                if (Math.abs(nextRate - rate) < 1e-6) {
+                    rate = nextRate;
+                    break;
+                }
+                rate = nextRate;
+            }
+            if (isNaN(rate) || rate <= -0.9999) return 0;
+            return rate * 100;
+        }
+
         // --- Keyboard Focus Navigation Flow Setup ---
         const journalFlow = ['tj-date', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
         const capitalFlow = ['cl-date', 'cl-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
@@ -587,7 +645,6 @@
             }
         }
 
-        // --- Formatters ---
         const formatMoney = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
         const formatNum = (num) => new Intl.NumberFormat('en-IN').format(num || 0);
 
@@ -597,7 +654,6 @@
             btn.querySelector('.eye-open').classList.toggle('hidden', isMasked); btn.querySelector('.eye-closed').classList.toggle('hidden', !isMasked);
         }
 
-        // --- Initializers ---
         window.addEventListener('DOMContentLoaded', () => {
             initCalculator(); initNavigation(); initStocks();
                          
@@ -609,7 +665,6 @@
                          
             bindKeyboardFlows(); updateViews(); initDashboardFilters();
 
-            // Auto-sync if token is still alive
             if (checkToken()) {
                 loadFromDrive();
             }
@@ -654,14 +709,13 @@
             const dl = document.getElementById('nse-stocks'); nseStocks.forEach(s => { const opt = document.createElement('option'); opt.value = s; dl.appendChild(opt); });
         }
 
-        // --- Custom Dropdown Engine ---
         function setupCustomDropdown(inputId, listId, storageKey, optionsArray, allowAdd, flowArray) {
             const input = document.getElementById(inputId); const list = document.getElementById(listId); let focusedIndex = -1;
             const renderList = (filter = "") => {
                 const filtered = optionsArray.filter(o => o.toLowerCase().includes(filter.toLowerCase()));
                 list.innerHTML = ""; if(allowAdd) list.innerHTML += `<li class="custom-dropdown-item custom-dropdown-add" data-val="_add_">+ Add New...</li>`;
                 filtered.forEach(o => {
-                    let color = ""; if(o === "Deposit Fund") color = "text-long font-bold"; else if(o === "Withdraw Fund") color = "text-short font-bold";
+                    let color = ""; if(o === "Deposit Fund" || o === "Liquid Fund Interest") color = "text-long font-bold"; else if(o === "Withdraw Fund") color = "text-short font-bold";
                     
                     let delBtn = allowAdd ? `<span class="delete-opt text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${o}" title="Delete">✕</span>` : '';
                     
@@ -728,7 +782,9 @@
 
         function updateInputColor(inputEl, val) {
             inputEl.classList.remove('text-long', 'text-short', 'text-brand-500');
-            if(val === 'Deposit Fund') inputEl.classList.add('text-long'); else if(val === 'Withdraw Fund') inputEl.classList.add('text-short'); else inputEl.classList.add('text-brand-500');
+            if(val === 'Deposit Fund' || val === 'Liquid Fund Interest') inputEl.classList.add('text-long'); 
+            else if(val === 'Withdraw Fund') inputEl.classList.add('text-short'); 
+            else inputEl.classList.add('text-brand-500');
         }
 
         function initNavigation() {
@@ -742,7 +798,6 @@
             });
         }
 
-        // --- Multi-Select & Bulk Actions Logic ---
         window.toggleAll = function(type) {
             const isChecked = document.getElementById(`chk-all-${type}`).checked;
             const set = type === 'trades' ? selectedTrades : selectedCapital;
@@ -777,7 +832,6 @@
             }
         }
 
-        // --- Edit / Delete Hooks ---
         function parse12HourTo24(time12) {
             if(!time12) return '';
             const [time, modifier] = time12.split(' '); let [hours, minutes] = time.split(':');
@@ -818,7 +872,6 @@
             }
         }
 
-        // --- Master Ledger Data Processing Logic ---
         function format12Hour(timeStr) {
             if(!timeStr) return '';
             let [h, m] = timeStr.split(':'); h = parseInt(h); const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${m} ${ampm}`;
@@ -873,10 +926,15 @@
             timeline.forEach(ev => {
                 if (ev.evType === 'CAPITAL') {
                     const rType = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(); const a = ev.amount;
-                    if (rType === "depositfund") balances.liquidFund += a; else if (rType === "withdrawfund") balances.liquidFund -= a;
-                    else if (rType === "liquidfundtradeledger") { balances.liquidFund -= a; balances.tradeLedger += a; } else if (rType === "tradeledgerliquidfund") { balances.tradeLedger -= a; balances.liquidFund += a; }
-                    else if (rType === "liquidfundslicereserve") { balances.liquidFund -= a; balances.sliceReserve += a; } else if (rType === "slicereserveliquidfund") { balances.sliceReserve -= a; balances.liquidFund += a; }
-                    else if (rType === "tradeledgerslicereserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } else if (rType === "slicereservetradeledger") { balances.sliceReserve -= a; balances.tradeLedger += a; }
+                    if (rType === "depositfund" || rType === "liquidfundinterest") balances.liquidFund += a; 
+                    else if (rType === "withdrawfund") balances.liquidFund -= a;
+                    else if (rType === "liquidfundtradeledger") { balances.liquidFund -= a; balances.tradeLedger += a; } 
+                    else if (rType === "tradeledgerliquidfund") { balances.tradeLedger -= a; balances.liquidFund += a; }
+                    else if (rType === "liquidfundslicereserve") { balances.liquidFund -= a; balances.sliceReserve += a; } 
+                    else if (rType === "slicereserveliquidfund") { balances.sliceReserve -= a; balances.liquidFund += a; }
+                    else if (rType === "tradeledgerslicereserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } 
+                    else if (rType === "slicereservetradeledger") { balances.sliceReserve -= a; balances.tradeLedger += a; }
+                    
                     const ref = capitalLedger.find(c => c.id === ev.id);
                     if(ref) { ref.tradeLedger = balances.tradeLedger; ref.liquidFund = balances.liquidFund; ref.sliceReserve = balances.sliceReserve; ref.netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; }
                 } else if (ev.evType === 'TRADE') {
@@ -891,7 +949,6 @@
             saveGlobalState(syncCloud); updateViews();
         }
 
-        // --- Rendering Logic ---
         function updateViews() { renderTradesTable(); renderCapitalTable(); updateDashboard(); }
         function renderTradesTable() {
             const tbody = document.getElementById('tradesBody');
@@ -924,7 +981,7 @@
                          
             tbody.innerHTML = capitalLedger.map(c => {
                 let badgeClass = "text-gray-300 border-gray-600 bg-gray-800/50"; let amountColor = "text-brand-500"; let formattedAmount = formatMoney(c.amount);
-                if (c.type === "Deposit Fund") { badgeClass = "text-long border-long/40 bg-long/10"; amountColor = "text-long"; formattedAmount = "+" + formatMoney(c.amount); } 
+                if (c.type === "Deposit Fund" || c.type === "Liquid Fund Interest") { badgeClass = "text-long border-long/40 bg-long/10"; amountColor = "text-long"; formattedAmount = "+" + formatMoney(c.amount); } 
                 else if (c.type === "Withdraw Fund") { badgeClass = "text-short border-short/40 bg-short/10"; amountColor = "text-short"; formattedAmount = "-" + formatMoney(c.amount); }
                 return `
                 <tr class="hover:bg-white/5 align-top">
@@ -946,7 +1003,6 @@
             updateBulkActionVisibility('cap');
         }
 
-        // --- Dashboard Filter Engine ---
         let dashFilterMode = 'all'; let periodOffset = 0; let customDateStart = null, customDateEnd = null;
         const dashOptionsMap = { "All Time": "all", "Today": "today", "This Week": "week", "This Month": "month", "3 Months": "3months", "6 Months": "6months", "This Year": "year", "3 Years": "3years", "5 Years": "5years", "Custom Range": "custom" };
         
@@ -980,6 +1036,13 @@
         let equityChartInstance, winChartInstance;
         function updateDashboard() {
             const netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+            
+            // XIRR Implementation Set
+            const xirrValue = calculateXIRR();
+            const xirrEl = document.getElementById('dash-xirr');
+            xirrEl.textContent = xirrValue.toFixed(2) + '%';
+            xirrEl.className = `text-xl font-bold tracking-tight sensitive-data ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : '')}`;
+
             document.getElementById('dash-total-corpus').textContent = formatMoney(netCorpus); document.getElementById('dash-trade-ledger').textContent = formatMoney(balances.tradeLedger);
             document.getElementById('dash-liquid').textContent = formatMoney(balances.liquidFund); document.getElementById('dash-reserve').textContent = formatMoney(balances.sliceReserve);
             document.getElementById('led-total').textContent = formatMoney(netCorpus); document.getElementById('led-trade').textContent = formatMoney(balances.tradeLedger);
@@ -1022,7 +1085,6 @@
             });
         }
 
-        // --- Calculator Logic ---
         function initCalculator() {
             const cInputs = {
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'),
