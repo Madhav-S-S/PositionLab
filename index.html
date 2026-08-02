@@ -158,7 +158,17 @@
                         <div id="validationMsg" class="mt-4 text-sm text-red-500 hidden"></div>
                         <div class="mt-6 flex gap-3"><button id="resetBtn" class="flex-1 py-2.5 rounded-lg border border-gray-600 hover:bg-gray-800 transition">Reset Setup</button></div>
                     </div>
+                    
+                    <!-- Brokerage Settings Card -->
+                    <div class="glass-card rounded-2xl p-6 relative z-50">
+                        <div class="mb-4"><h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Brokerage Profile (Intraday)</h2></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs text-gray-400 mb-1">Brokerage (%)</label><input type="number" id="brkPct" step="0.01" min="0" class="input-field py-1.5 text-sm" placeholder="0.03"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1">Max / Order (₹)</label><input type="number" id="brkMax" step="1" min="0" class="input-field py-1.5 text-sm" placeholder="20"></div>
+                        </div>
+                    </div>
                 </section>
+                
                 <section class="lg:col-span-8 space-y-6">
                     <div id="resultCard" class="glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 border-l-transparent z-10">
                         <div id="dirGlow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500"></div>
@@ -176,9 +186,28 @@
                             <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold">₹0.00</p></div>
                             <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold">₹0.00</p></div>
                             <div id="marginBlock" class="hidden"><p class="text-xs text-gray-400 mb-1">Margin Required</p><p id="outMarginReq" class="font-semibold text-brand-500">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-400 mb-1">Maximum Planned Loss</p><p id="outMaxLoss" class="font-semibold text-red-400">₹0.00</p></div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-1">Maximum Planned Loss</p>
+                                <div class="flex items-center gap-2">
+                                    <p id="outMaxLoss" class="font-semibold text-red-400">₹0.00</p>
+                                    <span class="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">inc. fees</span>
+                                </div>
+                            </div>
                             <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold">0.00%</p></div>
                             <div><p class="text-xs text-gray-400 mb-1">Trade Type</p><p id="outTradeType" class="font-semibold">-</p></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charges Breakdown Card -->
+                    <div id="chargesCard" class="glass-card rounded-2xl p-6 relative z-10 transition-opacity duration-300 opacity-50">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Estimated Charges <span class="text-xs text-gray-500 normal-case tracking-normal ml-1">(At Stop Loss)</span></h3>
+                        <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                            <div><p class="text-xs text-gray-500 mb-1">Brokerage</p><p id="chgBrokerage" class="font-semibold text-gray-300">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">STT</p><p id="chgSTT" class="font-semibold text-gray-300">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Exch. & SEBI</p><p id="chgExch" class="font-semibold text-gray-300">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">GST</p><p id="chgGST" class="font-semibold text-gray-300">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Stamp Duty</p><p id="chgStamp" class="font-semibold text-gray-300">₹0.00</p></div>
+                            <div class="border-l border-white/10 pl-4"><p class="text-xs text-brand-400 font-bold mb-1">Total Charges</p><p id="chgTotal" class="font-bold text-lg text-brand-500">₹0.00</p></div>
                         </div>
                     </div>
                 </section>
@@ -1284,7 +1313,9 @@
             const cInputs = {
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'),
                 corpus: document.getElementById('corpus'), margin: document.getElementById('margin'),
-                risk: document.getElementById('riskPct'), target: document.getElementById('targetPct'), msg: document.getElementById('validationMsg')
+                risk: document.getElementById('riskPct'), target: document.getElementById('targetPct'), 
+                brkPct: document.getElementById('brkPct'), brkMax: document.getElementById('brkMax'),
+                msg: document.getElementById('validationMsg')
             };
             const savedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
             
@@ -1295,14 +1326,41 @@
             cInputs.margin.value = savedState.margin || '1'; 
             cInputs.risk.value = savedState.riskPct || '1.0';
             cInputs.target.value = savedState.targetPct || '1.5';
+            cInputs.brkPct.value = savedState.brkPct || '0.03';
+            cInputs.brkMax.value = savedState.brkMax || '20';
             
+            const calcCharges = (qty, ent, stop, dir, bPct, bMax) => {
+                const pBuy = dir === 'LONG' ? ent : stop;
+                const pSell = dir === 'LONG' ? stop : ent;
+                const tBuy = qty * pBuy;
+                const tSell = qty * pSell;
+                const tTotal = tBuy + tSell;
+
+                const bBuy = Math.min(tBuy * (bPct / 100), bMax);
+                const bSell = Math.min(tSell * (bPct / 100), bMax);
+                const broker = bBuy + bSell;
+
+                const stt = Math.round(tSell * 0.00025);
+                const exch = tTotal * 0.0000325;
+                const sebi = tTotal * 0.000001;
+                const stamp = Math.round(tBuy * 0.00003);
+                const gst = (broker + exch + sebi) * 0.18;
+
+                const total = broker + stt + exch + sebi + stamp + gst;
+                return { broker, stt, exchAndSebi: exch + sebi, gst, stamp, total };
+            };
+
             const calculate = () => {
                 cInputs.msg.classList.add('hidden');
                 const entry = parseFloat(cInputs.entry.value); const sl = parseFloat(cInputs.sl.value);
                 const corpus = parseFloat(cInputs.corpus.value); const marginRaw = parseFloat(cInputs.margin.value); 
                 const riskPct = parseFloat(cInputs.risk.value); const targetPct = parseFloat(cInputs.target.value);
+                const brkPct = parseFloat(cInputs.brkPct.value) || 0; const brkMax = parseFloat(cInputs.brkMax.value) || 0;
                 
-                localStorage.setItem('riskCalcSettings', JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value }));
+                localStorage.setItem('riskCalcSettings', JSON.stringify({ 
+                    corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, 
+                    targetPct: cInputs.target.value, brkPct: cInputs.brkPct.value, brkMax: cInputs.brkMax.value 
+                }));
                 
                 const clear = () => {
                     document.getElementById('outShares').textContent = '0'; document.getElementById('outDirection').textContent = 'WAITING';
@@ -1311,6 +1369,9 @@
                     document.getElementById('outTargetPrice').textContent = '₹0.00';
                     ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00');
                     document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
+                    
+                    document.getElementById('chargesCard').classList.add('opacity-50');
+                    ['chgBrokerage', 'chgSTT', 'chgExch', 'chgGST', 'chgStamp', 'chgTotal'].forEach(id => document.getElementById(id).textContent = '₹0.00');
                 };
                 
                 if (isNaN(entry) || isNaN(sl) || isNaN(corpus) || isNaN(riskPct) || isNaN(targetPct)) return clear();
@@ -1318,21 +1379,47 @@
                 if (entry === sl) { cInputs.msg.textContent = "Entry/SL cannot be equal."; cInputs.msg.classList.remove('hidden'); return clear(); }
                 
                 const marginMult = Math.max(1, isNaN(marginRaw) ? 1 : marginRaw); 
-                const riskPerShare = Math.abs(entry - sl); 
-                const riskShares = Math.floor((corpus * (riskPct / 100)) / riskPerShare);
-                const capitalReq = riskShares * entry; 
-                let finalShares = riskShares;
-                
-                if ((capitalReq / marginMult) > corpus) { finalShares = Math.min(riskShares, Math.floor((corpus * marginMult) / entry)); }
-                
-                const actualMarginReq = (finalShares * entry) / marginMult; 
                 const direction = entry > sl ? "LONG" : "SHORT";
+                const riskPerShare = Math.abs(entry - sl); 
+                const riskBudget = corpus * (riskPct / 100);
+                
+                // Iterative solver to strict fit Max Loss (SL Hit + Charges) into the Risk Budget
+                let q = Math.floor(riskBudget / riskPerShare);
+                let estCharges = {};
+                let totalRiskWithCharges = 0;
+                
+                while (q > 0) {
+                    estCharges = calcCharges(q, entry, sl, direction, brkPct, brkMax);
+                    totalRiskWithCharges = (q * riskPerShare) + estCharges.total;
+                    if (totalRiskWithCharges <= riskBudget) break;
+                    q--;
+                }
+                
+                let finalShares = q;
+
+                // Apply margin limit constraints if necessary
+                const marginLimitShares = Math.floor((corpus * marginMult) / entry);
+                if (finalShares > marginLimitShares) {
+                    finalShares = marginLimitShares;
+                    // Recalculate charges for the lower share count due to margin limit
+                    estCharges = calcCharges(finalShares, entry, sl, direction, brkPct, brkMax);
+                    totalRiskWithCharges = (finalShares * riskPerShare) + estCharges.total;
+                }
+                
+                // If it evaluates to 0 shares (budget too small even for 1 share with charges)
+                if (finalShares === 0) {
+                    cInputs.msg.textContent = "Corpus/Risk too low to afford 1 share incl. charges."; cInputs.msg.classList.remove('hidden'); 
+                    return clear();
+                }
+
+                const actualMarginReq = (finalShares * entry) / marginMult; 
                 
                 // Dynamically calculate the exact target price needed to hit Target % of overall corpus
                 const targetProfitTotal = corpus * (targetPct / 100);
                 const targetProfitPerShare = targetProfitTotal / finalShares;
                 const targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
                 
+                // Update Main Result Card
                 document.getElementById('outShares').textContent = formatNum(finalShares); 
                 document.getElementById('outDirection').textContent = direction;
                 document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
@@ -1345,12 +1432,21 @@
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1);
                 if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
                                  
-                document.getElementById('outMaxLoss').textContent = formatMoney(finalShares * riskPerShare); 
-                document.getElementById('outActualRisk').textContent = (((finalShares * riskPerShare) / corpus) * 100).toFixed(4) + '%'; 
-                document.getElementById('outTradeType').textContent = finalShares === riskShares ? "Risk Limited" : "Capital Limited";
+                document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); 
+                document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
+                document.getElementById('outTradeType').textContent = finalShares === q ? "Risk Limited" : "Capital Limited";
+
+                // Update Charges Breakdown Card
+                document.getElementById('chargesCard').classList.remove('opacity-50');
+                document.getElementById('chgBrokerage').textContent = formatMoney(estCharges.broker);
+                document.getElementById('chgSTT').textContent = formatMoney(estCharges.stt);
+                document.getElementById('chgExch').textContent = formatMoney(estCharges.exchAndSebi);
+                document.getElementById('chgStamp').textContent = formatMoney(estCharges.stamp);
+                document.getElementById('chgGST').textContent = formatMoney(estCharges.gst);
+                document.getElementById('chgTotal').textContent = formatMoney(estCharges.total);
             };
             
-            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => cInputs[k].addEventListener('input', calculate));
+            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target', 'brkPct', 'brkMax'].forEach(k => cInputs[k].addEventListener('input', calculate));
             cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; cInputs.entry.focus(); calculate(); });
             document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; calculate(); });
