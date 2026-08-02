@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradeCompass - Master Platform</title>
+    <meta name="description" content="TradeCompass - Master Platform for Trading, Journaling, Ledger, and Risk Management">
+    <meta name="keywords" content="Trading, Calculator, Journal, Ledger, Finance, Stock Market, Risk Management">
+    <meta name="author" content="Madhav S S">
+    <!-- SVG Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
          
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -206,6 +211,24 @@
                             </div>
                             <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold">0.00%</p></div>
                             <div><p class="text-xs text-gray-400 mb-1">Trade Type</p><p id="outTradeType" class="font-semibold">-</p></div>
+                        </div>
+                        
+                        <!-- Breakeven Section -->
+                        <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-2 gap-6 relative z-10">
+                            <div>
+                                <p class="text-xs text-gray-400 mb-1">Breakeven Price</p>
+                                <div class="flex items-center gap-2">
+                                    <p id="outBreakeven" class="font-semibold text-gray-200">₹0.00</p>
+                                    <span id="outBreakevenNet" class="text-[10px] font-medium bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded border border-gray-600/30">Net: ₹0.00</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-1">Slight Profit Price</p>
+                                <div class="flex items-center gap-2">
+                                    <p id="outSlightProfit" class="font-semibold text-long">₹0.00</p>
+                                    <span id="outSlightProfitNet" class="text-[10px] font-medium bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Net: +₹0.00</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1376,7 +1399,6 @@
                 if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate(); 
             };
 
-            // Fix dropdown focus logic
             inp.addEventListener('mousedown', (e) => {
                 e.preventDefault(); 
                 list.classList.toggle('active');
@@ -1518,6 +1540,9 @@
                     ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00');
                     document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                     
+                    document.getElementById('outBreakeven').textContent = '₹0.00'; document.getElementById('outBreakevenNet').textContent = 'Net: ₹0.00';
+                    document.getElementById('outSlightProfit').textContent = '₹0.00'; document.getElementById('outSlightProfitNet').textContent = 'Net: +₹0.00';
+
                     document.getElementById('chargesContainer').classList.add('opacity-50');
                     ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
                     ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
@@ -1563,9 +1588,57 @@
                 const targetProfitPerShare = targetProfitTotal / finalShares;
                 const targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
 
-                // Calculate Charges at Target
                 const estChargesTG = calcCharges(finalShares, entry, targetPrice, direction, brkPct, brkMax, currentExchange);
                 
+                // Advanced Iterative Breakeven & Slight Profit Engine
+                const dirMult = direction === 'LONG' ? 1 : -1;
+                
+                // 1. Math-based initial guess
+                const baseChg = calcCharges(finalShares, entry, entry, direction, brkPct, brkMax, currentExchange);
+                const reqPts = baseChg.total / finalShares;
+                let bePrice = entry + (reqPts * dirMult);
+                let beNet = -1;
+                let iterations = 0;
+
+                // Fine-tune to the exact market tick (0.05 increments)
+                while (iterations < 500) {
+                    let chg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
+                    let gross = finalShares * (bePrice - entry) * dirMult;
+                    beNet = gross - chg.total;
+                    if (beNet >= 0) break;
+                    bePrice += 0.05 * dirMult;
+                    iterations++;
+                }
+
+                // If overshot on guess, walk backwards
+                while (beNet > 5 && iterations < 1000) {
+                    bePrice -= 0.05 * dirMult;
+                    let chg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
+                    let gross = finalShares * (bePrice - entry) * dirMult;
+                    beNet = gross - chg.total;
+                    if (beNet < 0) {
+                        bePrice += 0.05 * dirMult; 
+                        let fChg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
+                        beNet = (finalShares * (bePrice - entry) * dirMult) - fChg.total;
+                        break;
+                    }
+                    iterations++;
+                }
+
+                // Slight profit (minimum ₹25, or +0.05% of position, whichever is higher)
+                let spTarget = Math.max(25, (finalShares * entry) * 0.0005);
+                let spPrice = bePrice;
+                let spNet = beNet;
+                iterations = 0;
+
+                while (spNet < spTarget && iterations < 500) {
+                    spPrice += 0.05 * dirMult;
+                    let chg = calcCharges(finalShares, entry, spPrice, direction, brkPct, brkMax, currentExchange);
+                    let gross = finalShares * (spPrice - entry) * dirMult;
+                    spNet = gross - chg.total;
+                    iterations++;
+                }
+
                 document.getElementById('outShares').textContent = formatNum(finalShares); 
                 document.getElementById('outDirection').textContent = direction;
                 document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
@@ -1582,10 +1655,13 @@
                 document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
                 document.getElementById('outTradeType').textContent = finalShares === q ? "Risk Limited" : "Capital Limited";
 
-                // Format Charges Output
+                document.getElementById('outBreakeven').textContent = formatMoney(bePrice);
+                document.getElementById('outBreakevenNet').textContent = `Net: ${beNet > 0 ? '+' : ''}₹${beNet.toFixed(2)}`;
+                document.getElementById('outSlightProfit').textContent = formatMoney(spPrice);
+                document.getElementById('outSlightProfitNet').textContent = `Net: +₹${spNet.toFixed(2)}`;
+
                 document.getElementById('chargesContainer').classList.remove('opacity-50');
 
-                // SL Card
                 document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker);
                 document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt;
                 document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt);
@@ -1596,7 +1672,6 @@
                 document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp);
                 document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
 
-                // Target Card
                 document.getElementById('tgBrokerage').textContent = formatMoney(estChargesTG.broker);
                 document.getElementById('tgBrokerageTxt').textContent = estChargesTG.brokerTxt;
                 document.getElementById('tgSTT').textContent = formatMoney(estChargesTG.stt);
