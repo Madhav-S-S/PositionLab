@@ -149,9 +149,10 @@
                                 </div>
                                 <input type="number" id="corpus" step="0.01" class="input-field" placeholder="0.00">
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-3 gap-4">
                                 <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="margin" step="1" min="0" class="input-field" placeholder="1"></div>
                                 <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="riskPct" step="0.1" min="0.1" class="input-field" placeholder="1.0"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="targetPct" step="0.1" min="0.1" class="input-field" placeholder="1.5"></div>
                             </div>
                         </div>
                         <div id="validationMsg" class="mt-4 text-sm text-red-500 hidden"></div>
@@ -171,7 +172,7 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div><p class="text-xs text-gray-400 mb-1">Target Range</p><p id="outTargets" class="font-semibold">₹0.00 - ₹0.00</p></div>
+                            <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500">₹0.00</p></div>
                             <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold">₹0.00</p></div>
                             <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold">₹0.00</p></div>
                             <div id="marginBlock" class="hidden"><p class="text-xs text-gray-400 mb-1">Margin Required</p><p id="outMarginReq" class="font-semibold text-brand-500">₹0.00</p></div>
@@ -318,6 +319,7 @@
                                 <th class="whitespace-nowrap">Symbol</th>
                                 <th class="whitespace-nowrap">Strategy</th>
                                 <th class="whitespace-nowrap">Net P&L</th>
+                                <th class="whitespace-nowrap">Charges</th>
                                 <th class="whitespace-nowrap">Result</th>
                                 <th class="whitespace-nowrap">% Chg</th>
                                 <th class="whitespace-nowrap">End Corpus</th>
@@ -557,6 +559,15 @@
                     
                     saveGlobalState(false);
                     recalculateTimeline(false);
+                    
+                    // Auto-sync corpus field in the calculator upon fresh data load
+                    const netCorpusAfterFetch = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+                    if (netCorpusAfterFetch > 0) {
+                        const corpusInput = document.getElementById('corpus');
+                        corpusInput.value = netCorpusAfterFetch;
+                        corpusInput.dispatchEvent(new Event('input')); // Triggers calculations
+                    }
+                    
                     document.getElementById('syncStatus').textContent = "Synced";
                 } else {
                     await uploadToDrive();
@@ -689,7 +700,6 @@
                 let d = new Date(c.date);
                 d.setHours(0,0,0,0);
                 if ((!rangeStart || d >= actualStart) && d <= actualEnd) {
-                    // FIX: "Liquid Fund Interest" is now treated as a new external investment just like "Deposit Fund"
                     if (c.type === "Deposit Fund" || c.type === "Liquid Fund Interest") cfs.push({ amount: -c.amount, date: d });
                     else if (c.type === "Withdraw Fund") cfs.push({ amount: c.amount, date: d });
                 }
@@ -1113,7 +1123,7 @@
         
         function renderTradesTable() {
             const tbody = document.getElementById('tradesBody');
-            if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
+            if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
                          
             tbody.innerHTML = tradesDB.map(t => `
                 <tr class="hover:bg-white/5 align-top">
@@ -1122,6 +1132,7 @@
                     <td class="font-bold whitespace-nowrap">${t.symbol}</td>
                     <td class="text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>
                     <td class="font-semibold whitespace-nowrap ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>
+                    <td class="text-gray-400 whitespace-nowrap font-medium">${formatMoney(t.charges || 0)}</td>
                     <td class="whitespace-nowrap"><span class="text-xs font-bold px-2 py-1 rounded bg-black/40 ${t.result==='WIN'?'text-long':(t.result==='LOSS'?'text-short':'text-gray-400')}">${t.result}</span></td>
                     <td class="whitespace-nowrap font-semibold ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%</td>
                     <td class="whitespace-nowrap font-medium">${formatMoney(t.endCorpus)}</td>
@@ -1199,11 +1210,17 @@
         let equityChartInstance, winChartInstance;
         function updateDashboard() {
             const netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+            const calcPct = (val) => netCorpus > 0 ? ((val / netCorpus) * 100).toFixed(1) + '%' : '0.0%';
 
-            document.getElementById('dash-total-corpus').textContent = formatMoney(netCorpus); document.getElementById('dash-trade-ledger').textContent = formatMoney(balances.tradeLedger);
-            document.getElementById('dash-liquid').textContent = formatMoney(balances.liquidFund); document.getElementById('dash-reserve').textContent = formatMoney(balances.sliceReserve);
-            document.getElementById('led-total').textContent = formatMoney(netCorpus); document.getElementById('led-trade').textContent = formatMoney(balances.tradeLedger);
-            document.getElementById('led-liquid').textContent = formatMoney(balances.liquidFund); document.getElementById('led-reserve').textContent = formatMoney(balances.sliceReserve);
+            document.getElementById('dash-total-corpus').textContent = formatMoney(netCorpus); 
+            document.getElementById('dash-trade-ledger').innerHTML = `${formatMoney(balances.tradeLedger)} <span class="text-sm text-gray-500 font-medium ml-1">(${calcPct(balances.tradeLedger)})</span>`;
+            document.getElementById('dash-liquid').innerHTML = `${formatMoney(balances.liquidFund)} <span class="text-sm text-gray-500 font-medium ml-1">(${calcPct(balances.liquidFund)})</span>`;
+            document.getElementById('dash-reserve').innerHTML = `${formatMoney(balances.sliceReserve)} <span class="text-sm text-gray-500 font-medium ml-1">(${calcPct(balances.sliceReserve)})</span>`;
+
+            document.getElementById('led-total').textContent = formatMoney(netCorpus); 
+            document.getElementById('led-trade').innerHTML = `${formatMoney(balances.tradeLedger)} <span class="text-xs text-gray-500 font-medium ml-1">(${calcPct(balances.tradeLedger)})</span>`;
+            document.getElementById('led-liquid').innerHTML = `${formatMoney(balances.liquidFund)} <span class="text-xs text-gray-500 font-medium ml-1">(${calcPct(balances.liquidFund)})</span>`;
+            document.getElementById('led-reserve').innerHTML = `${formatMoney(balances.sliceReserve)} <span class="text-xs text-gray-500 font-medium ml-1">(${calcPct(balances.sliceReserve)})</span>`;
             
             let filteredTrades = [...tradesDB]; 
             let rangeLabel = "";
@@ -1267,46 +1284,77 @@
             const cInputs = {
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'),
                 corpus: document.getElementById('corpus'), margin: document.getElementById('margin'),
-                risk: document.getElementById('riskPct'), msg: document.getElementById('validationMsg')
+                risk: document.getElementById('riskPct'), target: document.getElementById('targetPct'), msg: document.getElementById('validationMsg')
             };
             const savedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
-            cInputs.corpus.value = savedState.corpus || ''; cInputs.margin.value = savedState.margin || '1'; cInputs.risk.value = savedState.riskPct || '1.0';
+            
+            // Auto-sync initial corpus if balances exist locally
+            const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+            cInputs.corpus.value = initialCorpus > 0 ? initialCorpus : (savedState.corpus || '');
+            
+            cInputs.margin.value = savedState.margin || '1'; 
+            cInputs.risk.value = savedState.riskPct || '1.0';
+            cInputs.target.value = savedState.targetPct || '1.5';
+            
             const calculate = () => {
                 cInputs.msg.classList.add('hidden');
                 const entry = parseFloat(cInputs.entry.value); const sl = parseFloat(cInputs.sl.value);
-                const corpus = parseFloat(cInputs.corpus.value); const marginRaw = parseFloat(cInputs.margin.value); const riskPct = parseFloat(cInputs.risk.value);
-                localStorage.setItem('riskCalcSettings', JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value }));
+                const corpus = parseFloat(cInputs.corpus.value); const marginRaw = parseFloat(cInputs.margin.value); 
+                const riskPct = parseFloat(cInputs.risk.value); const targetPct = parseFloat(cInputs.target.value);
+                
+                localStorage.setItem('riskCalcSettings', JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value }));
+                
                 const clear = () => {
                     document.getElementById('outShares').textContent = '0'; document.getElementById('outDirection').textContent = 'WAITING';
                     document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300";
                     document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-10";
-                    document.getElementById('outTargets').textContent = '₹0.00 - ₹0.00';
+                    document.getElementById('outTargetPrice').textContent = '₹0.00';
                     ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00');
                     document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                 };
-                if (isNaN(entry) || isNaN(sl) || isNaN(corpus) || isNaN(riskPct)) return clear();
-                if (entry <= 0 || sl <= 0 || corpus <= 0 || riskPct <= 0) { cInputs.msg.textContent = "Values > 0 required."; cInputs.msg.classList.remove('hidden'); return clear(); }
+                
+                if (isNaN(entry) || isNaN(sl) || isNaN(corpus) || isNaN(riskPct) || isNaN(targetPct)) return clear();
+                if (entry <= 0 || sl <= 0 || corpus <= 0 || riskPct <= 0 || targetPct <= 0) { cInputs.msg.textContent = "Values > 0 required."; cInputs.msg.classList.remove('hidden'); return clear(); }
                 if (entry === sl) { cInputs.msg.textContent = "Entry/SL cannot be equal."; cInputs.msg.classList.remove('hidden'); return clear(); }
-                const marginMult = Math.max(1, isNaN(marginRaw) ? 1 : marginRaw); const riskPerShare = Math.abs(entry - sl); const riskShares = Math.floor((corpus * (riskPct / 100)) / riskPerShare);
-                const capitalReq = riskShares * entry; let finalShares = riskShares;
+                
+                const marginMult = Math.max(1, isNaN(marginRaw) ? 1 : marginRaw); 
+                const riskPerShare = Math.abs(entry - sl); 
+                const riskShares = Math.floor((corpus * (riskPct / 100)) / riskPerShare);
+                const capitalReq = riskShares * entry; 
+                let finalShares = riskShares;
+                
                 if ((capitalReq / marginMult) > corpus) { finalShares = Math.min(riskShares, Math.floor((corpus * marginMult) / entry)); }
-                const actualMarginReq = (finalShares * entry) / marginMult; const direction = entry > sl ? "LONG" : "SHORT";
-                const t1 = entry + (riskPerShare * 1.5 * (direction === "LONG" ? 1 : -1)); const t2 = entry + (riskPerShare * 2 * (direction === "LONG" ? 1 : -1));
-                document.getElementById('outShares').textContent = formatNum(finalShares); document.getElementById('outDirection').textContent = direction;
+                
+                const actualMarginReq = (finalShares * entry) / marginMult; 
+                const direction = entry > sl ? "LONG" : "SHORT";
+                
+                // Dynamically calculate the exact target price needed to hit Target % of overall corpus
+                const targetProfitTotal = corpus * (targetPct / 100);
+                const targetProfitPerShare = targetProfitTotal / finalShares;
+                const targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
+                
+                document.getElementById('outShares').textContent = formatNum(finalShares); 
+                document.getElementById('outDirection').textContent = direction;
                 document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
                 document.getElementById('resultCard').className = `glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 ${direction === 'LONG' ? 'border-l-long' : 'border-l-short'} z-10`;
                 document.getElementById('dirGlow').style.backgroundColor = direction === 'LONG' ? '#10b981' : '#ef4444';
                                  
-                document.getElementById('outTargets').textContent = `${formatMoney(t1)} - ${formatMoney(t2)}`; document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
+                document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); 
+                document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); 
+                document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1);
                 if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
                                  
-                document.getElementById('outMaxLoss').textContent = formatMoney(finalShares * riskPerShare); document.getElementById('outActualRisk').textContent = (((finalShares * riskPerShare) / corpus) * 100).toFixed(4) + '%'; document.getElementById('outTradeType').textContent = finalShares === riskShares ? "Risk Limited" : "Capital Limited";
+                document.getElementById('outMaxLoss').textContent = formatMoney(finalShares * riskPerShare); 
+                document.getElementById('outActualRisk').textContent = (((finalShares * riskPerShare) / corpus) * 100).toFixed(4) + '%'; 
+                document.getElementById('outTradeType').textContent = finalShares === riskShares ? "Risk Limited" : "Capital Limited";
             };
-            ['entry', 'sl', 'corpus', 'margin', 'risk'].forEach(k => cInputs[k].addEventListener('input', calculate));
+            
+            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => cInputs[k].addEventListener('input', calculate));
             cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; cInputs.entry.focus(); calculate(); });
             document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; calculate(); });
+            
             if (cInputs.entry.value) calculate();
         }
     </script>
