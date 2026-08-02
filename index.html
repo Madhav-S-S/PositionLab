@@ -160,25 +160,21 @@
                     </div>
                     
                     <!-- Brokerage Settings Card -->
-                    <div class="glass-card rounded-2xl p-6 relative z-40">
-                        <div class="flex justify-between items-center mb-4">
+                    <div class="glass-card rounded-2xl p-5 relative z-40">
+                        <div class="flex justify-between items-center mb-3">
                             <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Brokerage Profile</h2>
                             <div class="flex bg-black/40 rounded-lg p-0.5 border border-white/10">
                                 <button id="btn-nse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors bg-brand-500 text-white">NSE</button>
                                 <button id="btn-bse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors text-gray-400 hover:text-white">BSE</button>
                             </div>
                         </div>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">Select Broker</label>
-                                <div class="custom-dropdown">
-                                    <input type="text" id="broker-input" class="input-field py-1.5 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
-                                    <ul id="broker-list" class="custom-dropdown-list"></ul>
-                                </div>
+                        <div class="space-y-2">
+                            <div class="custom-dropdown">
+                                <input type="text" id="broker-input" class="input-field py-2 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
+                                <ul id="broker-list" class="custom-dropdown-list"></ul>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="block text-xs text-gray-400 mb-1">Brokerage (%)</label><input type="number" id="brkPct" step="0.01" min="0" class="input-field py-1.5 text-sm" placeholder="0.03"></div>
-                                <div><label class="block text-xs text-gray-400 mb-1">Max / Order (₹)</label><input type="number" id="brkMax" step="1" min="0" class="input-field py-1.5 text-sm" placeholder="20"></div>
+                            <div class="text-right">
+                                <span id="broker-details" class="text-[11px] font-medium text-brand-400 tracking-wide bg-brand-500/10 px-2 py-1 rounded-md border border-brand-500/20"></span>
                             </div>
                         </div>
                     </div>
@@ -213,16 +209,46 @@
                         </div>
                     </div>
                     
-                    <!-- Charges Breakdown Card -->
-                    <div id="chargesCard" class="glass-card rounded-2xl p-6 relative z-10 transition-opacity duration-300 opacity-50">
-                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Estimated Charges <span class="text-xs text-gray-500 normal-case tracking-normal ml-1">(At Stop Loss)</span></h3>
-                        <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                            <div><p class="text-xs text-gray-500 mb-1">Brokerage</p><p id="chgBrokerage" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">STT</p><p id="chgSTT" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Exch. & SEBI</p><p id="chgExch" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">GST</p><p id="chgGST" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Stamp Duty</p><p id="chgStamp" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
-                            <div class="border-l border-white/10 pl-4"><p class="text-xs text-brand-400 font-bold mb-1">Total Charges</p><p id="chgTotal" class="font-bold text-lg text-brand-500 flex flex-wrap items-center">₹0.00</p></div>
+                    <!-- Extended Detailed Charges Output -->
+                    <div id="chargesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300 opacity-50 z-10 relative">
+                        <!-- SL Charges Card -->
+                        <div class="glass-card rounded-2xl p-5">
+                            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                                <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Charges (At Stop Loss)</h3>
+                                <span class="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">Loss Scenario</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-x-2 gap-y-4">
+                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slBrokerageTxt">Brokerage</p></div>
+                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
+                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slExchTxt">Exchange</p></div>
+                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
+                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
+                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                                <span class="text-xs font-semibold text-gray-400">Total Deductions</span>
+                                <span class="text-sm font-bold text-short" id="slTotal">₹0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Target Charges Card -->
+                        <div class="glass-card rounded-2xl p-5 border border-brand-500/20 bg-brand-500/5">
+                            <div class="flex justify-between items-center mb-4 border-b border-brand-500/20 pb-2">
+                                <h3 class="text-[11px] font-bold text-brand-400 uppercase tracking-widest">Charges (At Target)</h3>
+                                <span class="text-[10px] bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Win Scenario</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-x-2 gap-y-4">
+                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgBrokerageTxt">Brokerage</p></div>
+                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
+                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgExchTxt">Exchange</p></div>
+                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
+                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
+                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-brand-500/20 flex justify-between items-center">
+                                <span class="text-xs font-semibold text-brand-400">Total Deductions</span>
+                                <span class="text-sm font-bold text-brand-400" id="tgTotal">₹0.00</span>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -1329,6 +1355,8 @@
         // --- Broker Selection Logic ---
         function initBrokerManager() {
             const list = document.getElementById('broker-list');
+            const inp = document.getElementById('broker-input');
+
             const renderBrokerList = () => {
                 list.innerHTML = `<li class="custom-dropdown-item custom-dropdown-add" id="add-broker-btn">+ Add New Broker...</li>`;
                 Object.keys(brokerProfiles).forEach(b => {
@@ -1342,12 +1370,22 @@
             };
 
             const updateBrokerInputs = () => {
-                document.getElementById('broker-input').value = currentBroker;
+                inp.value = currentBroker;
                 const prof = brokerProfiles[currentBroker];
-                document.getElementById('brkPct').value = prof.pct;
-                document.getElementById('brkMax').value = prof.max;
+                document.getElementById('broker-details').textContent = `${prof.pct}% | Max ₹${prof.max}/order`;
                 if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate(); 
             };
+
+            // Fix dropdown focus logic
+            inp.addEventListener('mousedown', (e) => {
+                e.preventDefault(); 
+                list.classList.toggle('active');
+                if(list.classList.contains('active')) renderBrokerList();
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                if(!inp.contains(e.target) && !list.contains(e.target)) list.classList.remove('active');
+            });
 
             list.addEventListener('mousedown', (e) => {
                 e.preventDefault();
@@ -1361,7 +1399,7 @@
                         localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
                         localStorage.setItem('pt_current_broker', currentBroker);
                         updateBrokerInputs();
-                        renderBrokerList();
+                        list.classList.remove('active');
                     }
                 } else if (e.target.classList.contains('delete-broker')) {
                     e.stopPropagation();
@@ -1381,28 +1419,9 @@
                         currentBroker = item.getAttribute('data-broker');
                         localStorage.setItem('pt_current_broker', currentBroker);
                         updateBrokerInputs();
-                        renderBrokerList();
                         list.classList.remove('active');
                     }
                 }
-            });
-
-            document.getElementById('broker-input').addEventListener('focus', () => { renderBrokerList(); list.classList.add('active'); });
-            document.addEventListener('mousedown', (e) => {
-                const inp = document.getElementById('broker-input');
-                if(!inp.contains(e.target) && !list.contains(e.target)) list.classList.remove('active');
-            });
-
-            document.getElementById('brkPct').addEventListener('input', (e) => {
-                brokerProfiles[currentBroker].pct = parseFloat(e.target.value) || 0;
-                localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
-                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
-            });
-            
-            document.getElementById('brkMax').addEventListener('input', (e) => {
-                brokerProfiles[currentBroker].max = parseFloat(e.target.value) || 0;
-                localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
-                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
             });
 
             updateBrokerInputs();
@@ -1417,11 +1436,11 @@
                 currentExchange = exch;
                 localStorage.setItem('pt_exchange', exch);
                 if(exch === 'NSE') {
-                    btnNse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors bg-brand-500 text-white';
-                    btnBse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors text-gray-400 hover:text-white';
+                    btnNse.className = 'px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors bg-brand-500 text-white';
+                    btnBse.className = 'px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors text-gray-400 hover:text-white';
                 } else {
-                    btnBse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors bg-brand-500 text-white';
-                    btnNse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors text-gray-400 hover:text-white';
+                    btnBse.className = 'px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors bg-brand-500 text-white';
+                    btnNse.className = 'px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors text-gray-400 hover:text-white';
                 }
                 if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
             };
@@ -1439,7 +1458,6 @@
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'),
                 corpus: document.getElementById('corpus'), margin: document.getElementById('margin'),
                 risk: document.getElementById('riskPct'), target: document.getElementById('targetPct'), 
-                brkPct: document.getElementById('brkPct'), brkMax: document.getElementById('brkMax'),
                 msg: document.getElementById('validationMsg')
             };
             
@@ -1451,10 +1469,9 @@
             cInputs.risk.value = savedState.riskPct || '1.0';
             cInputs.target.value = savedState.targetPct || '1.5';
             
-            // Intraday Equity Formula
-            const calcCharges = (qty, ent, stop, dir, bPct, bMax, exchCode) => {
-                const pBuy = dir === 'LONG' ? ent : stop;
-                const pSell = dir === 'LONG' ? stop : ent;
+            const calcCharges = (qty, ent, exitPrice, dir, bPct, bMax, exchCode) => {
+                const pBuy = dir === 'LONG' ? ent : exitPrice;
+                const pSell = dir === 'LONG' ? exitPrice : ent;
                 const tBuy = qty * pBuy;
                 const tSell = qty * pSell;
                 const tTotal = tBuy + tSell;
@@ -1462,33 +1479,24 @@
                 const bBuy = Math.min(tBuy * (bPct / 100), bMax);
                 const bSell = Math.min(tSell * (bPct / 100), bMax);
                 const broker = bBuy + bSell;
-                const brokerPct = tTotal > 0 ? (broker / tTotal) * 100 : 0;
+                
+                let brokerTxt = `${bPct}% on Total`;
+                if(bBuy >= bMax || bSell >= bMax) brokerTxt = `Max ₹${bMax}/side`;
 
-                // STT is applied strictly on the sell side turnover at 0.025%
                 const stt = Math.round(tSell * 0.00025);
-                const sttPct = tTotal > 0 ? (stt / tTotal) * 100 : 0;
 
-                // Transaction Charges depend on exchange
                 const exchRate = exchCode === 'NSE' ? 0.0000307 : 0.0000375;
                 const exch = tTotal * exchRate;
 
-                // SEBI charges are ₹10 per crore (0.0001%)
                 const sebi = tTotal * 0.000001; 
-                const exchSebi = exch + sebi;
-                const exchSebiPct = tTotal > 0 ? (exchSebi / tTotal) * 100 : 0;
 
-                // Stamp Duty is applied strictly on the buy side turnover at 0.003%
                 const stamp = Math.round(tBuy * 0.00003); 
-                const stampPct = tTotal > 0 ? (stamp / tTotal) * 100 : 0;
 
-                // GST is 18% on (Brokerage + Exchange + SEBI)
                 const gst = (broker + exch + sebi) * 0.18;
-                const gstPct = tTotal > 0 ? (gst / tTotal) * 100 : 0;
 
                 const total = broker + stt + exch + sebi + stamp + gst;
-                const totalPct = tTotal > 0 ? (total / tTotal) * 100 : 0;
 
-                return { broker, brokerPct, stt, sttPct, exchAndSebi: exchSebi, exchSebiPct, gst, gstPct, stamp, stampPct, total, totalPct };
+                return { broker, brokerTxt, stt, exch, exchRate, sebi, gst, stamp, total };
             };
 
             const calculate = () => {
@@ -1496,7 +1504,9 @@
                 const entry = parseFloat(cInputs.entry.value); const sl = parseFloat(cInputs.sl.value);
                 const corpus = parseFloat(cInputs.corpus.value); const marginRaw = parseFloat(cInputs.margin.value); 
                 const riskPct = parseFloat(cInputs.risk.value); const targetPct = parseFloat(cInputs.target.value);
-                const brkPct = parseFloat(cInputs.brkPct.value) || 0; const brkMax = parseFloat(cInputs.brkMax.value) || 0;
+                
+                const activeBroker = brokerProfiles[currentBroker];
+                const brkPct = activeBroker.pct; const brkMax = activeBroker.max;
                 
                 localStorage.setItem('riskCalcSettings', JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value }));
                 
@@ -1508,8 +1518,9 @@
                     ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00');
                     document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                     
-                    document.getElementById('chargesCard').classList.add('opacity-50');
-                    ['chgBrokerage', 'chgSTT', 'chgExch', 'chgGST', 'chgStamp', 'chgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
+                    document.getElementById('chargesContainer').classList.add('opacity-50');
+                    ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
+                    ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
                 };
                 
                 if (isNaN(entry) || isNaN(sl) || isNaN(corpus) || isNaN(riskPct) || isNaN(targetPct)) return clear();
@@ -1521,14 +1532,13 @@
                 const riskPerShare = Math.abs(entry - sl); 
                 const riskBudget = corpus * (riskPct / 100);
                 
-                // Iterative solver to strict fit Max Loss (SL Hit + Exact Computed Charges) into the absolute Risk Budget
                 let q = Math.floor(riskBudget / riskPerShare);
-                let estCharges = {};
+                let estChargesSL = {};
                 let totalRiskWithCharges = 0;
                 
                 while (q > 0) {
-                    estCharges = calcCharges(q, entry, sl, direction, brkPct, brkMax, currentExchange);
-                    totalRiskWithCharges = (q * riskPerShare) + estCharges.total;
+                    estChargesSL = calcCharges(q, entry, sl, direction, brkPct, brkMax, currentExchange);
+                    totalRiskWithCharges = (q * riskPerShare) + estChargesSL.total;
                     if (totalRiskWithCharges <= riskBudget) break;
                     q--;
                 }
@@ -1538,8 +1548,8 @@
                 const marginLimitShares = Math.floor((corpus * marginMult) / entry);
                 if (finalShares > marginLimitShares) {
                     finalShares = marginLimitShares;
-                    estCharges = calcCharges(finalShares, entry, sl, direction, brkPct, brkMax, currentExchange);
-                    totalRiskWithCharges = (finalShares * riskPerShare) + estCharges.total;
+                    estChargesSL = calcCharges(finalShares, entry, sl, direction, brkPct, brkMax, currentExchange);
+                    totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
                 }
                 
                 if (finalShares === 0) {
@@ -1552,6 +1562,9 @@
                 const targetProfitTotal = corpus * (targetPct / 100);
                 const targetProfitPerShare = targetProfitTotal / finalShares;
                 const targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
+
+                // Calculate Charges at Target
+                const estChargesTG = calcCharges(finalShares, entry, targetPrice, direction, brkPct, brkMax, currentExchange);
                 
                 document.getElementById('outShares').textContent = formatNum(finalShares); 
                 document.getElementById('outDirection').textContent = direction;
@@ -1570,18 +1583,31 @@
                 document.getElementById('outTradeType').textContent = finalShares === q ? "Risk Limited" : "Capital Limited";
 
                 // Format Charges Output
-                document.getElementById('chargesCard').classList.remove('opacity-50');
-                const fmtPct = (v) => v > 0 ? `<span class="text-[10px] text-gray-500 font-medium tracking-normal ml-0.5">(${v.toFixed(3)}%)</span>` : '';
-                
-                document.getElementById('chgBrokerage').innerHTML = `${formatMoney(estCharges.broker)} ${fmtPct(estCharges.brokerPct)}`;
-                document.getElementById('chgSTT').innerHTML = `${formatMoney(estCharges.stt)} ${fmtPct(estCharges.sttPct)}`;
-                document.getElementById('chgExch').innerHTML = `${formatMoney(estCharges.exchAndSebi)} ${fmtPct(estCharges.exchSebiPct)}`;
-                document.getElementById('chgGST').innerHTML = `${formatMoney(estCharges.gst)} ${fmtPct(estCharges.gstPct)}`;
-                document.getElementById('chgStamp').innerHTML = `${formatMoney(estCharges.stamp)} ${fmtPct(estCharges.stampPct)}`;
-                document.getElementById('chgTotal').innerHTML = `${formatMoney(estCharges.total)} ${fmtPct(estCharges.totalPct)}`;
+                document.getElementById('chargesContainer').classList.remove('opacity-50');
+
+                // SL Card
+                document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker);
+                document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt;
+                document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt);
+                document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch);
+                document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`;
+                document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi);
+                document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst);
+                document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp);
+                document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
+
+                // Target Card
+                document.getElementById('tgBrokerage').textContent = formatMoney(estChargesTG.broker);
+                document.getElementById('tgBrokerageTxt').textContent = estChargesTG.brokerTxt;
+                document.getElementById('tgSTT').textContent = formatMoney(estChargesTG.stt);
+                document.getElementById('tgExch').textContent = formatMoney(estChargesTG.exch);
+                document.getElementById('tgExchTxt').innerHTML = `Exchange<br>${(estChargesTG.exchRate * 100).toFixed(5)}% on Total`;
+                document.getElementById('tgSebi').textContent = formatMoney(estChargesTG.sebi);
+                document.getElementById('tgGST').textContent = formatMoney(estChargesTG.gst);
+                document.getElementById('tgStamp').textContent = formatMoney(estChargesTG.stamp);
+                document.getElementById('tgTotal').textContent = formatMoney(estChargesTG.total);
             };
             
-            // Allow triggering calculation globally 
             window.triggerGlobalCalculate = calculate;
 
             ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => cInputs[k].addEventListener('input', calculate));
