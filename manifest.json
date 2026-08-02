@@ -1,6 +1,6 @@
 {
-  "name": "TradeCompass",
-  "short_name": "TradeCompass",
+  "name": "PositionLab",
+  "short_name": "PositionLab",
   "description": "Master Platform for Trading, Journaling, Ledger, and Risk Management",
   "start_url": "./",
   "display": "standalone",
