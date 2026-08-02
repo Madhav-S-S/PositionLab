@@ -160,11 +160,26 @@
                     </div>
                     
                     <!-- Brokerage Settings Card -->
-                    <div class="glass-card rounded-2xl p-6 relative z-50">
-                        <div class="mb-4"><h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Brokerage Profile (Intraday)</h2></div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-xs text-gray-400 mb-1">Brokerage (%)</label><input type="number" id="brkPct" step="0.01" min="0" class="input-field py-1.5 text-sm" placeholder="0.03"></div>
-                            <div><label class="block text-xs text-gray-400 mb-1">Max / Order (₹)</label><input type="number" id="brkMax" step="1" min="0" class="input-field py-1.5 text-sm" placeholder="20"></div>
+                    <div class="glass-card rounded-2xl p-6 relative z-40">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Brokerage Profile</h2>
+                            <div class="flex bg-black/40 rounded-lg p-0.5 border border-white/10">
+                                <button id="btn-nse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors bg-brand-500 text-white">NSE</button>
+                                <button id="btn-bse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors text-gray-400 hover:text-white">BSE</button>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Select Broker</label>
+                                <div class="custom-dropdown">
+                                    <input type="text" id="broker-input" class="input-field py-1.5 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
+                                    <ul id="broker-list" class="custom-dropdown-list"></ul>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-xs text-gray-400 mb-1">Brokerage (%)</label><input type="number" id="brkPct" step="0.01" min="0" class="input-field py-1.5 text-sm" placeholder="0.03"></div>
+                                <div><label class="block text-xs text-gray-400 mb-1">Max / Order (₹)</label><input type="number" id="brkMax" step="1" min="0" class="input-field py-1.5 text-sm" placeholder="20"></div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -202,12 +217,12 @@
                     <div id="chargesCard" class="glass-card rounded-2xl p-6 relative z-10 transition-opacity duration-300 opacity-50">
                         <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Estimated Charges <span class="text-xs text-gray-500 normal-case tracking-normal ml-1">(At Stop Loss)</span></h3>
                         <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                            <div><p class="text-xs text-gray-500 mb-1">Brokerage</p><p id="chgBrokerage" class="font-semibold text-gray-300">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">STT</p><p id="chgSTT" class="font-semibold text-gray-300">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Exch. & SEBI</p><p id="chgExch" class="font-semibold text-gray-300">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">GST</p><p id="chgGST" class="font-semibold text-gray-300">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Stamp Duty</p><p id="chgStamp" class="font-semibold text-gray-300">₹0.00</p></div>
-                            <div class="border-l border-white/10 pl-4"><p class="text-xs text-brand-400 font-bold mb-1">Total Charges</p><p id="chgTotal" class="font-bold text-lg text-brand-500">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Brokerage</p><p id="chgBrokerage" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">STT</p><p id="chgSTT" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Exch. & SEBI</p><p id="chgExch" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">GST</p><p id="chgGST" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Stamp Duty</p><p id="chgStamp" class="font-semibold text-gray-300 flex flex-wrap items-center">₹0.00</p></div>
+                            <div class="border-l border-white/10 pl-4"><p class="text-xs text-brand-400 font-bold mb-1">Total Charges</p><p id="chgTotal" class="font-bold text-lg text-brand-500 flex flex-wrap items-center">₹0.00</p></div>
                         </div>
                     </div>
                 </section>
@@ -446,6 +461,17 @@
         let capitalLedger = JSON.parse(localStorage.getItem('pt_capital')) || [];
         let customStrategies = JSON.parse(localStorage.getItem('pt_strategies')) || ["Trend Reversal", "Breakout", "Pullback"];
         let customVerdicts = JSON.parse(localStorage.getItem('pt_verdicts')) || ["Followed Rules", "FOMO", "Early Exit"];
+        
+        // Broker & Exchange State Management
+        let currentExchange = localStorage.getItem('pt_exchange') || 'NSE';
+        let brokerProfiles = JSON.parse(localStorage.getItem('pt_broker_profiles')) || {
+            "Dhan": { pct: 0.03, max: 20 },
+            "Zerodha": { pct: 0.03, max: 20 },
+            "Groww": { pct: 0.05, max: 20 }
+        };
+        let currentBroker = localStorage.getItem('pt_current_broker');
+        if (!currentBroker || !brokerProfiles[currentBroker]) currentBroker = "Dhan";
+
         let editingTradeId = null; let editingCapitalId = null;
         let selectedTrades = new Set(); let selectedCapital = new Set();
         
@@ -589,12 +615,11 @@
                     saveGlobalState(false);
                     recalculateTimeline(false);
                     
-                    // Auto-sync corpus field in the calculator upon fresh data load
                     const netCorpusAfterFetch = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
                     if (netCorpusAfterFetch > 0) {
                         const corpusInput = document.getElementById('corpus');
                         corpusInput.value = netCorpusAfterFetch;
-                        corpusInput.dispatchEvent(new Event('input')); // Triggers calculations
+                        corpusInput.dispatchEvent(new Event('input')); 
                     }
                     
                     document.getElementById('syncStatus').textContent = "Synced";
@@ -709,22 +734,18 @@
                 
                 let currentCorpus = tempTrade + tempLiquid + tempReserve;
                 
-                // Track value right before the start date
                 if (rangeStart && evDate < rangeStart) {
                     corpusAtStart = currentCorpus;
                 }
-                // Track value up to the end date
                 if (evDate <= actualEnd) {
                     corpusAtEnd = currentCorpus;
                 }
             });
 
-            // Initial Investment (Negative CF)
             if (corpusAtStart > 0 && rangeStart) {
                 cfs.push({ amount: -corpusAtStart, date: actualStart });
             }
 
-            // External Deposits / Withdrawals during timeframe
             capitalLedger.forEach(c => {
                 let d = new Date(c.date);
                 d.setHours(0,0,0,0);
@@ -734,10 +755,8 @@
                 }
             });
             
-            // Final Portfolio Value (Positive CF)
             cfs.push({ amount: corpusAtEnd, date: actualEnd });
 
-            // Consolidate identical dates to stabilize math
             let consolidated = {};
             cfs.forEach(cf => {
                 let t = cf.date.getTime();
@@ -745,7 +764,6 @@
             });
             let finalCfs = Object.keys(consolidated).map(t => ({ date: parseInt(t), amount: consolidated[t] })).sort((a,b) => a.date - b.date);
 
-            // Require at least one negative cash flow (investment)
             let hasInvestment = finalCfs.some(c => c.amount < 0);
             if (!hasInvestment || finalCfs.length === 0) return 0;
             if (finalCfs[finalCfs.length - 1].date === finalCfs[0].date) return 0;
@@ -763,7 +781,7 @@
                 const df = xnpvDerivative(rate);
                 if (Math.abs(df) < 1e-10) break;
                 let nextRate = rate - f / df;
-                nextRate = Math.max(-0.9999, nextRate); // Bound negative drops
+                nextRate = Math.max(-0.9999, nextRate); 
                 if (Math.abs(nextRate - rate) < 1e-6) {
                     rate = nextRate;
                     break;
@@ -1274,7 +1292,6 @@
                 }
             }
             
-            // Execute Timeframe-Aware XIRR
             const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd);
             const xirrEl = document.getElementById('dash-xirr');
             xirrEl.textContent = xirrValue.toFixed(2) + '%';
@@ -1309,7 +1326,115 @@
             });
         }
 
+        // --- Broker Selection Logic ---
+        function initBrokerManager() {
+            const list = document.getElementById('broker-list');
+            const renderBrokerList = () => {
+                list.innerHTML = `<li class="custom-dropdown-item custom-dropdown-add" id="add-broker-btn">+ Add New Broker...</li>`;
+                Object.keys(brokerProfiles).forEach(b => {
+                    let bgClass = (b === currentBroker) ? 'bg-brand-500/20 text-brand-400 font-bold' : '';
+                    let checkmark = (b === currentBroker) ? '✓ ' : '';
+                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${bgClass}" data-broker="${b}">
+                        <span class="pointer-events-none">${checkmark}${b}</span>
+                        <span class="delete-broker text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${b}" title="Delete">✕</span>
+                    </li>`;
+                });
+            };
+
+            const updateBrokerInputs = () => {
+                document.getElementById('broker-input').value = currentBroker;
+                const prof = brokerProfiles[currentBroker];
+                document.getElementById('brkPct').value = prof.pct;
+                document.getElementById('brkMax').value = prof.max;
+                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate(); 
+            };
+
+            list.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (e.target.id === 'add-broker-btn') {
+                    let name = prompt("Enter new broker name (e.g. Upstox):");
+                    if (name && name.trim()) {
+                        let p = prompt(`Enter Brokerage % for ${name.trim()} (e.g., 0.05):`, "0.03");
+                        let m = prompt(`Enter Max Brokerage per order for ${name.trim()} (e.g., 20):`, "20");
+                        brokerProfiles[name.trim()] = { pct: parseFloat(p)||0, max: parseFloat(m)||0 };
+                        currentBroker = name.trim();
+                        localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
+                        localStorage.setItem('pt_current_broker', currentBroker);
+                        updateBrokerInputs();
+                        renderBrokerList();
+                    }
+                } else if (e.target.classList.contains('delete-broker')) {
+                    e.stopPropagation();
+                    let name = e.target.getAttribute('data-del');
+                    if(Object.keys(brokerProfiles).length <= 1) return alert("Must have at least one broker profile.");
+                    if(confirm(`Delete ${name} profile?`)) {
+                        delete brokerProfiles[name];
+                        if(currentBroker === name) currentBroker = Object.keys(brokerProfiles)[0];
+                        localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
+                        localStorage.setItem('pt_current_broker', currentBroker);
+                        updateBrokerInputs();
+                        renderBrokerList();
+                    }
+                } else {
+                    let item = e.target.closest('.custom-dropdown-item');
+                    if(item && item.getAttribute('data-broker')) {
+                        currentBroker = item.getAttribute('data-broker');
+                        localStorage.setItem('pt_current_broker', currentBroker);
+                        updateBrokerInputs();
+                        renderBrokerList();
+                        list.classList.remove('active');
+                    }
+                }
+            });
+
+            document.getElementById('broker-input').addEventListener('focus', () => { renderBrokerList(); list.classList.add('active'); });
+            document.addEventListener('mousedown', (e) => {
+                const inp = document.getElementById('broker-input');
+                if(!inp.contains(e.target) && !list.contains(e.target)) list.classList.remove('active');
+            });
+
+            document.getElementById('brkPct').addEventListener('input', (e) => {
+                brokerProfiles[currentBroker].pct = parseFloat(e.target.value) || 0;
+                localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
+                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
+            });
+            
+            document.getElementById('brkMax').addEventListener('input', (e) => {
+                brokerProfiles[currentBroker].max = parseFloat(e.target.value) || 0;
+                localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
+                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
+            });
+
+            updateBrokerInputs();
+        }
+
+        // --- Exchange Toggle Logic ---
+        function initExchangeToggle() {
+            const btnNse = document.getElementById('btn-nse');
+            const btnBse = document.getElementById('btn-bse');
+            
+            const applyExchange = (exch) => {
+                currentExchange = exch;
+                localStorage.setItem('pt_exchange', exch);
+                if(exch === 'NSE') {
+                    btnNse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors bg-brand-500 text-white';
+                    btnBse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors text-gray-400 hover:text-white';
+                } else {
+                    btnBse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors bg-brand-500 text-white';
+                    btnNse.className = 'px-3 py-1 rounded text-xs font-bold transition-colors text-gray-400 hover:text-white';
+                }
+                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
+            };
+
+            btnNse.addEventListener('click', () => applyExchange('NSE'));
+            btnBse.addEventListener('click', () => applyExchange('BSE'));
+            applyExchange(currentExchange);
+        }
+
         function initCalculator() {
+            initBrokerManager();
+            initExchangeToggle();
+
             const cInputs = {
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'),
                 corpus: document.getElementById('corpus'), margin: document.getElementById('margin'),
@@ -1317,19 +1442,17 @@
                 brkPct: document.getElementById('brkPct'), brkMax: document.getElementById('brkMax'),
                 msg: document.getElementById('validationMsg')
             };
-            const savedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
             
-            // Auto-sync initial corpus if balances exist locally
+            const savedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
             const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
             cInputs.corpus.value = initialCorpus > 0 ? initialCorpus : (savedState.corpus || '');
             
             cInputs.margin.value = savedState.margin || '1'; 
             cInputs.risk.value = savedState.riskPct || '1.0';
             cInputs.target.value = savedState.targetPct || '1.5';
-            cInputs.brkPct.value = savedState.brkPct || '0.03';
-            cInputs.brkMax.value = savedState.brkMax || '20';
             
-            const calcCharges = (qty, ent, stop, dir, bPct, bMax) => {
+            // Intraday Equity Formula
+            const calcCharges = (qty, ent, stop, dir, bPct, bMax, exchCode) => {
                 const pBuy = dir === 'LONG' ? ent : stop;
                 const pSell = dir === 'LONG' ? stop : ent;
                 const tBuy = qty * pBuy;
@@ -1339,15 +1462,33 @@
                 const bBuy = Math.min(tBuy * (bPct / 100), bMax);
                 const bSell = Math.min(tSell * (bPct / 100), bMax);
                 const broker = bBuy + bSell;
+                const brokerPct = tTotal > 0 ? (broker / tTotal) * 100 : 0;
 
+                // STT is applied strictly on the sell side turnover at 0.025%
                 const stt = Math.round(tSell * 0.00025);
-                const exch = tTotal * 0.0000325;
-                const sebi = tTotal * 0.000001;
-                const stamp = Math.round(tBuy * 0.00003);
+                const sttPct = tTotal > 0 ? (stt / tTotal) * 100 : 0;
+
+                // Transaction Charges depend on exchange
+                const exchRate = exchCode === 'NSE' ? 0.0000307 : 0.0000375;
+                const exch = tTotal * exchRate;
+
+                // SEBI charges are ₹10 per crore (0.0001%)
+                const sebi = tTotal * 0.000001; 
+                const exchSebi = exch + sebi;
+                const exchSebiPct = tTotal > 0 ? (exchSebi / tTotal) * 100 : 0;
+
+                // Stamp Duty is applied strictly on the buy side turnover at 0.003%
+                const stamp = Math.round(tBuy * 0.00003); 
+                const stampPct = tTotal > 0 ? (stamp / tTotal) * 100 : 0;
+
+                // GST is 18% on (Brokerage + Exchange + SEBI)
                 const gst = (broker + exch + sebi) * 0.18;
+                const gstPct = tTotal > 0 ? (gst / tTotal) * 100 : 0;
 
                 const total = broker + stt + exch + sebi + stamp + gst;
-                return { broker, stt, exchAndSebi: exch + sebi, gst, stamp, total };
+                const totalPct = tTotal > 0 ? (total / tTotal) * 100 : 0;
+
+                return { broker, brokerPct, stt, sttPct, exchAndSebi: exchSebi, exchSebiPct, gst, gstPct, stamp, stampPct, total, totalPct };
             };
 
             const calculate = () => {
@@ -1357,10 +1498,7 @@
                 const riskPct = parseFloat(cInputs.risk.value); const targetPct = parseFloat(cInputs.target.value);
                 const brkPct = parseFloat(cInputs.brkPct.value) || 0; const brkMax = parseFloat(cInputs.brkMax.value) || 0;
                 
-                localStorage.setItem('riskCalcSettings', JSON.stringify({ 
-                    corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, 
-                    targetPct: cInputs.target.value, brkPct: cInputs.brkPct.value, brkMax: cInputs.brkMax.value 
-                }));
+                localStorage.setItem('riskCalcSettings', JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value }));
                 
                 const clear = () => {
                     document.getElementById('outShares').textContent = '0'; document.getElementById('outDirection').textContent = 'WAITING';
@@ -1371,7 +1509,7 @@
                     document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                     
                     document.getElementById('chargesCard').classList.add('opacity-50');
-                    ['chgBrokerage', 'chgSTT', 'chgExch', 'chgGST', 'chgStamp', 'chgTotal'].forEach(id => document.getElementById(id).textContent = '₹0.00');
+                    ['chgBrokerage', 'chgSTT', 'chgExch', 'chgGST', 'chgStamp', 'chgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
                 };
                 
                 if (isNaN(entry) || isNaN(sl) || isNaN(corpus) || isNaN(riskPct) || isNaN(targetPct)) return clear();
@@ -1383,13 +1521,13 @@
                 const riskPerShare = Math.abs(entry - sl); 
                 const riskBudget = corpus * (riskPct / 100);
                 
-                // Iterative solver to strict fit Max Loss (SL Hit + Charges) into the Risk Budget
+                // Iterative solver to strict fit Max Loss (SL Hit + Exact Computed Charges) into the absolute Risk Budget
                 let q = Math.floor(riskBudget / riskPerShare);
                 let estCharges = {};
                 let totalRiskWithCharges = 0;
                 
                 while (q > 0) {
-                    estCharges = calcCharges(q, entry, sl, direction, brkPct, brkMax);
+                    estCharges = calcCharges(q, entry, sl, direction, brkPct, brkMax, currentExchange);
                     totalRiskWithCharges = (q * riskPerShare) + estCharges.total;
                     if (totalRiskWithCharges <= riskBudget) break;
                     q--;
@@ -1397,29 +1535,24 @@
                 
                 let finalShares = q;
 
-                // Apply margin limit constraints if necessary
                 const marginLimitShares = Math.floor((corpus * marginMult) / entry);
                 if (finalShares > marginLimitShares) {
                     finalShares = marginLimitShares;
-                    // Recalculate charges for the lower share count due to margin limit
-                    estCharges = calcCharges(finalShares, entry, sl, direction, brkPct, brkMax);
+                    estCharges = calcCharges(finalShares, entry, sl, direction, brkPct, brkMax, currentExchange);
                     totalRiskWithCharges = (finalShares * riskPerShare) + estCharges.total;
                 }
                 
-                // If it evaluates to 0 shares (budget too small even for 1 share with charges)
                 if (finalShares === 0) {
-                    cInputs.msg.textContent = "Corpus/Risk too low to afford 1 share incl. charges."; cInputs.msg.classList.remove('hidden'); 
+                    cInputs.msg.textContent = "Corpus/Risk is too low to afford 1 share including statutory charges."; cInputs.msg.classList.remove('hidden'); 
                     return clear();
                 }
 
                 const actualMarginReq = (finalShares * entry) / marginMult; 
                 
-                // Dynamically calculate the exact target price needed to hit Target % of overall corpus
                 const targetProfitTotal = corpus * (targetPct / 100);
                 const targetProfitPerShare = targetProfitTotal / finalShares;
                 const targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
                 
-                // Update Main Result Card
                 document.getElementById('outShares').textContent = formatNum(finalShares); 
                 document.getElementById('outDirection').textContent = direction;
                 document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
@@ -1436,17 +1569,22 @@
                 document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
                 document.getElementById('outTradeType').textContent = finalShares === q ? "Risk Limited" : "Capital Limited";
 
-                // Update Charges Breakdown Card
+                // Format Charges Output
                 document.getElementById('chargesCard').classList.remove('opacity-50');
-                document.getElementById('chgBrokerage').textContent = formatMoney(estCharges.broker);
-                document.getElementById('chgSTT').textContent = formatMoney(estCharges.stt);
-                document.getElementById('chgExch').textContent = formatMoney(estCharges.exchAndSebi);
-                document.getElementById('chgStamp').textContent = formatMoney(estCharges.stamp);
-                document.getElementById('chgGST').textContent = formatMoney(estCharges.gst);
-                document.getElementById('chgTotal').textContent = formatMoney(estCharges.total);
+                const fmtPct = (v) => v > 0 ? `<span class="text-[10px] text-gray-500 font-medium tracking-normal ml-0.5">(${v.toFixed(3)}%)</span>` : '';
+                
+                document.getElementById('chgBrokerage').innerHTML = `${formatMoney(estCharges.broker)} ${fmtPct(estCharges.brokerPct)}`;
+                document.getElementById('chgSTT').innerHTML = `${formatMoney(estCharges.stt)} ${fmtPct(estCharges.sttPct)}`;
+                document.getElementById('chgExch').innerHTML = `${formatMoney(estCharges.exchAndSebi)} ${fmtPct(estCharges.exchSebiPct)}`;
+                document.getElementById('chgGST').innerHTML = `${formatMoney(estCharges.gst)} ${fmtPct(estCharges.gstPct)}`;
+                document.getElementById('chgStamp').innerHTML = `${formatMoney(estCharges.stamp)} ${fmtPct(estCharges.stampPct)}`;
+                document.getElementById('chgTotal').innerHTML = `${formatMoney(estCharges.total)} ${fmtPct(estCharges.totalPct)}`;
             };
             
-            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target', 'brkPct', 'brkMax'].forEach(k => cInputs[k].addEventListener('input', calculate));
+            // Allow triggering calculation globally 
+            window.triggerGlobalCalculate = calculate;
+
+            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => cInputs[k].addEventListener('input', calculate));
             cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; cInputs.entry.focus(); calculate(); });
             document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; calculate(); });
