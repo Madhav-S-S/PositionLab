@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCompass -by Madhav</title>
+    <title>TradeCompass - by Madhav</title>
     
     <!-- App & SEO Metadata -->
     <meta name="description" content="TradeCompass - Master Platform for Trading, Journaling, Ledger, and Risk Management">
@@ -11,14 +11,11 @@
     <meta name="author" content="Madhav S S">
     <meta name="theme-color" content="#0a0a0a">
 
-    <!-- PWA Web App Manifest & Mobile App Icons -->
+    <!-- PWA Web App Manifest & App Icons -->
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon192.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icon192.png">
-    
-    <!-- SVG Favicon Fallback for Desktop Tabs -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon512.png">
          
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -108,11 +105,8 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
                          
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 border border-white/10">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.095 10.383a1.996 1.996 0 00-1.286-1.286l-7.794-2.598a.5.5 0 00-.632.632l2.598 7.794a1.996 1.996 0 001.286 1.286l7.794 2.598a.5.5 0 00.632-.632l-2.598-7.794z"></path>
-                        <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"></circle>
-                    </svg>
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20 border border-white/10 overflow-hidden bg-brand-600/20">
+                    <img src="icon192.png" alt="TradeCompass Logo" width="44" height="44" decoding="async" class="w-full h-full object-contain">
                 </div>
                 <div class="flex flex-col mt-1">
                     <h1 class="text-xl font-bold tracking-tight leading-none text-white">TradeCompass</h1>
@@ -1603,14 +1597,12 @@
                 // Advanced Iterative Breakeven & Slight Profit Engine
                 const dirMult = direction === 'LONG' ? 1 : -1;
                 
-                // 1. Math-based initial guess
                 const baseChg = calcCharges(finalShares, entry, entry, direction, brkPct, brkMax, currentExchange);
                 const reqPts = baseChg.total / finalShares;
                 let bePrice = entry + (reqPts * dirMult);
                 let beNet = -1;
                 let iterations = 0;
 
-                // Fine-tune to the exact market tick (0.05 increments)
                 while (iterations < 500) {
                     let chg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
                     let gross = finalShares * (bePrice - entry) * dirMult;
@@ -1620,7 +1612,6 @@
                     iterations++;
                 }
 
-                // If overshot on guess, walk backwards
                 while (beNet > 5 && iterations < 1000) {
                     bePrice -= 0.05 * dirMult;
                     let chg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
@@ -1635,7 +1626,6 @@
                     iterations++;
                 }
 
-                // Slight profit (minimum ₹25, or +0.05% of position, whichever is higher)
                 let spTarget = Math.max(25, (finalShares * entry) * 0.0005);
                 let spPrice = bePrice;
                 let spNet = beNet;
