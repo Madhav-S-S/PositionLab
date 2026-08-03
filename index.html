@@ -109,10 +109,14 @@
     
     <!-- Top Navigation -->
     <nav class="glass-card sticky top-0 z-[100] px-4 py-3 mb-6">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center gap-y-3">
+        <!-- 
+          Mobile: 2-column Grid (Logo top-left, Auth top-right, Tabs bottom-full)
+          Desktop: Flex container keeping Logo left, Auth & Tabs grouped on the right.
+        -->
+        <div class="max-w-7xl mx-auto grid grid-cols-2 md:flex md:items-center gap-y-3 md:gap-4">
             
-            <!-- Logo (Left on PC & Mobile) -->
-            <div class="flex items-center gap-3 order-1 shrink-0">
+            <!-- Logo -->
+            <div class="flex items-center gap-3 col-span-1 shrink-0">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20 border border-white/10 overflow-hidden bg-brand-600/20">
                     <img src="icon.svg" alt="PositionLab Logo" decoding="async" class="w-full h-full object-cover scale-110">
                 </div>
@@ -122,8 +126,9 @@
                 </div>
             </div>
 
-            <!-- Actions: Auth, Sync, Profile, Logout (Far Right on PC & Mobile) -->
-            <div class="flex items-center gap-2 order-2 ml-auto shrink-0">
+            <!-- Header Actions (Sync, Profile, Logout) -->
+            <!-- md:ml-auto perfectly pushes this and the tabs to the right side on Desktop -->
+            <div class="flex items-center justify-end gap-2 col-span-1 md:ml-auto shrink-0">
                 <div id="authContainer" class="flex items-center gap-2">
                     <button id="driveSyncBtn" onclick="handleAuthClick()" class="px-2 py-1.5 md:px-3 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-1 md:gap-2 transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
@@ -144,8 +149,8 @@
                 </button>
             </div>
 
-            <!-- Tabs Navigation (Bottom Full-width on Mobile, Grouped with Actions on PC) -->
-            <div class="w-full md:w-auto grid grid-cols-4 md:flex gap-1 md:gap-4 order-3 md:order-3 md:ml-4 mt-1 md:mt-0 bg-white/5 md:bg-transparent p-1 md:p-0 rounded-lg shrink-0">
+            <!-- Tab Buttons Row -->
+            <div class="col-span-2 md:col-auto grid grid-cols-4 md:flex gap-1 md:gap-4 bg-white/5 md:bg-transparent p-1 md:p-0 rounded-lg shrink-0">
                 <button class="nav-btn active" data-target="view-calculator">CALCULATOR</button>
                 <button class="nav-btn" data-target="view-dashboard">DASHBOARD</button>
                 <button class="nav-btn" data-target="view-trades">JOURNAL</button>
@@ -158,151 +163,155 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 md:px-0 mb-12 w-full">
         <!-- CALCULATOR TAB -->
         <div id="view-calculator" class="view-section active">
-            <!-- Using floats for Desktop to completely decouple left/right column heights, falling back to flex-col on mobile -->
-            <div class="flex flex-col lg:block gap-6 lg:gap-0 w-full relative">
+            <!-- Using display: contents to allow native mobile flex-col sorting, while enforcing 2 columns strictly via flex on Desktop -->
+            <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full">
                 
-                <!-- Trade Setup (Left Column Desktop, Order 1 Mobile) -->
-                <section class="order-1 lg:float-left lg:w-[calc(33.333%-1rem)] lg:mb-8 lg:clear-left z-50">
-                    <div class="glass-card rounded-2xl p-6 relative">
-                        <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider">TRADE SETUP</h2></div>
-                        <div class="space-y-4">
-                            <div><label class="block text-sm text-gray-400 mb-1">Entry Price (₹)</label><input type="number" id="entry" step="0.01" class="input-field" placeholder="0.00"></div>
-                            <div><label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label><input type="number" id="stopLoss" step="0.01" class="input-field" placeholder="0.00"></div>
-                            <div>
-                                <div class="flex justify-between items-center mb-1">
-                                    <label class="block text-sm text-gray-400">Total Corpus (₹)</label>
-                                    <button id="syncCorpusBtn" class="text-xs text-brand-500 hover:text-brand-400 font-semibold" title="Sync with Total Capital">Sync Total Capital</button>
+                <!-- LEFT COLUMN -->
+                <div class="contents lg:flex lg:flex-col w-full lg:w-1/3 gap-6 lg:gap-8">
+                    <!-- Trade Setup (Order 1 on mobile) -->
+                    <section class="order-1 w-full z-50">
+                        <div class="glass-card rounded-2xl p-6 relative">
+                            <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider">TRADE SETUP</h2></div>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Entry Price (₹)</label><input type="number" id="entry" step="0.01" class="input-field" placeholder="0.00"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label><input type="number" id="stopLoss" step="0.01" class="input-field" placeholder="0.00"></div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-sm text-gray-400">Total Corpus (₹)</label>
+                                        <button id="syncCorpusBtn" class="text-xs text-brand-500 hover:text-brand-400 font-semibold" title="Sync with Total Capital">Sync Total Capital</button>
+                                    </div>
+                                    <input type="number" id="corpus" step="0.01" class="input-field" placeholder="0.00">
                                 </div>
-                                <input type="number" id="corpus" step="0.01" class="input-field" placeholder="0.00">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="margin" step="1" min="0" class="input-field" placeholder="1"></div>
+                                    <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="riskPct" step="0.1" min="0.1" class="input-field" placeholder="1.0"></div>
+                                    <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="targetPct" step="0.1" min="0.1" class="input-field" placeholder="1.5"></div>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-3 gap-4">
-                                <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="margin" step="1" min="0" class="input-field" placeholder="1"></div>
-                                <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="riskPct" step="0.1" min="0.1" class="input-field" placeholder="1.0"></div>
-                                <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="targetPct" step="0.1" min="0.1" class="input-field" placeholder="1.5"></div>
-                            </div>
+                            <div id="validationMsg" class="mt-4 text-sm text-red-500 hidden"></div>
+                            <div class="mt-6 flex gap-3"><button id="resetBtn" class="flex-1 py-2.5 rounded-lg border border-gray-600 hover:bg-gray-800 transition">Reset Setup</button></div>
                         </div>
-                        <div id="validationMsg" class="mt-4 text-sm text-red-500 hidden"></div>
-                        <div class="mt-6 flex gap-3"><button id="resetBtn" class="flex-1 py-2.5 rounded-lg border border-gray-600 hover:bg-gray-800 transition">Reset Setup</button></div>
-                    </div>
-                </section>
-                
-                <!-- Recommended Shares (Result Card) (Right Column Desktop, Order 2 Mobile) -->
-                <section class="order-2 lg:float-right lg:w-[calc(66.666%-1rem)] lg:mb-8 lg:clear-right z-40">
-                    <div id="resultCard" class="glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 border-l-transparent">
-                        <div id="dirGlow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500"></div>
-                        <div class="flex justify-between items-start mb-6">
-                            <div>
-                                <p class="text-sm text-gray-400 font-medium uppercase tracking-wider mb-1">Recommended Shares</p>
-                                <div class="flex items-end gap-3">
-                                    <h2 id="outShares" class="text-5xl lg:text-6xl font-bold tracking-tight">0</h2>
-                                    <span id="outDirection" class="text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300">WAITING</span>
+                    </section>
+                    
+                    <!-- Brokerage Settings Card (Order 3 on mobile) -->
+                    <section class="order-3 w-full z-30">
+                        <div class="glass-card rounded-2xl p-5 relative">
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Brokerage Profile</h2>
+                                <div class="flex bg-black/40 rounded-lg p-0.5 border border-white/10">
+                                    <button id="btn-nse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors bg-brand-500 text-white">NSE</button>
+                                    <button id="btn-bse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors text-gray-400 hover:text-white">BSE</button>
                                 </div>
                             </div>
-                        </div>
-                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-                            <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold">₹0.00</p></div>
-                            <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold">₹0.00</p></div>
-                            <div id="marginBlock" class="hidden"><p class="text-xs text-gray-400 mb-1">Margin Required</p><p id="outMarginReq" class="font-semibold text-brand-500">₹0.00</p></div>
-                            <div>
-                                <p class="text-xs text-gray-400 mb-1">Maximum Planned Loss</p>
-                                <div class="flex items-center gap-2">
-                                    <p id="outMaxLoss" class="font-semibold text-red-400">₹0.00</p>
-                                    <span class="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">inc. fees</span>
+                            <div class="space-y-2">
+                                <div class="custom-dropdown">
+                                    <input type="text" id="broker-input" class="input-field py-2 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
+                                    <ul id="broker-list" class="custom-dropdown-list"></ul>
                                 </div>
-                            </div>
-                            <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold">0.00%</p></div>
-                            <div><p class="text-xs text-gray-400 mb-1">Trade Type</p><p id="outTradeType" class="font-semibold">-</p></div>
-                        </div>
-                        
-                        <!-- Breakeven Section -->
-                        <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-2 gap-6 relative z-10">
-                            <div>
-                                <p class="text-xs text-gray-400 mb-1">Breakeven Price</p>
-                                <div class="flex items-center gap-2">
-                                    <p id="outBreakeven" class="font-semibold text-gray-200">₹0.00</p>
-                                    <span id="outBreakevenNet" class="text-[10px] font-medium bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded border border-gray-600/30">Net: ₹0.00</span>
-                                </div>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 mb-1">Slight Profit Price</p>
-                                <div class="flex items-center gap-2">
-                                    <p id="outSlightProfit" class="font-semibold text-long">₹0.00</p>
-                                    <span id="outSlightProfitNet" class="text-[10px] font-medium bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Net: +₹0.00</span>
+                                <div class="text-right">
+                                    <span id="broker-details" class="text-[11px] font-medium text-brand-400 tracking-wide bg-brand-500/10 px-2 py-1 rounded-md border border-brand-500/20"></span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
 
-                <!-- Brokerage Settings Card (Left Column Desktop, Order 3 Mobile) -->
-                <section class="order-3 lg:float-left lg:w-[calc(33.333%-1rem)] lg:mb-8 lg:clear-left z-30">
-                    <div class="glass-card rounded-2xl p-5 relative">
-                        <div class="flex justify-between items-center mb-3">
-                            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Brokerage Profile</h2>
-                            <div class="flex bg-black/40 rounded-lg p-0.5 border border-white/10">
-                                <button id="btn-nse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors bg-brand-500 text-white">NSE</button>
-                                <button id="btn-bse" class="px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors text-gray-400 hover:text-white">BSE</button>
+                <!-- RIGHT COLUMN -->
+                <div class="contents lg:flex lg:flex-col w-full lg:w-2/3 gap-6 lg:gap-8">
+                    <!-- Recommended Shares Result Card (Order 2 on mobile) -->
+                    <section class="order-2 w-full z-40">
+                        <div id="resultCard" class="glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 border-l-transparent">
+                            <div id="dirGlow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500"></div>
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <p class="text-sm text-gray-400 font-medium uppercase tracking-wider mb-1">Recommended Shares</p>
+                                    <div class="flex items-end gap-3">
+                                        <h2 id="outShares" class="text-5xl lg:text-6xl font-bold tracking-tight">0</h2>
+                                        <span id="outDirection" class="text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300">WAITING</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                                <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500">₹0.00</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold">₹0.00</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold">₹0.00</p></div>
+                                <div id="marginBlock" class="hidden"><p class="text-xs text-gray-400 mb-1">Margin Required</p><p id="outMarginReq" class="font-semibold text-brand-500">₹0.00</p></div>
+                                <div>
+                                    <p class="text-xs text-gray-400 mb-1">Maximum Planned Loss</p>
+                                    <div class="flex items-center gap-2">
+                                        <p id="outMaxLoss" class="font-semibold text-red-400">₹0.00</p>
+                                        <span class="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">inc. fees</span>
+                                    </div>
+                                </div>
+                                <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold">0.00%</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Trade Type</p><p id="outTradeType" class="font-semibold">-</p></div>
+                            </div>
+                            
+                            <!-- Breakeven Section -->
+                            <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-2 gap-6 relative z-10">
+                                <div>
+                                    <p class="text-xs text-gray-400 mb-1">Breakeven Price</p>
+                                    <div class="flex items-center gap-2">
+                                        <p id="outBreakeven" class="font-semibold text-gray-200">₹0.00</p>
+                                        <span id="outBreakevenNet" class="text-[10px] font-medium bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded border border-gray-600/30">Net: ₹0.00</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 mb-1">Slight Profit Price</p>
+                                    <div class="flex items-center gap-2">
+                                        <p id="outSlightProfit" class="font-semibold text-long">₹0.00</p>
+                                        <span id="outSlightProfitNet" class="text-[10px] font-medium bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Net: +₹0.00</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="space-y-2">
-                            <div class="custom-dropdown">
-                                <input type="text" id="broker-input" class="input-field py-2 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
-                                <ul id="broker-list" class="custom-dropdown-list"></ul>
-                            </div>
-                            <div class="text-right">
-                                <span id="broker-details" class="text-[11px] font-medium text-brand-400 tracking-wide bg-brand-500/10 px-2 py-1 rounded-md border border-brand-500/20"></span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Extended Detailed Charges Output (Right Column Desktop, Order 4 Mobile) -->
-                <section class="order-4 lg:float-right lg:w-[calc(66.666%-1rem)] lg:mb-8 lg:clear-right z-20">
-                    <div id="chargesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300 opacity-50 relative">
-                        <!-- SL Charges Card -->
-                        <div class="glass-card rounded-2xl p-5">
-                            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-                                <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Charges (At Stop Loss)</h3>
-                                <span class="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">Loss Scenario</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-x-2 gap-y-4">
-                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slBrokerageTxt">Brokerage</p></div>
-                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
-                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slExchTxt">Exchange</p></div>
-                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
-                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
-                                <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
-                            </div>
-                            <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
-                                <span class="text-xs font-semibold text-gray-400">Total Deductions</span>
-                                <span class="text-sm font-bold text-short" id="slTotal">₹0.00</span>
-                            </div>
-                        </div>
+                    </section>
 
-                        <!-- Target Charges Card -->
-                        <div class="glass-card rounded-2xl p-5 border border-brand-500/20 bg-brand-500/5">
-                            <div class="flex justify-between items-center mb-4 border-b border-brand-500/20 pb-2">
-                                <h3 class="text-[11px] font-bold text-brand-400 uppercase tracking-widest">Charges (At Target)</h3>
-                                <span class="text-[10px] bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Win Scenario</span>
+                    <!-- Extended Detailed Charges Output (Order 4 on mobile) -->
+                    <section class="order-4 w-full z-20">
+                        <div id="chargesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300 opacity-50 relative">
+                            <!-- SL Charges Card -->
+                            <div class="glass-card rounded-2xl p-5">
+                                <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                                    <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Charges (At Stop Loss)</h3>
+                                    <span class="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">Loss Scenario</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-x-2 gap-y-4">
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slBrokerageTxt">Brokerage</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slExchTxt">Exchange</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                                    <span class="text-xs font-semibold text-gray-400">Total Deductions</span>
+                                    <span class="text-sm font-bold text-short" id="slTotal">₹0.00</span>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-3 gap-x-2 gap-y-4">
-                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgBrokerageTxt">Brokerage</p></div>
-                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
-                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgExchTxt">Exchange</p></div>
-                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
-                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
-                                <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
-                            </div>
-                            <div class="mt-4 pt-3 border-t border-brand-500/20 flex justify-between items-center">
-                                <span class="text-xs font-semibold text-brand-400">Total Deductions</span>
-                                <span class="text-sm font-bold text-brand-400" id="tgTotal">₹0.00</span>
+
+                            <!-- Target Charges Card -->
+                            <div class="glass-card rounded-2xl p-5 border border-brand-500/20 bg-brand-500/5">
+                                <div class="flex justify-between items-center mb-4 border-b border-brand-500/20 pb-2">
+                                    <h3 class="text-[11px] font-bold text-brand-400 uppercase tracking-widest">Charges (At Target)</h3>
+                                    <span class="text-[10px] bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Win Scenario</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-x-2 gap-y-4">
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgBrokerageTxt">Brokerage</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgExchTxt">Exchange</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-brand-500/20 flex justify-between items-center">
+                                    <span class="text-xs font-semibold text-brand-400">Total Deductions</span>
+                                    <span class="text-sm font-bold text-brand-400" id="tgTotal">₹0.00</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-
-                <div class="clear-both hidden lg:block"></div>
+                    </section>
+                </div>
             </div>
         </div>
 
