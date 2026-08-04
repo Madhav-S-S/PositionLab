@@ -66,7 +66,7 @@
         }
                  
         .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-        .custom-checkbox { accent-color: #3b82f6; width: 1.1rem; height: 1.1rem; cursor: pointer; border-radius: 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); }
+        .custom-checkbox { accent-color: #3b82f6; cursor: pointer; border-radius: 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); }
                  
         .custom-dropdown { position: relative; }
         .custom-dropdown-list {
@@ -92,8 +92,8 @@
         .view-section.active { display: block; opacity: 1; }
                  
         .table-container { width: 100%; overflow-x: auto; max-width: 100%; }
-        th, td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        th { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: #9ca3af; font-weight: 600; text-align: left; }
+        th, td { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; font-weight: 600; text-align: left; }
                  
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -387,91 +387,98 @@
 
         <!-- JOURNAL TAB -->
         <div id="view-trades" class="view-section space-y-6">
-            <div id="trade-input-panel" class="glass-card rounded-2xl p-6 relative z-50">
-                <div class="flex justify-between items-center mb-6">
+            <div id="trade-input-panel" class="glass-card rounded-2xl p-4 md:p-6 relative z-50">
+                <div class="flex justify-between items-center mb-4 md:mb-6">
                     <h2 class="text-lg font-semibold text-brand-500 tracking-wider">JOURNAL ENTRY</h2>
                     <span id="tj-edit-badge" class="hidden text-xs font-bold bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full border border-brand-500/30">EDITING MODE</span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <div><label class="block text-sm text-gray-400 mb-1">Date</label><input type="text" id="tj-date" class="input-field" placeholder="Select Date"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field font-bold" placeholder="e.g. RELIANCE" list="nse-stocks" autocomplete="off"></div>
-                    
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Strategy</label>
-                        <div class="custom-dropdown">
-                            <input type="text" id="tj-strategy" class="input-field" placeholder="Select Strategy..." autocomplete="off">
-                            <ul id="tj-strategy-list" class="custom-dropdown-list"></ul>
+                
+                <!-- Auto-Fill / Calculator Fields Group -->
+                <div class="border-b border-white/10 pb-4 md:pb-6 mb-4 md:mb-6">
+                    <h3 class="text-[10px] uppercase font-bold text-gray-500 mb-3 tracking-widest">Trade Setup (Auto-filled)</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4">
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Date</label><input type="text" id="tj-date" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="Select Date"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Entry Price</label><input type="number" id="tj-entry" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Stop Loss</label><input type="number" id="tj-sl" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="tj-margin" step="1" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="1"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="tj-risk" step="0.1" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="1.0"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="tj-target" step="0.1" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="1.5"></div>
+                        <div>
+                            <label class="block text-xs md:text-sm text-gray-400 mb-1">Result</label>
+                            <select id="tj-result" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors" disabled>
+                                <option value="BREAKEVEN" class="text-gray-400">BREAKEVEN</option>
+                                <option value="WIN" class="text-long">WIN</option>
+                                <option value="LOSS" class="text-short">LOSS</option>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div><label class="block text-sm text-gray-400 mb-1">Entry Price</label><input type="number" id="tj-entry" step="0.01" class="input-field" placeholder="0.00"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Stop Loss</label><input type="number" id="tj-sl" step="0.01" class="input-field" placeholder="0.00"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="tj-margin" step="1" class="input-field" placeholder="1"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="tj-risk" step="0.1" class="input-field" placeholder="1.0"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="tj-target" step="0.1" class="input-field" placeholder="1.5"></div>
+                </div>
 
-                    <div><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field" placeholder="0.00"></div>
-                    <div><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field" placeholder="0.00"></div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Result (Auto)</label>
-                        <select id="tj-result" class="input-field font-bold text-gray-400 transition-colors" disabled>
-                            <option value="BREAKEVEN" class="text-gray-400">BREAKEVEN</option>
-                            <option value="WIN" class="text-long">WIN</option>
-                            <option value="LOSS" class="text-short">LOSS</option>
-                        </select>
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm text-gray-400 mb-1">Verdict(s)</label>
-                        <div class="custom-dropdown">
-                            <input type="text" id="tj-verdict" class="input-field" placeholder="Select Verdicts..." autocomplete="off">
-                            <ul id="tj-verdict-list" class="custom-dropdown-list"></ul>
+                <!-- Manual Fields Group -->
+                <div>
+                    <h3 class="text-[10px] uppercase font-bold text-brand-500 mb-3 tracking-widest">Execution Details</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 items-end">
+                        <div><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field py-2"></div>
+                        <div><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field py-2"></div>
+                        <div><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field py-2 font-bold" placeholder="e.g. RELIANCE" list="nse-stocks" autocomplete="off"></div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Strategy</label>
+                            <div class="custom-dropdown">
+                                <input type="text" id="tj-strategy" class="input-field py-2" placeholder="Select Strategy..." autocomplete="off">
+                                <ul id="tj-strategy-list" class="custom-dropdown-list"></ul>
+                            </div>
                         </div>
+                        <div><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        
+                        <div><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm text-gray-400 mb-1">Verdict(s)</label>
+                            <div class="custom-dropdown">
+                                <input type="text" id="tj-verdict" class="input-field py-2" placeholder="Select Verdicts..." autocomplete="off">
+                                <ul id="tj-verdict-list" class="custom-dropdown-list"></ul>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-2"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="tj-remarks" class="input-field py-2" placeholder="Mistakes or lessons..."></div>
                     </div>
-                    
-                    <div class="md:col-span-3 lg:col-span-5"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="tj-remarks" class="input-field" placeholder="Mistakes or lessons..."></div>
-                    
-                    <div class="md:col-span-5 flex items-end mt-2">
+                    <div class="mt-5">
                         <button id="tj-save-btn" onclick="processTrade()" class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition shadow-lg shadow-brand-500/20">Save Trade</button>
                     </div>
                 </div>
             </div>
             
-            <div id="trade-db-container" class="glass-card rounded-2xl p-6 z-40 relative privacy-enabled">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Trade Database</h3>
-                    <div class="flex items-center gap-3">
-                        <button id="btn-del-trades" class="hidden px-3 py-1.5 text-xs font-bold bg-short/20 text-short hover:bg-short/40 rounded transition border border-short/30" onclick="bulkDelete('trades')">Delete Selected</button>
+            <div id="trade-db-container" class="glass-card rounded-2xl p-2 md:p-6 z-40 relative privacy-enabled">
+                <div class="flex justify-between items-center mb-4 px-2 md:px-0">
+                    <h3 class="text-[11px] md:text-sm font-semibold text-gray-400 uppercase tracking-wider">Trade Database</h3>
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <button id="btn-del-trades" class="hidden px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-bold bg-short/20 text-short hover:bg-short/40 rounded transition border border-short/30" onclick="bulkDelete('trades')">Delete</button>
                         
                         <!-- Column Settings -->
                         <div class="relative">
-                            <button id="btn-cols" onclick="document.getElementById('col-dropdown').classList.toggle('hidden')" class="px-3 py-1.5 text-xs font-bold bg-white/5 text-gray-300 hover:bg-white/10 rounded border border-white/10 transition flex items-center gap-1">
-                                Columns <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <button id="btn-cols" onclick="document.getElementById('col-dropdown').classList.toggle('hidden')" class="px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-bold bg-white/5 text-gray-300 hover:bg-white/10 rounded border border-white/10 transition flex items-center gap-1">
+                                Cols <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
                             <div id="col-dropdown" class="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl hidden z-50 p-3 flex flex-col gap-2">
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox" checked disabled> Date</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox" checked disabled> Symbol</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="strategy"> Strategy</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="entryInfo"> Entry/SL Stats</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="pnl"> Net P&L</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="charges"> Charges</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="result"> Result</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="pctChange"> % Chg</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="corpus"> End Corpus</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="remarks"> Remarks</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Date</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Symbol</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="strategy"> Strategy</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="entryInfo"> Entry/SL Stats</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="pnl"> Net P&L</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="charges"> Charges</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="result"> Result</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="pctChange"> % Chg</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="corpus"> End Corpus</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="remarks"> Remarks</label>
                             </div>
                         </div>
 
                         <button id="trade-privacy-btn" class="privacy-btn" onclick="togglePrivacy('trade-db-container', 'trade-privacy-btn')">
-                            <svg class="w-4 h-4 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg class="w-4 h-4 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                            <svg class="w-3 h-3 md:w-4 md:h-4 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            <svg class="w-3 h-3 md:w-4 md:h-4 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                         </button>
                     </div>
                 </div>
                 <div class="table-container">
-                    <table class="w-full text-left text-sm table-auto">
+                    <table class="w-full text-left table-auto">
                         <thead class="bg-black/20 text-gray-400">
                             <tr id="tradeTableHeader">
                                 <!-- Rendered dynamically based on column preferences -->
@@ -494,10 +501,10 @@
                     </button>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sensitive-data">
-                    <div class="glass-card rounded-xl p-4 border-l-2 border-l-brand-500"><p class="text-xs text-gray-500 mb-1">Total Corpus</p><p id="led-total" class="font-bold text-lg">₹0.00</p></div>
-                    <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Trade Ledger</p><p id="led-trade" class="font-semibold text-gray-300">₹0.00</p></div>
-                    <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Liquid Fund</p><p id="led-liquid" class="font-semibold text-gray-300">₹0.00</p></div>
-                    <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Reserve</p><p id="led-reserve" class="font-semibold text-gray-300">₹0.00</p></div>
+                    <div class="glass-card rounded-xl p-4 border-l-2 border-l-brand-500"><p class="text-xs text-gray-500 mb-1">Total Corpus</p><p id="led-total" class="font-bold text-lg truncate">₹0.00</p></div>
+                    <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Trade Ledger</p><p id="led-trade" class="font-semibold text-gray-300 truncate">₹0.00</p></div>
+                    <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Liquid Fund</p><p id="led-liquid" class="font-semibold text-gray-300 truncate">₹0.00</p></div>
+                    <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Reserve</p><p id="led-reserve" class="font-semibold text-gray-300 truncate">₹0.00</p></div>
                 </div>
             </div>
             
@@ -528,29 +535,29 @@
                 </div>
             </div>
             
-            <div id="ledger-hist-container" class="glass-card rounded-2xl p-6 z-40 relative privacy-enabled">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Capital Ledger History</h3>
-                    <div class="flex items-center gap-3">
-                        <button id="btn-del-cap" class="hidden px-3 py-1.5 text-xs font-bold bg-short/20 text-short hover:bg-short/40 rounded transition border border-short/30" onclick="bulkDelete('cap')">Delete Selected</button>
+            <div id="ledger-hist-container" class="glass-card rounded-2xl p-2 md:p-6 z-40 relative privacy-enabled">
+                <div class="flex justify-between items-center mb-4 px-2 md:px-0">
+                    <h3 class="text-[11px] md:text-sm font-semibold text-gray-400 uppercase tracking-wider">Capital Ledger History</h3>
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <button id="btn-del-cap" class="hidden px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-bold bg-short/20 text-short hover:bg-short/40 rounded transition border border-short/30" onclick="bulkDelete('cap')">Delete</button>
                         <button id="led-hist-privacy-btn" class="privacy-btn" onclick="togglePrivacy('ledger-hist-container', 'led-hist-privacy-btn')">
-                            <svg class="w-4 h-4 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg class="w-4 h-4 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                            <svg class="w-3 h-3 md:w-4 md:h-4 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            <svg class="w-3 h-3 md:w-4 md:h-4 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                         </button>
                     </div>
                 </div>
                 <div class="table-container">
-                    <table class="w-full text-left text-sm table-auto">
+                    <table class="w-full text-left table-auto">
                         <thead class="bg-black/20 text-gray-400">
                             <tr>
-                                <th class="w-8 px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox" id="chk-all-cap" onclick="toggleAll('cap')"></th>
-                                <th class="whitespace-nowrap">Date</th>
-                                <th class="whitespace-nowrap">Type</th>
-                                <th class="whitespace-nowrap">Amount</th>
-                                <th class="whitespace-nowrap">Net Corpus</th>
-                                <th class="whitespace-nowrap">Ledger Bal.</th>
-                                <th class="w-full min-w-[200px]">Remarks</th>
-                                <th class="text-right whitespace-nowrap">Actions</th>
+                                <th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-cap" onclick="toggleAll('cap')"></th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Type</th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Amount</th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Net Corpus</th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Ledger Bal.</th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs w-full max-w-[80px] md:max-w-none md:min-w-[200px]">Remarks</th>
+                                <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-right whitespace-nowrap">Act</th>
                             </tr>
                         </thead>
                         <tbody id="capitalBody" class="divide-y divide-white/5 sensitive-data"></tbody>
@@ -617,7 +624,7 @@
         let customVerdicts = JSON.parse(localStorage.getItem('pt_verdicts')) || ["Followed Rules", "FOMO", "Early Exit"];
         
         let tradeTableColumns = JSON.parse(localStorage.getItem('pt_visible_cols')) || {
-            strategy: true, pnl: true, charges: true, result: true, pctChange: true, corpus: true, remarks: true, entryInfo: false
+            strategy: false, pnl: true, charges: false, result: false, pctChange: true, corpus: true, remarks: true, entryInfo: false
         };
 
         // Broker & Exchange State Management
@@ -970,7 +977,7 @@
         }
 
         // --- Keyboard Focus Navigation Flow Setup ---
-        const journalFlow = ['tj-date', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
+        const journalFlow = ['tj-date', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
         const capitalFlow = ['cl-date', 'cl-action', 'cl-sub-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
         
         function focusNextElement(currentId, flowArray) {
@@ -1000,7 +1007,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             initCalculator(); initNavigation(); initStocks(); initColToggles();
                          
-            flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry-time').focus();} } });
+            flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry').focus();} } });
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-action').focus();} } });
             
             setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow, false);
@@ -1096,7 +1103,7 @@
             pnlInput.addEventListener('input', (e) => {
                 const val = parseFloat(e.target.value);
                 resSelect.value = val > 0 ? 'WIN' : (val < 0 ? 'LOSS' : 'BREAKEVEN');
-                resSelect.className = `input-field font-bold transition-colors ${val > 0 ? 'text-long' : (val < 0 ? 'text-short' : 'text-gray-400')}`;
+                resSelect.className = `input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold transition-colors ${val > 0 ? 'text-long' : (val < 0 ? 'text-short' : 'text-gray-400')}`;
             });
         }
 
@@ -1229,6 +1236,7 @@
                     const targetId = e.target.getAttribute('data-target');
                     document.querySelectorAll('.view-section').forEach(sec => { sec.classList.remove('active'); if(sec.id === targetId) sec.classList.add('active'); });
                     if(targetId === 'view-dashboard') updateDashboard();
+                    if(targetId === 'view-trades') setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
                 });
             });
         }
@@ -1417,7 +1425,7 @@
             recalculateTimeline();
             
             ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field font-bold text-gray-400 transition-colors";
+            document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors";
             
             if(window.innerWidth <= 768) {
                 setTimeout(() => {
@@ -1507,20 +1515,20 @@
         function renderTradesTable() {
             const thead = document.getElementById('tradeTableHeader');
             let cols = tradeTableColumns;
-            let thHTML = `<th class="w-8 px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox" id="chk-all-trades" onclick="toggleAll('trades')"></th>
-                          <th class="whitespace-nowrap">Date</th>
-                          <th class="whitespace-nowrap">Symbol</th>`;
+            let thHTML = `<th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-trades" onclick="toggleAll('trades')"></th>
+                          <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th>
+                          <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Symbol</th>`;
                           
-            if (cols.strategy) thHTML += `<th class="whitespace-nowrap">Strategy</th>`;
-            if (cols.entryInfo) thHTML += `<th class="whitespace-nowrap">Entry / SL</th>`;
-            if (cols.pnl) thHTML += `<th class="whitespace-nowrap">Net P&L</th>`;
-            if (cols.charges) thHTML += `<th class="whitespace-nowrap">Charges</th>`;
-            if (cols.result) thHTML += `<th class="whitespace-nowrap">Result</th>`;
-            if (cols.pctChange) thHTML += `<th class="whitespace-nowrap">% Chg</th>`;
-            if (cols.corpus) thHTML += `<th class="whitespace-nowrap">End Corpus</th>`;
-            if (cols.remarks) thHTML += `<th class="w-full min-w-[200px]">Remarks</th>`;
+            if (cols.strategy) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Strategy</th>`;
+            if (cols.entryInfo) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Entry / SL</th>`;
+            if (cols.pnl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Net P&L</th>`;
+            if (cols.charges) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Charges</th>`;
+            if (cols.result) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Result</th>`;
+            if (cols.pctChange) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">% Chg</th>`;
+            if (cols.corpus) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">End Corpus</th>`;
+            if (cols.remarks) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs w-full max-w-[80px] md:max-w-none md:min-w-[200px]">Remarks</th>`;
             
-            thHTML += `<th class="text-right whitespace-nowrap">Actions</th>`;
+            thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-right whitespace-nowrap">Act</th>`;
             thead.innerHTML = thHTML;
             
             const tbody = document.getElementById('tradesBody');
@@ -1529,22 +1537,24 @@
             tbody.innerHTML = tradesDB.map(t => {
                 let rowHTML = `
                 <tr class="clickable-row align-top group" onclick="openTradeModal(${t.id})">
-                    <td class="px-4 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
-                    <td class="whitespace-nowrap text-gray-300">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[10px] uppercase font-bold">${t.session || ''}</span></td>
-                    <td class="font-bold whitespace-nowrap text-gray-100 group-hover:text-brand-400 transition-colors">${t.symbol}</td>`;
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades w-3 h-3 md:w-4 md:h-4" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${t.session || ''}</span></td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm text-gray-100 group-hover:text-brand-400 transition-colors">${t.symbol}</td>`;
                     
-                if (cols.strategy) rowHTML += `<td class="text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
-                if (cols.entryInfo) rowHTML += `<td class="whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[10px] text-gray-500">SL: ${t.sl || '-'}</span></div></td>`;
-                if (cols.pnl) rowHTML += `<td class="font-semibold whitespace-nowrap ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`;
-                if (cols.charges) rowHTML += `<td class="text-gray-400 whitespace-nowrap font-medium">${formatMoney(t.charges || 0)}</td>`;
-                if (cols.result) rowHTML += `<td class="whitespace-nowrap"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`;
-                if (cols.pctChange) rowHTML += `<td class="whitespace-nowrap font-semibold ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%</td>`;
-                if (cols.corpus) rowHTML += `<td class="whitespace-nowrap font-medium text-gray-300">${formatMoney(t.endCorpus)}</td>`;
-                if (cols.remarks) rowHTML += `<td class="whitespace-normal break-words w-full min-w-[200px] text-xs text-gray-400 leading-relaxed">${t.remarks || '-'}</td>`;
+                if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
+                if (cols.entryInfo) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">SL: ${t.sl || '-'}</span></div></td>`;
+                if (cols.pnl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`;
+                if (cols.charges) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`;
+                if (cols.result) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`;
+                if (cols.pctChange) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%</td>`;
+                if (cols.corpus) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-300">${formatMoney(t.endCorpus)}</td>`;
+                if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${t.remarks || '-'}</td>`;
                 
-                rowHTML += `<td class="text-right whitespace-nowrap">
-                        <button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-1 mr-1 transition" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
-                        <button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-1 transition" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-1 md:gap-2">
+                            <button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                            <button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
                     </td></tr>`;
                 return rowHTML;
             }).join('');
@@ -1564,18 +1574,20 @@
                 else if (tStr.includes("withdraw")) { badgeClass = "text-short border-short/40 bg-short/10"; amountColor = "text-short"; formattedAmount = "-" + formatMoney(c.amount); }
                 return `
                 <tr class="hover:bg-white/5 align-top">
-                    <td class="px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox chk-cap" onclick="toggleSelection(${c.id}, 'cap')" ${selectedCapital.has(c.id) ? 'checked' : ''}></td>
-                    <td class="whitespace-nowrap text-gray-300">${formatToDDMMYYYY(c.date)}</td>
-                    <td class="whitespace-nowrap"><span class="text-[10px] font-semibold px-2 py-1 rounded border ${badgeClass}">${c.type}</span></td>
-                    <td class="font-bold whitespace-nowrap ${amountColor}">${formattedAmount}</td>
-                    <td class="text-gray-200 whitespace-nowrap font-medium">${formatMoney(c.netCorpus)}</td>
-                    <td class="text-gray-400 whitespace-nowrap text-[10px] leading-tight">
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox chk-cap w-3 h-3 md:w-4 md:h-4" onclick="toggleSelection(${c.id}, 'cap')" ${selectedCapital.has(c.id) ? 'checked' : ''}></td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300">${formatToDDMMYYYY(c.date)}</td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><span class="text-[8px] md:text-[10px] font-semibold px-1.5 py-0.5 rounded border ${badgeClass}">${c.type}</span></td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm ${amountColor}">${formattedAmount}</td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 text-gray-200 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(c.netCorpus)}</td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap text-[8px] md:text-[10px] leading-tight">
                         T: ${formatMoney(c.tradeLedger)}<br>L: ${formatMoney(c.liquidFund)}<br>R: ${formatMoney(c.sliceReserve)}
                     </td>
-                    <td class="whitespace-normal break-words w-full min-w-[200px] text-xs text-gray-400 leading-relaxed">${c.remarks || '-'}</td>
-                    <td class="text-right whitespace-nowrap">
-                        <button onclick="editRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-brand-400 p-1 mr-1 transition" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
-                        <button onclick="deleteRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-red-500 p-1 transition" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${c.remarks || '-'}</td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-1 md:gap-2">
+                            <button onclick="editRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                            <button onclick="deleteRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
                     </td>
                 </tr>
                 `;
@@ -2020,7 +2032,7 @@
                 document.getElementById('tj-margin').value = cInputs.margin.value;
                 document.getElementById('tj-risk').value = cInputs.risk.value;
                 document.getElementById('tj-target').value = cInputs.target.value;
-                setTimeout(() => document.getElementById('tj-symbol').focus(), 100);
+                setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
             });
         }
     </script>
