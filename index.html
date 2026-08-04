@@ -14,10 +14,10 @@
     <!-- PWA Web App Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Apple Touch Icon (iOS strictly requires PNG for home screen apps) -->
+    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
     
-    <!-- Favicon (SVG for Desktop/Modern Browsers) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="icon.svg">
          
     <!-- Google Fonts -->
@@ -102,17 +102,16 @@
         .sensitive-data { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .privacy-btn { cursor: pointer; padding: 0.4rem; border-radius: 0.375rem; color: #9ca3af; transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
         .privacy-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        
+        tr.clickable-row { cursor: pointer; transition: background 0.2s; }
+        tr.clickable-row:hover { background: rgba(255,255,255,0.08); }
     </style>
 </head>
-<body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col">
+<body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col relative">
     <datalist id="nse-stocks"></datalist>
     
     <!-- Top Navigation -->
     <nav class="glass-card sticky top-0 z-[100] px-4 py-3 mb-6">
-        <!-- 
-          Mobile: 2-column Grid (Logo top-left, Auth top-right, Tabs bottom-full)
-          Desktop: Flex container keeping Logo left, Auth & Tabs grouped on the right.
-        -->
         <div class="max-w-7xl mx-auto grid grid-cols-2 md:flex md:items-center gap-y-3 md:gap-4">
             
             <!-- Logo -->
@@ -126,8 +125,7 @@
                 </div>
             </div>
 
-            <!-- Header Actions (Sync, Profile, Logout) -->
-            <!-- md:ml-auto perfectly pushes this and the tabs to the right side on Desktop -->
+            <!-- Header Actions -->
             <div class="flex items-center justify-end gap-2 col-span-1 md:ml-auto shrink-0">
                 <div id="authContainer" class="flex items-center gap-2">
                     <button id="driveSyncBtn" onclick="handleAuthClick()" class="px-2 py-1.5 md:px-3 rounded-lg border border-brand-500/30 bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold flex items-center gap-1 md:gap-2 transition">
@@ -135,14 +133,12 @@
                         <span id="syncStatus" class="hidden sm:inline">Connect Drive</span>
                         <span class="sm:hidden text-[10px]" id="syncStatusMobile">Connect</span>
                     </button>
-                    <!-- Inline User Profile Pill -->
                     <div id="userProfile" class="hidden items-center gap-2 pl-1 pr-1 md:pr-3 py-1 bg-white/5 border border-white/10 rounded-full transition-all">
                         <img id="profileImg" src="" alt="Profile" class="w-6 h-6 rounded-full object-cover border border-brand-500/50">
                         <span id="profileName" class="hidden md:block text-xs font-medium text-gray-200 tracking-wide whitespace-nowrap"></span>
                     </div>
                 </div>
                 
-                <!-- Dedicated Logout Tab -->
                 <button id="logoutBtn" onclick="logoutDrive()" class="hidden px-2 py-1.5 md:px-3 rounded-lg border border-transparent hover:border-short/30 !text-short hover:!bg-short/10 items-center gap-1 font-bold text-xs transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="hidden md:inline">LOGOUT</span>
@@ -163,12 +159,11 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 md:px-0 mb-12 w-full">
         <!-- CALCULATOR TAB -->
         <div id="view-calculator" class="view-section active">
-            <!-- Using display: contents to allow native mobile flex-col sorting, while enforcing 2 columns strictly via flex on Desktop -->
             <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full">
                 
                 <!-- LEFT COLUMN -->
                 <div class="contents lg:flex lg:flex-col w-full lg:w-1/3 gap-6 lg:gap-8">
-                    <!-- Trade Setup (Order 1 on mobile) -->
+                    <!-- Trade Setup -->
                     <section class="order-1 w-full z-50">
                         <div class="glass-card rounded-2xl p-6 relative">
                             <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider">TRADE SETUP</h2></div>
@@ -189,11 +184,14 @@
                                 </div>
                             </div>
                             <div id="validationMsg" class="mt-4 text-sm text-red-500 hidden"></div>
-                            <div class="mt-6 flex gap-3"><button id="resetBtn" class="flex-1 py-2.5 rounded-lg border border-gray-600 hover:bg-gray-800 transition">Reset Setup</button></div>
+                            <div class="mt-6 flex gap-3">
+                                <button id="resetBtn" class="flex-1 py-2.5 rounded-lg border border-gray-600 hover:bg-gray-800 transition text-sm">Reset Setup</button>
+                                <button id="logJournalBtn" class="flex-1 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition text-sm">Log to Journal</button>
+                            </div>
                         </div>
                     </section>
                     
-                    <!-- Brokerage Settings Card (Order 3 on mobile) -->
+                    <!-- Brokerage Settings Card -->
                     <section class="order-3 w-full z-30">
                         <div class="glass-card rounded-2xl p-5 relative">
                             <div class="flex justify-between items-center mb-3">
@@ -218,7 +216,7 @@
 
                 <!-- RIGHT COLUMN -->
                 <div class="contents lg:flex lg:flex-col w-full lg:w-2/3 gap-6 lg:gap-8">
-                    <!-- Recommended Shares Result Card (Order 2 on mobile) -->
+                    <!-- Recommended Shares Result Card -->
                     <section class="order-2 w-full z-40">
                         <div id="resultCard" class="glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 border-l-transparent">
                             <div id="dirGlow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500"></div>
@@ -267,7 +265,7 @@
                         </div>
                     </section>
 
-                    <!-- Extended Detailed Charges Output (Order 4 on mobile) -->
+                    <!-- Extended Detailed Charges Output -->
                     <section class="order-4 w-full z-20">
                         <div id="chargesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300 opacity-50 relative">
                             <!-- SL Charges Card -->
@@ -330,19 +328,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 z-10 relative">
                 <div class="glass-card rounded-2xl p-6 border-l-4 border-l-brand-500 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-3xl font-bold tracking-tight sensitive-data">₹0.00</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-2xl md:text-3xl font-bold tracking-tight sensitive-data truncate">₹0.00</h3>
                 </div>
                 <div class="glass-card rounded-2xl p-6 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Trade Ledger</p><h3 id="dash-trade-ledger" class="text-xl font-bold tracking-tight sensitive-data">₹0.00</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Trade Ledger</p><h3 id="dash-trade-ledger" class="text-xl font-bold tracking-tight sensitive-data truncate">₹0.00</h3>
                 </div>
                 <div class="glass-card rounded-2xl p-6 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Liquid Fund</p><h3 id="dash-liquid" class="text-xl font-bold tracking-tight sensitive-data">₹0.00</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Liquid Fund</p><h3 id="dash-liquid" class="text-xl font-bold tracking-tight sensitive-data truncate">₹0.00</h3>
                 </div>
                 <div class="glass-card rounded-2xl p-6 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Reserve</p><h3 id="dash-reserve" class="text-xl font-bold tracking-tight sensitive-data">₹0.00</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Reserve</p><h3 id="dash-reserve" class="text-xl font-bold tracking-tight sensitive-data truncate">₹0.00</h3>
                 </div>
             </div>
 
@@ -368,11 +366,11 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 z-10 relative">
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Total Trades</p><h2 id="dash-total-trades" class="text-4xl font-bold sensitive-data">0</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Win Rate</p><h2 id="dash-win-rate" class="text-4xl font-bold text-brand-500 sensitive-data">0.0%</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">Net P&L</p><h2 id="dash-total-pnl" class="text-4xl font-bold sensitive-data">₹0.00</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2">XIRR</p><h2 id="dash-xirr" class="text-4xl font-bold sensitive-data">0.00%</h2></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 z-10 relative overflow-hidden">
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Total Trades</p><h2 id="dash-total-trades" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Win Rate</p><h2 id="dash-win-rate" class="text-3xl md:text-4xl font-bold text-brand-500 sensitive-data truncate">0.0%</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden col-span-2 md:col-span-1"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Net P&L</p><h2 id="dash-total-pnl" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden col-span-2 md:col-span-1"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">XIRR</p><h2 id="dash-xirr" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0.00%</h2></div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10 relative">
@@ -394,11 +392,12 @@
                     <h2 class="text-lg font-semibold text-brand-500 tracking-wider">JOURNAL ENTRY</h2>
                     <span id="tj-edit-badge" class="hidden text-xs font-bold bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full border border-brand-500/30">EDITING MODE</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     <div><label class="block text-sm text-gray-400 mb-1">Date</label><input type="text" id="tj-date" class="input-field" placeholder="Select Date"></div>
                     <div><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field"></div>
                     <div><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field"></div>
                     <div><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field font-bold" placeholder="e.g. RELIANCE" list="nse-stocks" autocomplete="off"></div>
+                    
                     <div>
                         <label class="block text-sm text-gray-400 mb-1">Strategy</label>
                         <div class="custom-dropdown">
@@ -406,6 +405,13 @@
                             <ul id="tj-strategy-list" class="custom-dropdown-list"></ul>
                         </div>
                     </div>
+                    
+                    <div><label class="block text-sm text-gray-400 mb-1">Entry Price</label><input type="number" id="tj-entry" step="0.01" class="input-field" placeholder="0.00"></div>
+                    <div><label class="block text-sm text-gray-400 mb-1">Stop Loss</label><input type="number" id="tj-sl" step="0.01" class="input-field" placeholder="0.00"></div>
+                    <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="tj-margin" step="1" class="input-field" placeholder="1"></div>
+                    <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="tj-risk" step="0.1" class="input-field" placeholder="1.0"></div>
+                    <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="tj-target" step="0.1" class="input-field" placeholder="1.5"></div>
+
                     <div><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field" placeholder="0.00"></div>
                     <div><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field" placeholder="0.00"></div>
                     <div>
@@ -416,6 +422,7 @@
                             <option value="LOSS" class="text-short">LOSS</option>
                         </select>
                     </div>
+                    
                     <div class="md:col-span-2">
                         <label class="block text-sm text-gray-400 mb-1">Verdict(s)</label>
                         <div class="custom-dropdown">
@@ -423,17 +430,40 @@
                             <ul id="tj-verdict-list" class="custom-dropdown-list"></ul>
                         </div>
                     </div>
-                    <div class="md:col-span-2"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="tj-remarks" class="input-field" placeholder="Mistakes or lessons..."></div>
-                    <div class="md:col-span-4 flex items-end mt-2">
+                    
+                    <div class="md:col-span-3 lg:col-span-5"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="tj-remarks" class="input-field" placeholder="Mistakes or lessons..."></div>
+                    
+                    <div class="md:col-span-5 flex items-end mt-2">
                         <button id="tj-save-btn" onclick="processTrade()" class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition shadow-lg shadow-brand-500/20">Save Trade</button>
                     </div>
                 </div>
             </div>
+            
             <div id="trade-db-container" class="glass-card rounded-2xl p-6 z-40 relative privacy-enabled">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Trade Database</h3>
                     <div class="flex items-center gap-3">
                         <button id="btn-del-trades" class="hidden px-3 py-1.5 text-xs font-bold bg-short/20 text-short hover:bg-short/40 rounded transition border border-short/30" onclick="bulkDelete('trades')">Delete Selected</button>
+                        
+                        <!-- Column Settings -->
+                        <div class="relative">
+                            <button id="btn-cols" onclick="document.getElementById('col-dropdown').classList.toggle('hidden')" class="px-3 py-1.5 text-xs font-bold bg-white/5 text-gray-300 hover:bg-white/10 rounded border border-white/10 transition flex items-center gap-1">
+                                Columns <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div id="col-dropdown" class="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl hidden z-50 p-3 flex flex-col gap-2">
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox" checked disabled> Date</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox" checked disabled> Symbol</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="strategy"> Strategy</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="entryInfo"> Entry/SL Stats</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="pnl"> Net P&L</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="charges"> Charges</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="result"> Result</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="pctChange"> % Chg</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="corpus"> End Corpus</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle" data-col="remarks"> Remarks</label>
+                            </div>
+                        </div>
+
                         <button id="trade-privacy-btn" class="privacy-btn" onclick="togglePrivacy('trade-db-container', 'trade-privacy-btn')">
                             <svg class="w-4 h-4 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             <svg class="w-4 h-4 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
@@ -443,18 +473,8 @@
                 <div class="table-container">
                     <table class="w-full text-left text-sm table-auto">
                         <thead class="bg-black/20 text-gray-400">
-                            <tr>
-                                <th class="w-8 px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox" id="chk-all-trades" onclick="toggleAll('trades')"></th>
-                                <th class="whitespace-nowrap">Date</th>
-                                <th class="whitespace-nowrap">Symbol</th>
-                                <th class="whitespace-nowrap">Strategy</th>
-                                <th class="whitespace-nowrap">Net P&L</th>
-                                <th class="whitespace-nowrap">Charges</th>
-                                <th class="whitespace-nowrap">Result</th>
-                                <th class="whitespace-nowrap">% Chg</th>
-                                <th class="whitespace-nowrap">End Corpus</th>
-                                <th class="w-full min-w-[200px]">Remarks</th>
-                                <th class="text-right whitespace-nowrap">Actions</th>
+                            <tr id="tradeTableHeader">
+                                <!-- Rendered dynamically based on column preferences -->
                             </tr>
                         </thead>
                         <tbody id="tradesBody" class="divide-y divide-white/5 sensitive-data"></tbody>
@@ -480,25 +500,34 @@
                     <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Reserve</p><p id="led-reserve" class="font-semibold text-gray-300">₹0.00</p></div>
                 </div>
             </div>
+            
             <div id="capital-input-panel" class="glass-card rounded-2xl p-6 relative z-50">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-lg font-semibold text-brand-500 tracking-wider">CAPITAL TRANSFER</h2>
                     <span id="cl-edit-badge" class="hidden text-xs font-bold bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full border border-brand-500/30">EDITING MODE</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div><label class="block text-sm text-gray-400 mb-1">Date</label><input type="text" id="cl-date" class="input-field" placeholder="Select Date"></div>
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Type</label>
-                        <div class="custom-dropdown">
-                            <input type="text" id="cl-type" class="input-field font-semibold transition-colors duration-200" placeholder="Select Transfer..." autocomplete="off">
-                            <ul id="cl-type-list" class="custom-dropdown-list"></ul>
-                        </div>
+                        <label class="block text-sm text-gray-400 mb-1">Action</label>
+                        <select id="cl-action" class="input-field font-semibold text-gray-200">
+                            <option value="Deposit">Deposit</option>
+                            <option value="Withdraw">Withdraw</option>
+                            <option value="Transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Account / Route</label>
+                        <select id="cl-sub-type" class="input-field font-semibold text-gray-200">
+                            <!-- Populated dynamically -->
+                        </select>
                     </div>
                     <div><label class="block text-sm text-gray-400 mb-1">Amount (₹)</label><input type="number" id="cl-amount" step="0.01" class="input-field" placeholder="0.00"></div>
-                    <div class="md:col-span-1"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="cl-remarks" class="input-field" placeholder="Notes"></div>
-                    <div class="md:col-span-4 flex items-end mt-2"><button id="cl-save-btn" onclick="processCapitalTx()" class="w-full py-3 rounded-lg border border-gray-600 hover:bg-white/10 transition font-medium">Process Request</button></div>
+                    <div class="md:col-span-2"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="cl-remarks" class="input-field" placeholder="Notes"></div>
+                    <div class="md:col-span-2"><button id="cl-save-btn" onclick="processCapitalTx()" class="w-full py-3 rounded-lg border border-gray-600 hover:bg-white/10 transition font-medium">Process Request</button></div>
                 </div>
             </div>
+            
             <div id="ledger-hist-container" class="glass-card rounded-2xl p-6 z-40 relative privacy-enabled">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Capital Ledger History</h3>
@@ -530,6 +559,26 @@
             </div>
         </div>
     </main>
+
+    <!-- Trade Detail Modal -->
+    <div id="tradeModal" class="fixed inset-0 z-[200] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-2xl rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="tradeModalCard">
+            <button onclick="closeTradeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition">✕</button>
+            <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                <span id="tm-result-badge" class="px-3 py-1 rounded text-xs font-bold text-white"></span>
+                <h2 class="text-xl font-bold tracking-wider uppercase text-gray-200" id="tm-symbol"></h2>
+            </div>
+            
+            <div id="tradeModalContent" class="grid grid-cols-2 md:grid-cols-3 gap-6 text-sm">
+                <!-- Populated dynamically via JS -->
+            </div>
+            <div class="mt-6 pt-4 border-t border-white/10">
+                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Remarks & Verdict</p>
+                <p id="tm-remarks" class="text-gray-300 leading-relaxed"></p>
+                <div id="tm-verdicts" class="mt-2 flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="mt-auto py-8 border-t border-white/10 text-center relative z-10 w-full">
@@ -567,6 +616,10 @@
         let customStrategies = JSON.parse(localStorage.getItem('pt_strategies')) || ["Trend Reversal", "Breakout", "Pullback"];
         let customVerdicts = JSON.parse(localStorage.getItem('pt_verdicts')) || ["Followed Rules", "FOMO", "Early Exit"];
         
+        let tradeTableColumns = JSON.parse(localStorage.getItem('pt_visible_cols')) || {
+            strategy: true, pnl: true, charges: true, result: true, pctChange: true, corpus: true, remarks: true, entryInfo: false
+        };
+
         // Broker & Exchange State Management
         let currentExchange = localStorage.getItem('pt_exchange') || 'NSE';
         let brokerProfiles = JSON.parse(localStorage.getItem('pt_broker_profiles')) || {
@@ -579,8 +632,6 @@
 
         let editingTradeId = null; let editingCapitalId = null;
         let selectedTrades = new Set(); let selectedCapital = new Set();
-        
-        const capitalTypes = ["Deposit Fund", "Withdraw Fund", "Liquid Fund Interest", "Liquid Fund -> Trade Ledger", "Trade Ledger -> Liquid Fund", "Liquid Fund -> Reserve", "Reserve -> Liquid Fund", "Trade Ledger -> Reserve", "Reserve -> Trade Ledger"];
         
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
@@ -838,15 +889,21 @@
                 evDate.setHours(0,0,0,0);
                 
                 if (ev.evType === 'CAPITAL') {
-                    const rType = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(); const a = ev.amount;
-                    if (rType === "depositfund" || rType === "liquidfundinterest") tempLiquid += a; 
-                    else if (rType === "withdrawfund") tempLiquid -= a;
-                    else if (rType === "liquidfundtradeledger") { tempLiquid -= a; tempTrade += a; } 
-                    else if (rType === "tradeledgerliquidfund") { tempTrade -= a; tempLiquid += a; }
-                    else if (rType === "liquidfundreserve" || rType === "liquidfundslicereserve") { tempLiquid -= a; tempReserve += a; } 
-                    else if (rType === "reserveliquidfund" || rType === "slicereserveliquidfund") { tempReserve -= a; tempLiquid += a; }
-                    else if (rType === "tradeledgerreserve" || rType === "tradeledgerslicereserve") { tempTrade -= a; tempReserve += a; } 
-                    else if (rType === "reservetradeledger" || rType === "slicereservetradeledger") { tempReserve -= a; tempTrade += a; }
+                    // Match Exact normalized string logic from recalculateTimeline
+                    const tStr = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase();
+                    const a = ev.amount;
+                    if (tStr === "depositfund" || tStr === "liquidfundinterest" || tStr === "depositliquidfund" || tStr === "depositliquidfundinterest") tempLiquid += a;
+                    else if (tStr === "withdrawfund" || tStr === "withdrawliquidfund") tempLiquid -= a;
+                    else if (tStr === "deposittradeledger") tempTrade += a;
+                    else if (tStr === "depositreserve") tempReserve += a;
+                    else if (tStr === "withdrawtradeledger") tempTrade -= a;
+                    else if (tStr === "withdrawreserve") tempReserve -= a;
+                    else if (tStr === "liquidfundtradeledger" || tStr === "transferliquidfundtradeledger") { tempLiquid -= a; tempTrade += a; } 
+                    else if (tStr === "tradeledgerliquidfund" || tStr === "transfertradeledgerliquidfund") { tempTrade -= a; tempLiquid += a; }
+                    else if (tStr === "liquidfundreserve" || tStr === "liquidfundslicereserve" || tStr === "transferliquidfundreserve") { tempLiquid -= a; tempReserve += a; } 
+                    else if (tStr === "reserveliquidfund" || tStr === "slicereserveliquidfund" || tStr === "transferreserveliquidfund") { tempReserve -= a; tempLiquid += a; }
+                    else if (tStr === "tradeledgerreserve" || tStr === "tradeledgerslicereserve" || tStr === "transfertradeledgerreserve") { tempTrade -= a; tempReserve += a; } 
+                    else if (tStr === "reservetradeledger" || tStr === "slicereservetradeledger" || tStr === "transferreservetradeledger") { tempReserve -= a; tempTrade += a; }
                 } else if (ev.evType === 'TRADE') {
                     tempTrade += ev.netPnl;
                 }
@@ -869,8 +926,9 @@
                 let d = new Date(c.date);
                 d.setHours(0,0,0,0);
                 if ((!rangeStart || d >= actualStart) && d <= actualEnd) {
-                    if (c.type === "Deposit Fund" || c.type === "Liquid Fund Interest") cfs.push({ amount: -c.amount, date: d });
-                    else if (c.type === "Withdraw Fund") cfs.push({ amount: c.amount, date: d });
+                    const tStr = c.type.toLowerCase();
+                    if (tStr.includes("deposit") || tStr.includes("interest")) cfs.push({ amount: -c.amount, date: d });
+                    else if (tStr.includes("withdraw")) cfs.push({ amount: c.amount, date: d });
                 }
             });
             
@@ -912,8 +970,8 @@
         }
 
         // --- Keyboard Focus Navigation Flow Setup ---
-        const journalFlow = ['tj-date', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
-        const capitalFlow = ['cl-date', 'cl-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
+        const journalFlow = ['tj-date', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
+        const capitalFlow = ['cl-date', 'cl-action', 'cl-sub-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
         
         function focusNextElement(currentId, flowArray) {
             const idx = flowArray.indexOf(currentId);
@@ -940,28 +998,78 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            initCalculator(); initNavigation(); initStocks();
+            initCalculator(); initNavigation(); initStocks(); initColToggles();
                          
             flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry-time').focus();} } });
-            flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-type').focus();} } });
+            flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-action').focus();} } });
             
             setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow, false);
             setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, journalFlow, true);
-            setupCustomDropdown('cl-type', 'cl-type-list', null, capitalTypes, false, capitalFlow, false);
+            setupCapitalTransfers();
                          
             bindKeyboardFlows(); updateViews(); initDashboardFilters();
+
+            // Load Calculator Presets
+            const calcSavedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
+            document.getElementById('entry').value = calcSavedState.entry || '';
+            document.getElementById('stopLoss').value = calcSavedState.sl || '';
+            if(document.getElementById('entry').value) window.triggerGlobalCalculate();
+
+            // Setup close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if(!e.target.closest('#btn-cols') && !e.target.closest('#col-dropdown')) {
+                    document.getElementById('col-dropdown').classList.add('hidden');
+                }
+                if(!e.target.closest('#tradeModalCard') && e.target.id === 'tradeModal') {
+                    closeTradeModal();
+                }
+            });
 
             if (checkToken()) {
                 loadFromDrive();
             }
         });
+        
+        function setupCapitalTransfers() {
+            const clAction = document.getElementById('cl-action');
+            const clSub = document.getElementById('cl-sub-type');
+            
+            const updateSubTypes = () => {
+                const val = clAction.value;
+                let options = [];
+                if(val === 'Deposit') options = ['Trade Ledger', 'Liquid Fund', 'Reserve', 'Liquid Fund Interest'];
+                else if(val === 'Withdraw') options = ['Trade Ledger', 'Liquid Fund', 'Reserve'];
+                else if(val === 'Transfer') options = ['Liquid Fund -> Trade Ledger', 'Trade Ledger -> Liquid Fund', 'Liquid Fund -> Reserve', 'Reserve -> Liquid Fund', 'Trade Ledger -> Reserve', 'Reserve -> Trade Ledger'];
+                
+                clSub.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
+                
+                if (val === 'Deposit') clSub.className = "input-field font-semibold text-long";
+                else if (val === 'Withdraw') clSub.className = "input-field font-semibold text-short";
+                else clSub.className = "input-field font-semibold text-brand-500";
+            };
+            
+            clAction.addEventListener('change', updateSubTypes);
+            updateSubTypes(); // initial call
+        }
+
+        function initColToggles() {
+            document.querySelectorAll('.col-toggle').forEach(cb => {
+                const colKey = cb.getAttribute('data-col');
+                cb.checked = tradeTableColumns[colKey];
+                cb.addEventListener('change', (e) => {
+                    tradeTableColumns[colKey] = e.target.checked;
+                    localStorage.setItem('pt_visible_cols', JSON.stringify(tradeTableColumns));
+                    renderTradesTable();
+                });
+            });
+        }
 
         function bindKeyboardFlows() {
             const bindFlow = (flow) => {
                 flow.forEach(id => {
                     const el = document.getElementById(id);
                     if (!el) return;
-                    if (['tj-symbol', 'tj-strategy', 'tj-verdict', 'cl-type', 'dash-filter-input', 'tj-date', 'cl-date'].includes(id)) return;
+                    if (['tj-symbol', 'tj-strategy', 'tj-verdict', 'cl-action', 'cl-sub-type', 'dash-filter-input', 'tj-date', 'cl-date'].includes(id)) return;
                                          
                     el.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
@@ -973,6 +1081,7 @@
             };
             bindFlow(journalFlow);
             bindFlow(capitalFlow);
+            
             document.getElementById('tj-symbol').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -1011,10 +1120,8 @@
                 const currentSelected = isMulti ? input.value.split(',').map(s => s.trim()).filter(Boolean) : [input.value.trim()];
 
                 filtered.forEach(o => {
-                    let color = ""; if(o === "Deposit Fund" || o === "Liquid Fund Interest") color = "text-long font-bold"; else if(o === "Withdraw Fund") color = "text-short font-bold";
-                    
+                    let color = ""; 
                     let delBtn = allowAdd ? `<span class="delete-opt text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${o}" title="Delete">✕</span>` : '';
-                    
                     let isSelected = currentSelected.includes(o);
                     let bgClass = isSelected ? 'bg-brand-500/20 text-brand-400 font-bold' : '';
                     let checkmark = isSelected ? '✓ ' : '';
@@ -1029,7 +1136,6 @@
             input.addEventListener('focus', () => { renderList(""); list.classList.add('active'); focusedIndex = -1; });
             input.addEventListener('input', (e) => { 
                 renderList(e.target.value); list.classList.add('active'); 
-                if (inputId === 'cl-type') updateInputColor(input, e.target.value); 
             });
             document.addEventListener('mousedown', (e) => { if (!input.contains(e.target) && !list.contains(e.target)) list.classList.remove('active'); });
             list.addEventListener('mousedown', (e) => {
@@ -1076,7 +1182,7 @@
                             input.value = currentVals.join(', ');
                             renderList(""); 
                         } else {
-                            input.value = val; if (inputId === 'cl-type') updateInputColor(input, val); 
+                            input.value = val; 
                         }
                         input.dispatchEvent(new Event('change')); 
                     }
@@ -1111,13 +1217,6 @@
                 } else { if (e.key === 'Enter') { e.preventDefault(); focusNextElement(input.id, flowArray); } }
             });
             function updateFocus(items) { items.forEach(i => i.classList.remove('focused')); if (items[focusedIndex]) { items[focusedIndex].classList.add('focused'); items[focusedIndex].scrollIntoView({ block: 'nearest' }); } }
-        }
-
-        function updateInputColor(inputEl, val) {
-            inputEl.classList.remove('text-long', 'text-short', 'text-brand-500');
-            if(val === 'Deposit Fund' || val === 'Liquid Fund Interest') inputEl.classList.add('text-long'); 
-            else if(val === 'Withdraw Fund') inputEl.classList.add('text-short'); 
-            else inputEl.classList.add('text-brand-500');
         }
 
         function initNavigation() {
@@ -1175,7 +1274,9 @@
             return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
 
-        window.editRecord = function(id, type) {
+        window.editRecord = function(id, type, event) {
+            if(event) event.stopPropagation(); // prevent modal opening
+
             if (type === 'trade') {
                 const t = tradesDB.find(x => x.id === id); if(!t) return;
                 editingTradeId = id; document.getElementById('tj-date')._flatpickr.setDate(t.date);
@@ -1183,6 +1284,13 @@
                 if(t.session) { const parts = t.session.split(' - '); inTime = parse12HourTo24(parts[0]); outTime = parse12HourTo24(parts[1] || ''); }
                 document.getElementById('tj-entry-time').value = inTime; document.getElementById('tj-exit-time').value = outTime;
                 document.getElementById('tj-symbol').value = t.symbol; document.getElementById('tj-strategy').value = t.strategy || '';
+                
+                document.getElementById('tj-entry').value = t.entry || '';
+                document.getElementById('tj-sl').value = t.sl || '';
+                document.getElementById('tj-margin').value = t.margin || '';
+                document.getElementById('tj-risk').value = t.risk || '';
+                document.getElementById('tj-target').value = t.target || '';
+
                 document.getElementById('tj-pnl').value = t.netPnl; document.getElementById('tj-charges').value = t.charges || '';
                 document.getElementById('tj-result').value = t.result; document.getElementById('tj-verdict').value = t.verdict || '';
                 document.getElementById('tj-remarks').value = t.remarks || '';
@@ -1193,7 +1301,15 @@
             } else {
                 const c = capitalLedger.find(x => x.id === id); if(!c) return;
                 editingCapitalId = id; document.getElementById('cl-date')._flatpickr.setDate(c.date);
-                document.getElementById('cl-type').value = c.type; updateInputColor(document.getElementById('cl-type'), c.type);
+                
+                const parts = c.type.split(' - ');
+                const action = parts[0] || 'Deposit';
+                const subType = parts[1] || '';
+                
+                document.getElementById('cl-action').value = action;
+                document.getElementById('cl-action').dispatchEvent(new Event('change'));
+                document.getElementById('cl-sub-type').value = subType;
+                
                 document.getElementById('cl-amount').value = c.amount; document.getElementById('cl-remarks').value = c.remarks || '';
                 const btn = document.getElementById('cl-save-btn');
                 btn.textContent = "Update Request"; btn.classList.add('bg-long', 'text-white', 'border-none');
@@ -1201,11 +1317,69 @@
             }
         }
 
-        window.deleteRecord = function(id, type) {
+        window.deleteRecord = function(id, type, event) {
+            if(event) event.stopPropagation(); // prevent modal opening
             if(confirm('Delete this record? This will instantly recalculate all historical running balances.')) {
                 if(type === 'trade') tradesDB = tradesDB.filter(t => t.id !== id); else capitalLedger = capitalLedger.filter(c => c.id !== id);
                 recalculateTimeline();
             }
+        }
+        
+        window.openTradeModal = function(id) {
+            const t = tradesDB.find(x => x.id === id); if(!t) return;
+            const modal = document.getElementById('tradeModal');
+            const card = document.getElementById('tradeModalCard');
+            
+            document.getElementById('tm-symbol').textContent = `${t.symbol} (${formatToDDMMYYYY(t.date)})`;
+            document.getElementById('tm-remarks').textContent = t.remarks || "No remarks provided.";
+            
+            const badge = document.getElementById('tm-result-badge');
+            badge.textContent = t.result;
+            badge.className = `px-3 py-1 rounded text-xs font-bold text-white shadow ${t.result==='WIN'?'bg-long shadow-long/20':(t.result==='LOSS'?'bg-short shadow-short/20':'bg-gray-600 shadow-gray-500/20')}`;
+
+            const addField = (label, val, classColor = "text-gray-200") => `<div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">${label}</p><p class="font-semibold ${classColor} text-base">${val}</p></div>`;
+            
+            let html = addField("Net P&L", formatMoney(t.netPnl), t.netPnl > 0 ? "text-long" : (t.netPnl < 0 ? "text-short" : "text-gray-400"));
+            html += addField("Charges", formatMoney(t.charges || 0));
+            html += addField("End Corpus", formatMoney(t.endCorpus));
+            html += addField("% Change", `${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%`, t.pctChange > 0 ? "text-long" : (t.pctChange < 0 ? "text-short" : "text-gray-400"));
+            html += addField("Session Time", t.session || "-");
+            html += addField("Strategy", t.strategy || "-");
+            
+            if(t.entry || t.sl) {
+                html += `<div class="col-span-full border-t border-white/5 mt-2 pt-4 grid grid-cols-2 md:grid-cols-4 gap-6">`;
+                html += addField("Entry Price", t.entry ? formatMoney(t.entry) : "-");
+                html += addField("Stop Loss", t.sl ? formatMoney(t.sl) : "-");
+                html += addField("Target %", t.target ? `${t.target}%` : "-");
+                html += addField("Risk % & Margin", `${t.risk ? t.risk + '%' : '-'} | ${t.margin ? t.margin + 'x' : '-'}`);
+                html += `</div>`;
+            }
+            
+            document.getElementById('tradeModalContent').innerHTML = html;
+            
+            let verdictsHtml = '';
+            if(t.verdict) {
+                t.verdict.split(',').forEach(v => {
+                    if(v.trim()) verdictsHtml += `<span class="text-xs bg-white/5 text-brand-300 border border-brand-500/20 px-2 py-1 rounded">${v.trim()}</span>`;
+                });
+            }
+            document.getElementById('tm-verdicts').innerHTML = verdictsHtml || '-';
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 10);
+        }
+
+        window.closeTradeModal = function() {
+            const modal = document.getElementById('tradeModal');
+            const card = document.getElementById('tradeModalCard');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         function format12Hour(timeStr) {
@@ -1220,18 +1394,29 @@
             const session = (entryTime && exitTime) ? `${entryTime} - ${exitTime}` : (entryTime || exitTime || '');
                          
             const symbol = document.getElementById('tj-symbol').value.toUpperCase(); const strategy = document.getElementById('tj-strategy').value;
+            
+            const entry = parseFloat(document.getElementById('tj-entry').value) || '';
+            const sl = parseFloat(document.getElementById('tj-sl').value) || '';
+            const margin = parseFloat(document.getElementById('tj-margin').value) || '';
+            const risk = parseFloat(document.getElementById('tj-risk').value) || '';
+            const target = parseFloat(document.getElementById('tj-target').value) || '';
+
             const pnl = parseFloat(document.getElementById('tj-pnl').value) || 0; const charges = parseFloat(document.getElementById('tj-charges').value) || 0;
             const result = document.getElementById('tj-result').value; const verdict = document.getElementById('tj-verdict').value; const remarks = document.getElementById('tj-remarks').value;
+            
             if(!symbol) return alert('Symbol is required.');
-            const tradeData = { date, session, symbol, strategy, netPnl: pnl, charges, result, verdict, remarks };
+            const tradeData = { date, session, symbol, strategy, entry, sl, margin, risk, target, netPnl: pnl, charges, result, verdict, remarks };
+            
             if (editingTradeId) {
                 const idx = tradesDB.findIndex(t => t.id === editingTradeId); if(idx > -1) tradesDB[idx] = { ...tradesDB[idx], ...tradeData };
                 editingTradeId = null; const btn = document.getElementById('tj-save-btn');
                 btn.textContent = "Save Trade"; btn.classList.replace('bg-long', 'bg-brand-600'); btn.classList.replace('hover:bg-long/80', 'hover:bg-brand-500');
                 document.getElementById('tj-edit-badge').classList.add('hidden');
             } else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); }
+            
             recalculateTimeline();
-            ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = '');
+            
+            ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field font-bold text-gray-400 transition-colors";
             
             if(window.innerWidth <= 768) {
@@ -1246,10 +1431,16 @@
         }
 
         window.processCapitalTx = function() {
-            const date = document.getElementById('cl-date').value; const type = document.getElementById('cl-type').value;
+            const date = document.getElementById('cl-date').value; 
+            const action = document.getElementById('cl-action').value;
+            const subType = document.getElementById('cl-sub-type').value;
+            const type = `${action} - ${subType}`;
+            
             const amount = parseFloat(document.getElementById('cl-amount').value) || 0; const remarks = document.getElementById('cl-remarks').value;
+            
             if (amount <= 0) return alert('Amount must be positive.');
             const capData = { date, type, amount, remarks };
+            
             if (editingCapitalId) {
                 const idx = capitalLedger.findIndex(c => c.id === editingCapitalId); if(idx > -1) capitalLedger[idx] = { ...capitalLedger[idx], ...capData };
                 editingCapitalId = null; const btn = document.getElementById('cl-save-btn');
@@ -1257,8 +1448,8 @@
                 document.getElementById('cl-edit-badge').classList.add('hidden');
             } else { capData.id = Date.now(); capitalLedger.unshift(capData); }
             recalculateTimeline();
+            
             document.getElementById('cl-amount').value = ''; document.getElementById('cl-remarks').value = ''; 
-            document.getElementById('cl-type').value = ''; updateInputColor(document.getElementById('cl-type'), ''); 
             
             if(window.innerWidth <= 768) {
                 setTimeout(() => {
@@ -1267,7 +1458,7 @@
                     window.scrollTo({top: y, behavior: 'smooth'});
                 }, 100);
             } else {
-                document.getElementById('cl-type').focus();
+                document.getElementById('cl-action').focus();
             }
         }
 
@@ -1280,15 +1471,22 @@
                          
             timeline.forEach(ev => {
                 if (ev.evType === 'CAPITAL') {
-                    const rType = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(); const a = ev.amount;
-                    if (rType === "depositfund" || rType === "liquidfundinterest") balances.liquidFund += a; 
-                    else if (rType === "withdrawfund") balances.liquidFund -= a;
-                    else if (rType === "liquidfundtradeledger") { balances.liquidFund -= a; balances.tradeLedger += a; } 
-                    else if (rType === "tradeledgerliquidfund") { balances.tradeLedger -= a; balances.liquidFund += a; }
-                    else if (rType === "liquidfundreserve" || rType === "liquidfundslicereserve") { balances.liquidFund -= a; balances.sliceReserve += a; } 
-                    else if (rType === "reserveliquidfund" || rType === "slicereserveliquidfund") { balances.sliceReserve -= a; balances.liquidFund += a; }
-                    else if (rType === "tradeledgerreserve" || rType === "tradeledgerslicereserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } 
-                    else if (rType === "reservetradeledger" || rType === "slicereservetradeledger") { balances.sliceReserve -= a; balances.tradeLedger += a; }
+                    // Match Exact normalized string logic mapping for both legacy and new types
+                    const tStr = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(); 
+                    const a = ev.amount;
+                    
+                    if (tStr === "depositfund" || tStr === "liquidfundinterest" || tStr === "depositliquidfund" || tStr === "depositliquidfundinterest") balances.liquidFund += a; 
+                    else if (tStr === "withdrawfund" || tStr === "withdrawliquidfund") balances.liquidFund -= a;
+                    else if (tStr === "deposittradeledger") balances.tradeLedger += a;
+                    else if (tStr === "depositreserve") balances.sliceReserve += a;
+                    else if (tStr === "withdrawtradeledger") balances.tradeLedger -= a;
+                    else if (tStr === "withdrawreserve") balances.sliceReserve -= a;
+                    else if (tStr === "liquidfundtradeledger" || tStr === "transferliquidfundtradeledger") { balances.liquidFund -= a; balances.tradeLedger += a; } 
+                    else if (tStr === "tradeledgerliquidfund" || tStr === "transfertradeledgerliquidfund") { balances.tradeLedger -= a; balances.liquidFund += a; }
+                    else if (tStr === "liquidfundreserve" || tStr === "liquidfundslicereserve" || tStr === "transferliquidfundreserve") { balances.liquidFund -= a; balances.sliceReserve += a; } 
+                    else if (tStr === "reserveliquidfund" || tStr === "slicereserveliquidfund" || tStr === "transferreserveliquidfund") { balances.sliceReserve -= a; balances.liquidFund += a; }
+                    else if (tStr === "tradeledgerreserve" || tStr === "tradeledgerslicereserve" || tStr === "transfertradeledgerreserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } 
+                    else if (tStr === "reservetradeledger" || tStr === "slicereservetradeledger" || tStr === "transferreservetradeledger") { balances.sliceReserve -= a; balances.tradeLedger += a; }
                     
                     const ref = capitalLedger.find(c => c.id === ev.id);
                     if(ref) { ref.tradeLedger = balances.tradeLedger; ref.liquidFund = balances.liquidFund; ref.sliceReserve = balances.sliceReserve; ref.netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; }
@@ -1307,27 +1505,50 @@
         function updateViews() { renderTradesTable(); renderCapitalTable(); updateDashboard(); }
         
         function renderTradesTable() {
+            const thead = document.getElementById('tradeTableHeader');
+            let cols = tradeTableColumns;
+            let thHTML = `<th class="w-8 px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox" id="chk-all-trades" onclick="toggleAll('trades')"></th>
+                          <th class="whitespace-nowrap">Date</th>
+                          <th class="whitespace-nowrap">Symbol</th>`;
+                          
+            if (cols.strategy) thHTML += `<th class="whitespace-nowrap">Strategy</th>`;
+            if (cols.entryInfo) thHTML += `<th class="whitespace-nowrap">Entry / SL</th>`;
+            if (cols.pnl) thHTML += `<th class="whitespace-nowrap">Net P&L</th>`;
+            if (cols.charges) thHTML += `<th class="whitespace-nowrap">Charges</th>`;
+            if (cols.result) thHTML += `<th class="whitespace-nowrap">Result</th>`;
+            if (cols.pctChange) thHTML += `<th class="whitespace-nowrap">% Chg</th>`;
+            if (cols.corpus) thHTML += `<th class="whitespace-nowrap">End Corpus</th>`;
+            if (cols.remarks) thHTML += `<th class="w-full min-w-[200px]">Remarks</th>`;
+            
+            thHTML += `<th class="text-right whitespace-nowrap">Actions</th>`;
+            thead.innerHTML = thHTML;
+            
             const tbody = document.getElementById('tradesBody');
-            if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
+            if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
                          
-            tbody.innerHTML = tradesDB.map(t => `
-                <tr class="hover:bg-white/5 align-top">
-                    <td class="px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox chk-trades" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
-                    <td class="whitespace-nowrap">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-xs">${t.session || ''}</span></td>
-                    <td class="font-bold whitespace-nowrap">${t.symbol}</td>
-                    <td class="text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>
-                    <td class="font-semibold whitespace-nowrap ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>
-                    <td class="text-gray-400 whitespace-nowrap font-medium">${formatMoney(t.charges || 0)}</td>
-                    <td class="whitespace-nowrap"><span class="text-xs font-bold px-2 py-1 rounded bg-black/40 ${t.result==='WIN'?'text-long':(t.result==='LOSS'?'text-short':'text-gray-400')}">${t.result}</span></td>
-                    <td class="whitespace-nowrap font-semibold ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%</td>
-                    <td class="whitespace-nowrap font-medium">${formatMoney(t.endCorpus)}</td>
-                    <td class="whitespace-normal break-words w-full min-w-[200px] text-xs text-gray-300 leading-relaxed">${t.remarks || '-'}</td>
-                    <td class="text-right whitespace-nowrap">
-                        <button onclick="editRecord(${t.id}, 'trade')" class="text-gray-400 hover:text-brand-400 p-1 mr-1" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
-                        <button onclick="deleteRecord(${t.id}, 'trade')" class="text-red-500 hover:text-red-400 p-1" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = tradesDB.map(t => {
+                let rowHTML = `
+                <tr class="clickable-row align-top group" onclick="openTradeModal(${t.id})">
+                    <td class="px-4 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
+                    <td class="whitespace-nowrap text-gray-300">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[10px] uppercase font-bold">${t.session || ''}</span></td>
+                    <td class="font-bold whitespace-nowrap text-gray-100 group-hover:text-brand-400 transition-colors">${t.symbol}</td>`;
+                    
+                if (cols.strategy) rowHTML += `<td class="text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
+                if (cols.entryInfo) rowHTML += `<td class="whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[10px] text-gray-500">SL: ${t.sl || '-'}</span></div></td>`;
+                if (cols.pnl) rowHTML += `<td class="font-semibold whitespace-nowrap ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`;
+                if (cols.charges) rowHTML += `<td class="text-gray-400 whitespace-nowrap font-medium">${formatMoney(t.charges || 0)}</td>`;
+                if (cols.result) rowHTML += `<td class="whitespace-nowrap"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`;
+                if (cols.pctChange) rowHTML += `<td class="whitespace-nowrap font-semibold ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%</td>`;
+                if (cols.corpus) rowHTML += `<td class="whitespace-nowrap font-medium text-gray-300">${formatMoney(t.endCorpus)}</td>`;
+                if (cols.remarks) rowHTML += `<td class="whitespace-normal break-words w-full min-w-[200px] text-xs text-gray-400 leading-relaxed">${t.remarks || '-'}</td>`;
+                
+                rowHTML += `<td class="text-right whitespace-nowrap">
+                        <button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-1 mr-1 transition" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                        <button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-1 transition" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    </td></tr>`;
+                return rowHTML;
+            }).join('');
+            
             document.getElementById('chk-all-trades').checked = (selectedTrades.size === tradesDB.length && tradesDB.length > 0);
             updateBulkActionVisibility('trades');
         }
@@ -1338,20 +1559,23 @@
                          
             tbody.innerHTML = capitalLedger.map(c => {
                 let badgeClass = "text-gray-300 border-gray-600 bg-gray-800/50"; let amountColor = "text-brand-500"; let formattedAmount = formatMoney(c.amount);
-                if (c.type === "Deposit Fund" || c.type === "Liquid Fund Interest") { badgeClass = "text-long border-long/40 bg-long/10"; amountColor = "text-long"; formattedAmount = "+" + formatMoney(c.amount); } 
-                else if (c.type === "Withdraw Fund") { badgeClass = "text-short border-short/40 bg-short/10"; amountColor = "text-short"; formattedAmount = "-" + formatMoney(c.amount); }
+                const tStr = c.type.toLowerCase();
+                if (tStr.includes("deposit") || tStr.includes("interest")) { badgeClass = "text-long border-long/40 bg-long/10"; amountColor = "text-long"; formattedAmount = "+" + formatMoney(c.amount); } 
+                else if (tStr.includes("withdraw")) { badgeClass = "text-short border-short/40 bg-short/10"; amountColor = "text-short"; formattedAmount = "-" + formatMoney(c.amount); }
                 return `
                 <tr class="hover:bg-white/5 align-top">
                     <td class="px-4 whitespace-nowrap"><input type="checkbox" class="custom-checkbox chk-cap" onclick="toggleSelection(${c.id}, 'cap')" ${selectedCapital.has(c.id) ? 'checked' : ''}></td>
                     <td class="whitespace-nowrap text-gray-300">${formatToDDMMYYYY(c.date)}</td>
-                    <td class="whitespace-nowrap"><span class="text-xs font-semibold px-2 py-1 rounded border ${badgeClass}">${c.type}</span></td>
+                    <td class="whitespace-nowrap"><span class="text-[10px] font-semibold px-2 py-1 rounded border ${badgeClass}">${c.type}</span></td>
                     <td class="font-bold whitespace-nowrap ${amountColor}">${formattedAmount}</td>
                     <td class="text-gray-200 whitespace-nowrap font-medium">${formatMoney(c.netCorpus)}</td>
-                    <td class="text-gray-400 whitespace-nowrap">${formatMoney(c.tradeLedger)}</td>
-                    <td class="whitespace-normal break-words w-full min-w-[200px] text-xs text-gray-300 leading-relaxed">${c.remarks || '-'}</td>
+                    <td class="text-gray-400 whitespace-nowrap text-[10px] leading-tight">
+                        T: ${formatMoney(c.tradeLedger)}<br>L: ${formatMoney(c.liquidFund)}<br>R: ${formatMoney(c.sliceReserve)}
+                    </td>
+                    <td class="whitespace-normal break-words w-full min-w-[200px] text-xs text-gray-400 leading-relaxed">${c.remarks || '-'}</td>
                     <td class="text-right whitespace-nowrap">
-                        <button onclick="editRecord(${c.id}, 'cap')" class="text-gray-400 hover:text-brand-400 p-1 mr-1" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
-                        <button onclick="deleteRecord(${c.id}, 'cap')" class="text-red-500 hover:text-red-400 p-1" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        <button onclick="editRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-brand-400 p-1 mr-1 transition" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                        <button onclick="deleteRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-red-500 p-1 transition" title="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                     </td>
                 </tr>
                 `;
@@ -1433,7 +1657,7 @@
             const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd);
             const xirrEl = document.getElementById('dash-xirr');
             xirrEl.textContent = xirrValue.toFixed(2) + '%';
-            xirrEl.className = `text-4xl font-bold sensitive-data ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : '')}`;
+            xirrEl.className = `text-3xl md:text-4xl font-bold sensitive-data truncate ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : '')}`;
 
             lbl.textContent = rangeLabel;
             let totalPnl = 0, wins = 0; filteredTrades.forEach(t => { totalPnl += t.netPnl; if (t.result === 'WIN') wins++; });
@@ -1441,7 +1665,7 @@
             document.getElementById('dash-total-trades').textContent = filteredTrades.length; document.getElementById('dash-win-rate').textContent = winRate + '%';
                          
             const pnlEl = document.getElementById('dash-total-pnl'); pnlEl.textContent = formatMoney(totalPnl);
-            pnlEl.className = `text-4xl font-bold sensitive-data ${totalPnl > 0 ? 'text-long' : (totalPnl < 0 ? 'text-short' : '')}`;
+            pnlEl.className = `text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center ${totalPnl > 0 ? 'text-long' : (totalPnl < 0 ? 'text-short' : '')}`;
             
             let formatStr;
             if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -1595,16 +1819,11 @@
                 if(bBuy >= bMax || bSell >= bMax) brokerTxt = `Max ₹${bMax}/side`;
 
                 const stt = Math.round(tSell * 0.00025);
-
                 const exchRate = exchCode === 'NSE' ? 0.0000307 : 0.0000375;
                 const exch = tTotal * exchRate;
-
                 const sebi = tTotal * 0.000001; 
-
                 const stamp = Math.round(tBuy * 0.00003); 
-
                 const gst = (broker + exch + sebi) * 0.18;
-
                 const total = broker + stt + exch + sebi + stamp + gst;
 
                 return { broker, brokerTxt, stt, exch, exchRate, sebi, gst, stamp, total };
@@ -1619,7 +1838,10 @@
                 const activeBroker = brokerProfiles[currentBroker];
                 const brkPct = activeBroker.pct; const brkMax = activeBroker.max;
                 
-                localStorage.setItem('riskCalcSettings', JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value }));
+                localStorage.setItem('riskCalcSettings', JSON.stringify({ 
+                    corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, 
+                    targetPct: cInputs.target.value, entry: cInputs.entry.value, sl: cInputs.sl.value 
+                }));
                 
                 const clear = () => {
                     document.getElementById('outShares').textContent = '0'; document.getElementById('outDirection').textContent = 'WAITING';
@@ -1791,7 +2013,15 @@
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; cInputs.entry.focus(); calculate(); });
             document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; calculate(); });
             
-            if (cInputs.entry.value) calculate();
+            document.getElementById('logJournalBtn').addEventListener('click', () => {
+                document.querySelector('.nav-btn[data-target="view-trades"]').click();
+                document.getElementById('tj-entry').value = cInputs.entry.value;
+                document.getElementById('tj-sl').value = cInputs.sl.value;
+                document.getElementById('tj-margin').value = cInputs.margin.value;
+                document.getElementById('tj-risk').value = cInputs.risk.value;
+                document.getElementById('tj-target').value = cInputs.target.value;
+                setTimeout(() => document.getElementById('tj-symbol').focus(), 100);
+            });
         }
     </script>
 </body>
