@@ -245,20 +245,34 @@
                                 <div><p class="text-xs text-gray-400 mb-1">Trade Type</p><p id="outTradeType" class="font-semibold">-</p></div>
                             </div>
                             
-                            <!-- Breakeven Section -->
-                            <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-2 gap-6 relative z-10">
+                            <!-- B0, B1, B2, B3 Targets Section -->
+                            <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
                                 <div>
-                                    <p class="text-xs text-gray-400 mb-1">Breakeven Price</p>
-                                    <div class="flex items-center gap-2">
-                                        <p id="outBreakeven" class="font-semibold text-gray-200">₹0.00</p>
-                                        <span id="outBreakevenNet" class="text-[10px] font-medium bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded border border-gray-600/30">Net: ₹0.00</span>
+                                    <p class="text-[11px] text-gray-400 mb-1">B0 <span class="text-[9px]">(0.00%)</span></p>
+                                    <div class="flex flex-col items-start gap-1">
+                                        <p id="outB0" class="font-semibold text-gray-200">₹0.00</p>
+                                        <span id="outB0Net" class="text-[9px] font-medium bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded border border-gray-600/30">Net: ₹0.00</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-400 mb-1">Slight Profit Price</p>
-                                    <div class="flex items-center gap-2">
-                                        <p id="outSlightProfit" class="font-semibold text-long">₹0.00</p>
-                                        <span id="outSlightProfitNet" class="text-[10px] font-medium bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Net: +₹0.00</span>
+                                    <p class="text-[11px] text-gray-400 mb-1">B1 <span class="text-[9px]">(0.03%)</span></p>
+                                    <div class="flex flex-col items-start gap-1">
+                                        <p id="outB1" class="font-semibold text-brand-400">₹0.00</p>
+                                        <span id="outB1Net" class="text-[9px] font-medium bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded border border-brand-500/30">Net: +₹0.00</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] text-gray-400 mb-1">B2 <span class="text-[9px]">(0.10%)</span></p>
+                                    <div class="flex flex-col items-start gap-1">
+                                        <p id="outB2" class="font-semibold text-long">₹0.00</p>
+                                        <span id="outB2Net" class="text-[9px] font-medium bg-long/20 text-long px-1.5 py-0.5 rounded border border-long/30">Net: +₹0.00</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] text-gray-400 mb-1">B3 <span class="text-[9px]">(0.20%)</span></p>
+                                    <div class="flex flex-col items-start gap-1">
+                                        <p id="outB3" class="font-semibold text-purple-400">₹0.00</p>
+                                        <span id="outB3Net" class="text-[9px] font-medium bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded border border-purple-500/30">Net: +₹0.00</span>
                                     </div>
                                 </div>
                             </div>
@@ -409,8 +423,12 @@
                         <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Pos Value</label><input type="number" id="tj-pos-value" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
                         <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Max Loss</label><input type="number" id="tj-max-loss" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
                         <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Act Risk %</label><input type="number" id="tj-actual-risk" step="0.0001" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
-                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Breakeven</label><input type="number" id="tj-breakeven" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
-                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">Slight Profit</label><input type="number" id="tj-slight-profit" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">B0 (0.00%)</label><input type="number" id="tj-b0" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">B1 (0.03%)</label><input type="number" id="tj-b1" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">B2 (0.10%)</label><input type="number" id="tj-b2" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        <div><label class="block text-xs md:text-sm text-gray-400 mb-1">B3 (0.20%)</label><input type="number" id="tj-b3" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
+                        
                         <div>
                             <label class="block text-xs md:text-sm text-gray-400 mb-1">Result</label>
                             <select id="tj-result" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors" disabled>
@@ -1023,7 +1041,7 @@
         }
 
         // --- Keyboard Focus Navigation Flow Setup ---
-        const journalFlow = ['tj-date', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-breakeven', 'tj-slight-profit', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
+        const journalFlow = ['tj-date', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-strategy', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-remarks', 'tj-save-btn'];
         const capitalFlow = ['cl-date', 'cl-action', 'cl-sub-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
         
         function focusNextElement(currentId, flowArray) {
@@ -1369,8 +1387,11 @@
                 document.getElementById('tj-pos-value').value = t.posValue || '';
                 document.getElementById('tj-max-loss').value = t.maxLoss || '';
                 document.getElementById('tj-actual-risk').value = t.actualRisk || '';
-                document.getElementById('tj-breakeven').value = t.breakeven || '';
-                document.getElementById('tj-slight-profit').value = t.slightProfit || '';
+                
+                document.getElementById('tj-b0').value = t.b0 || '';
+                document.getElementById('tj-b1').value = t.b1 || '';
+                document.getElementById('tj-b2').value = t.b2 || '';
+                document.getElementById('tj-b3').value = t.b3 || '';
 
                 document.getElementById('tj-exit-price').value = t.exitPrice || '';
                 document.getElementById('tj-pnl').value = t.netPnl; document.getElementById('tj-charges').value = t.charges || '';
@@ -1442,8 +1463,11 @@
                 html += addField("Position Value", t.posValue ? formatMoney(t.posValue) : "-");
                 html += addField("Max Loss", t.maxLoss ? formatMoney(t.maxLoss) : "-", "text-red-400");
                 html += addField("Actual Risk", t.actualRisk ? t.actualRisk + '%' : "-");
-                html += addField("Breakeven", t.breakeven ? formatMoney(t.breakeven) : "-");
-                html += addField("Slight Profit", t.slightProfit ? formatMoney(t.slightProfit) : "-", "text-long");
+                
+                html += addField("B0 (0.00%)", t.b0 ? formatMoney(t.b0) : "-");
+                html += addField("B1 (0.03%)", t.b1 ? formatMoney(t.b1) : "-", "text-brand-400");
+                html += addField("B2 (0.10%)", t.b2 ? formatMoney(t.b2) : "-", "text-long");
+                html += addField("B3 (0.20%)", t.b3 ? formatMoney(t.b3) : "-", "text-blue-400");
                 html += `</div>`;
             }
             
@@ -1570,8 +1594,11 @@
             const posValue = parseFloat(document.getElementById('tj-pos-value').value) || '';
             const maxLoss = parseFloat(document.getElementById('tj-max-loss').value) || '';
             const actualRisk = parseFloat(document.getElementById('tj-actual-risk').value) || '';
-            const breakeven = parseFloat(document.getElementById('tj-breakeven').value) || '';
-            const slightProfit = parseFloat(document.getElementById('tj-slight-profit').value) || '';
+            
+            const b0 = parseFloat(document.getElementById('tj-b0').value) || '';
+            const b1 = parseFloat(document.getElementById('tj-b1').value) || '';
+            const b2 = parseFloat(document.getElementById('tj-b2').value) || '';
+            const b3 = parseFloat(document.getElementById('tj-b3').value) || '';
 
             const exitPrice = parseFloat(document.getElementById('tj-exit-price').value) || '';
             const pnl = parseFloat(document.getElementById('tj-pnl').value) || 0; const charges = parseFloat(document.getElementById('tj-charges').value) || 0;
@@ -1581,7 +1608,7 @@
             const tradeData = { 
                 date, session, symbol, strategy, 
                 entry, sl, margin, risk, target, 
-                shares, targetPrice, rps, posValue, maxLoss, actualRisk, breakeven, slightProfit,
+                shares, targetPrice, rps, posValue, maxLoss, actualRisk, b0, b1, b2, b3,
                 exitPrice, netPnl: pnl, charges, result, verdict, remarks 
             };
             
@@ -1595,7 +1622,7 @@
             recalculateTimeline();
             
             ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 
-             'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-breakeven', 'tj-slight-profit',
+             'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3',
              'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = '');
              
             document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors";
@@ -2034,6 +2061,9 @@
             cInputs.margin.value = savedState.margin || '1'; 
             cInputs.risk.value = savedState.riskPct || '1.0';
             cInputs.target.value = savedState.targetPct || '1.5';
+
+            cInputs.entry.addEventListener('focus', function(e) { this.select(); });
+            cInputs.sl.addEventListener('focus', function(e) { this.select(); });
             
             const calcCharges = (qty, ent, exitPrice, dir, bPct, bMax, exchCode) => {
                 const pBuy = dir === 'LONG' ? ent : exitPrice;
@@ -2082,8 +2112,8 @@
                     ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00');
                     document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                     
-                    document.getElementById('outBreakeven').textContent = '₹0.00'; document.getElementById('outBreakevenNet').textContent = 'Net: ₹0.00';
-                    document.getElementById('outSlightProfit').textContent = '₹0.00'; document.getElementById('outSlightProfitNet').textContent = 'Net: +₹0.00';
+                    ['outB0', 'outB1', 'outB2', 'outB3'].forEach(id => document.getElementById(id).textContent = '₹0.00');
+                    ['outB0Net', 'outB1Net', 'outB2Net', 'outB3Net'].forEach(id => document.getElementById(id).textContent = 'Net: ₹0.00');
 
                     document.getElementById('chargesContainer').classList.add('opacity-50');
                     ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
@@ -2132,71 +2162,72 @@
 
                 const estChargesTG = calcCharges(finalShares, entry, targetPrice, direction, brkPct, brkMax, currentExchange);
                 
-                // Advanced Iterative Breakeven & Slight Profit Engine
                 const dirMult = direction === 'LONG' ? 1 : -1;
-                
                 const baseChg = calcCharges(finalShares, entry, entry, direction, brkPct, brkMax, currentExchange);
                 const reqPts = baseChg.total / finalShares;
-                let bePrice = entry + (reqPts * dirMult);
-                let beNet = -1;
-                let iterations = 0;
-
-                while (iterations < 500) {
-                    let chg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
-                    let gross = finalShares * (bePrice - entry) * dirMult;
-                    beNet = gross - chg.total;
-                    if (beNet >= 0) break;
-                    bePrice += 0.05 * dirMult;
-                    iterations++;
-                }
-
-                while (beNet > 5 && iterations < 1000) {
-                    bePrice -= 0.05 * dirMult;
-                    let chg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
-                    let gross = finalShares * (bePrice - entry) * dirMult;
-                    beNet = gross - chg.total;
-                    if (beNet < 0) {
-                        bePrice += 0.05 * dirMult; 
-                        let fChg = calcCharges(finalShares, entry, bePrice, direction, brkPct, brkMax, currentExchange);
-                        beNet = (finalShares * (bePrice - entry) * dirMult) - fChg.total;
-                        break;
+                
+                const getTargetPriceForNet = (targetNet, startPrice) => {
+                    let p = startPrice;
+                    let net = -1;
+                    let iter = 0;
+                    
+                    while (iter < 1000) {
+                        let chg = calcCharges(finalShares, entry, p, direction, brkPct, brkMax, currentExchange);
+                        let gross = finalShares * (p - entry) * dirMult;
+                        net = gross - chg.total;
+                        if (net >= targetNet) break;
+                        p += 0.05 * dirMult;
+                        iter++;
                     }
-                    iterations++;
-                }
 
-                let spTarget = Math.max(25, (finalShares * entry) * 0.0005);
-                let spPrice = bePrice;
-                let spNet = beNet;
-                iterations = 0;
+                    while (net > targetNet + 5 && iter < 1500) {
+                        p -= 0.05 * dirMult;
+                        let chg = calcCharges(finalShares, entry, p, direction, brkPct, brkMax, currentExchange);
+                        let gross = finalShares * (p - entry) * dirMult;
+                        net = gross - chg.total;
+                        if (net < targetNet) {
+                            p += 0.05 * dirMult;
+                            let fChg = calcCharges(finalShares, entry, p, direction, brkPct, brkMax, currentExchange);
+                            net = (finalShares * (p - entry) * dirMult) - fChg.total;
+                            break;
+                        }
+                        iter++;
+                    }
+                    return { price: p, net: net };
+                };
 
-                while (spNet < spTarget && iterations < 500) {
-                    spPrice += 0.05 * dirMult;
-                    let chg = calcCharges(finalShares, entry, spPrice, direction, brkPct, brkMax, currentExchange);
-                    let gross = finalShares * (spPrice - entry) * dirMult;
-                    spNet = gross - chg.total;
-                    iterations++;
-                }
+                let b0 = getTargetPriceForNet(0, entry + (reqPts * dirMult));
+                let b1 = getTargetPriceForNet(corpus * 0.0003, b0.price);
+                let b2 = getTargetPriceForNet(corpus * 0.0010, b1.price);
+                let b3 = getTargetPriceForNet(corpus * 0.0020, b2.price);
 
                 document.getElementById('outShares').textContent = formatNum(finalShares); 
                 document.getElementById('outDirection').textContent = direction;
                 document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
                 document.getElementById('resultCard').className = `glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 ${direction === 'LONG' ? 'border-l-long' : 'border-l-short'} z-40`;
                 document.getElementById('dirGlow').style.backgroundColor = direction === 'LONG' ? '#10b981' : '#ef4444';
-                                                                 
+                                                                                                 
                 document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); 
                 document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); 
                 document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1);
                 if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
-                                                                 
+                                                                                                 
                 document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); 
                 document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
                 document.getElementById('outTradeType').textContent = finalShares === q ? "Risk Limited" : "Capital Limited";
 
-                document.getElementById('outBreakeven').textContent = formatMoney(bePrice);
-                document.getElementById('outBreakevenNet').textContent = `Net: ${beNet > 0 ? '+' : ''}₹${beNet.toFixed(2)}`;
-                document.getElementById('outSlightProfit').textContent = formatMoney(spPrice);
-                document.getElementById('outSlightProfitNet').textContent = `Net: +₹${spNet.toFixed(2)}`;
+                document.getElementById('outB0').textContent = formatMoney(b0.price);
+                document.getElementById('outB0Net').textContent = `Net: ${b0.net > 0 ? '+' : ''}₹${b0.net.toFixed(2)}`;
+                
+                document.getElementById('outB1').textContent = formatMoney(b1.price);
+                document.getElementById('outB1Net').textContent = `Net: ${b1.net > 0 ? '+' : ''}₹${b1.net.toFixed(2)}`;
+
+                document.getElementById('outB2').textContent = formatMoney(b2.price);
+                document.getElementById('outB2Net').textContent = `Net: ${b2.net > 0 ? '+' : ''}₹${b2.net.toFixed(2)}`;
+
+                document.getElementById('outB3').textContent = formatMoney(b3.price);
+                document.getElementById('outB3Net').textContent = `Net: ${b3.net > 0 ? '+' : ''}₹${b3.net.toFixed(2)}`;
 
                 document.getElementById('chargesContainer').classList.remove('opacity-50');
 
@@ -2259,8 +2290,11 @@
                 document.getElementById('tj-pos-value').value = extractNum(document.getElementById('outPosValue').textContent);
                 document.getElementById('tj-max-loss').value = extractNum(document.getElementById('outMaxLoss').textContent);
                 document.getElementById('tj-actual-risk').value = extractNum(document.getElementById('outActualRisk').textContent);
-                document.getElementById('tj-breakeven').value = extractNum(document.getElementById('outBreakeven').textContent);
-                document.getElementById('tj-slight-profit').value = extractNum(document.getElementById('outSlightProfit').textContent);
+                
+                document.getElementById('tj-b0').value = extractNum(document.getElementById('outB0').textContent);
+                document.getElementById('tj-b1').value = extractNum(document.getElementById('outB1').textContent);
+                document.getElementById('tj-b2').value = extractNum(document.getElementById('outB2').textContent);
+                document.getElementById('tj-b3').value = extractNum(document.getElementById('outB3').textContent);
 
                 setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
             });
