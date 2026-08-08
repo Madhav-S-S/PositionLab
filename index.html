@@ -105,6 +105,16 @@
         
         tr.clickable-row { cursor: pointer; transition: background 0.2s; }
         tr.clickable-row:hover { background: rgba(255,255,255,0.08); }
+
+        /* Hidden Number Input Spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .mode-toggle-btn { transition: all 0.3s ease; }
+        .mode-toggle-btn.active { background-color: #3b82f6; color: white; box-shadow: 0 4px 14px rgba(59,130,246,0.3); }
+        .mode-toggle-btn.inactive { background-color: transparent; color: #9ca3af; }
+        .mode-toggle-btn.inactive:hover { color: white; }
     </style>
 </head>
 <body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col relative">
@@ -159,6 +169,14 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 md:px-0 mb-12 w-full">
         <!-- CALCULATOR TAB -->
         <div id="view-calculator" class="view-section active">
+            <!-- Grand Toggle -->
+            <div class="flex justify-center mb-8 z-50 relative">
+                <div class="bg-black/40 p-1.5 rounded-xl flex gap-2 border border-white/10 shadow-inner">
+                    <button class="calc-mode-btn mode-toggle-btn active px-8 py-2.5 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="intraday">Intraday</button>
+                    <button class="calc-mode-btn mode-toggle-btn inactive px-8 py-2.5 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="swing">Swing</button>
+                </div>
+            </div>
+
             <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full">
                 
                 <!-- LEFT COLUMN -->
@@ -166,10 +184,10 @@
                     <!-- Trade Setup -->
                     <section class="order-1 w-full z-50">
                         <div class="glass-card rounded-2xl p-6 relative">
-                            <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider">TRADE SETUP</h2></div>
+                            <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider flex justify-between items-center">TRADE SETUP <span id="setupModeLabel" class="text-xs bg-brand-500/20 text-brand-400 px-2 py-1 rounded">INTRADAY</span></h2></div>
                             <div class="space-y-4">
-                                <div><label class="block text-sm text-gray-400 mb-1">Entry Price (₹)</label><input type="number" id="entry" step="0.01" class="input-field" placeholder="0.00"></div>
-                                <div><label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label><input type="number" id="stopLoss" step="0.01" class="input-field" placeholder="0.00"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Entry Price (₹)</label><input type="number" id="entry" step="0.01" class="input-field text-lg font-bold" placeholder="0.00"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label><input type="number" id="stopLoss" step="0.01" class="input-field text-lg font-bold" placeholder="0.00"></div>
                                 <div>
                                     <div class="flex justify-between items-center mb-1">
                                         <label class="block text-sm text-gray-400">Total Corpus (₹)</label>
@@ -177,8 +195,11 @@
                                     </div>
                                     <input type="number" id="corpus" step="0.01" class="input-field" placeholder="0.00">
                                 </div>
-                                <div class="grid grid-cols-3 gap-4">
+                                <div class="grid grid-cols-2 gap-4">
                                     <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="margin" step="1" min="0" class="input-field" placeholder="1"></div>
+                                    <div><label class="block text-sm text-gray-400 mb-1">Max Alloc (%)</label><input type="number" id="maxAllocPct" step="1" min="1" max="100" class="input-field" placeholder="100"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
                                     <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="riskPct" step="0.1" min="0.1" class="input-field" placeholder="1.0"></div>
                                     <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="targetPct" step="0.1" min="0.1" class="input-field" placeholder="1.5"></div>
                                 </div>
@@ -202,11 +223,17 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <div class="custom-dropdown">
-                                    <input type="text" id="broker-input" class="input-field py-2 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
-                                    <ul id="broker-list" class="custom-dropdown-list"></ul>
+                                <div class="flex gap-2">
+                                    <div class="custom-dropdown flex-grow">
+                                        <input type="text" id="broker-input" class="input-field py-2 text-sm font-bold cursor-pointer" placeholder="Select Broker..." autocomplete="off" readonly>
+                                        <ul id="broker-list" class="custom-dropdown-list"></ul>
+                                    </div>
+                                    <button id="editBrokerBtn" class="px-3 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-gray-300 flex items-center justify-center transition" title="Edit Charges Config">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    </button>
                                 </div>
-                                <div class="text-right">
+                                <div class="text-right flex justify-between items-center mt-2">
+                                    <span id="broker-mode-badge" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">INTRADAY</span>
                                     <span id="broker-details" class="text-[11px] font-medium text-brand-400 tracking-wide bg-brand-500/10 px-2 py-1 rounded-md border border-brand-500/20"></span>
                                 </div>
                             </div>
@@ -222,27 +249,32 @@
                             <div id="dirGlow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500"></div>
                             <div class="flex justify-between items-start mb-6">
                                 <div>
-                                    <p class="text-sm text-gray-400 font-medium uppercase tracking-wider mb-1">Recommended Shares</p>
-                                    <div class="flex items-end gap-3">
-                                        <h2 id="outShares" class="text-5xl lg:text-6xl font-bold tracking-tight">0</h2>
-                                        <span id="outDirection" class="text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300">WAITING</span>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <p class="text-sm text-gray-400 font-medium uppercase tracking-wider">Recommended Shares</p>
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="You can edit this value to override calculations"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </div>
+                                    <div class="flex items-center gap-3">
+                                        <!-- Editable Shares Input -->
+                                        <input type="number" id="outSharesInput" class="text-5xl lg:text-6xl font-bold tracking-tight bg-transparent border-b-2 border-dashed border-gray-600 hover:border-brand-500 focus:border-brand-500 focus:outline-none transition-colors w-40 text-white" value="0">
+                                        <span id="outDirection" class="text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase">WAITING</span>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 mt-1 italic hidden" id="overrideNotice">Manual override active</p>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-                                <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500">₹0.00</p></div>
-                                <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold">₹0.00</p></div>
-                                <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold">₹0.00</p></div>
-                                <div id="marginBlock" class="hidden"><p class="text-xs text-gray-400 mb-1">Margin Required</p><p id="outMarginReq" class="font-semibold text-brand-500">₹0.00</p></div>
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10 mt-2">
+                                <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500 text-lg">₹0.00</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold text-lg">₹0.00</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold text-lg">₹0.00</p></div>
+                                <div id="marginBlock" class="hidden"><p class="text-xs text-gray-400 mb-1">Margin Required</p><p id="outMarginReq" class="font-semibold text-brand-500 text-lg">₹0.00</p></div>
                                 <div>
                                     <p class="text-xs text-gray-400 mb-1">Maximum Planned Loss</p>
                                     <div class="flex items-center gap-2">
-                                        <p id="outMaxLoss" class="font-semibold text-red-400">₹0.00</p>
+                                        <p id="outMaxLoss" class="font-semibold text-red-400 text-lg">₹0.00</p>
                                         <span class="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">inc. fees</span>
                                     </div>
                                 </div>
-                                <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold">0.00%</p></div>
-                                <div><p class="text-xs text-gray-400 mb-1">Trade Type</p><p id="outTradeType" class="font-semibold">-</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold text-lg">0.00%</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Constraint</p><p id="outTradeType" class="font-semibold text-lg text-gray-300">-</p></div>
                             </div>
                             
                             <!-- B0, B1, B2, B3 Targets Section -->
@@ -290,11 +322,11 @@
                                 </div>
                                 <div class="grid grid-cols-3 gap-x-2 gap-y-4">
                                     <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slBrokerageTxt">Brokerage</p></div>
-                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slSTTTxt">STT</p></div>
                                     <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slExchTxt">Exchange</p></div>
-                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
-                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
-                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slSebiTxt">SEBI</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slGSTTxt">GST</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slStampTxt">Stamp Duty</p></div>
                                 </div>
                                 <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
                                     <span class="text-xs font-semibold text-gray-400">Total Deductions</span>
@@ -310,11 +342,11 @@
                                 </div>
                                 <div class="grid grid-cols-3 gap-x-2 gap-y-4">
                                     <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgBrokerage">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgBrokerageTxt">Brokerage</p></div>
-                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">STT<br>0.025% on Sell</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSTT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgSTTTxt">STT</p></div>
                                     <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgExch">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgExchTxt">Exchange</p></div>
-                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">SEBI<br>₹10/Cr on Total</p></div>
-                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">GST<br>18% on B+E+S</p></div>
-                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight">Stamp Duty<br>0.003% on Buy</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgSebiTxt">SEBI</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgGSTTxt">GST</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgStampTxt">Stamp Duty</p></div>
                                 </div>
                                 <div class="mt-4 pt-3 border-t border-brand-500/20 flex justify-between items-center">
                                     <span class="text-xs font-semibold text-brand-400">Total Deductions</span>
@@ -329,6 +361,15 @@
 
         <!-- DASHBOARD TAB -->
         <div id="view-dashboard" class="view-section space-y-6 privacy-enabled">
+            <!-- Grand Toggle -->
+            <div class="flex justify-center mb-4 z-50 relative">
+                <div class="bg-black/40 p-1.5 rounded-xl flex gap-2 border border-white/10 shadow-inner">
+                    <button class="dash-mode-toggle-btn mode-toggle-btn inactive px-6 py-2 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="intraday">Intraday</button>
+                    <button class="dash-mode-toggle-btn mode-toggle-btn inactive px-6 py-2 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="swing">Swing</button>
+                    <button class="dash-mode-toggle-btn mode-toggle-btn active px-6 py-2 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="both">Both</button>
+                </div>
+            </div>
+
             <div class="flex flex-col md:flex-row justify-between items-center px-2 gap-4">
                 <h2 class="text-xl font-bold text-gray-100 flex items-center gap-3 uppercase tracking-wider">
                     CORPUS OVERVIEW
@@ -342,7 +383,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 z-10 relative">
                 <div class="glass-card rounded-2xl p-6 border-l-4 border-l-brand-500 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Corpus</p><h3 id="dash-total-corpus" class="text-2xl md:text-3xl font-bold tracking-tight sensitive-data truncate">₹0.00</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Realized Corpus</p><h3 id="dash-total-corpus" class="text-2xl md:text-3xl font-bold tracking-tight sensitive-data truncate">₹0.00</h3>
                 </div>
                 <div class="glass-card rounded-2xl p-6 relative">
                     <span class="absolute top-4 right-4 text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Live</span>
@@ -359,7 +400,7 @@
             </div>
 
             <div class="flex flex-col md:flex-row justify-between items-center px-2 mt-8 mb-2 gap-4 relative z-50">
-                <h3 class="text-lg font-semibold text-gray-100 tracking-wider">PERFORMANCE METRICS</h3>
+                <h3 class="text-lg font-semibold text-gray-100 tracking-wider">PERFORMANCE METRICS <span id="dashPerformanceLabel" class="text-xs bg-brand-500/20 text-brand-400 px-2 py-1 rounded ml-2 uppercase">BOTH</span></h3>
                 <div class="flex items-center gap-2">
                     <button id="dash-prev-btn" onclick="changePeriod(-1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -372,7 +413,7 @@
                         <span id="dash-period-label" class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider hidden"></span>
                     </div>
                     <button id="dash-next-btn" onclick="changePeriod(1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7-7"></path></svg>
                     </button>
                     <div id="dash-custom-range-container" class="hidden relative ml-2">
                         <input type="text" id="dash-custom-range" class="input-field py-1.5 text-sm w-48 bg-black/40 text-brand-400 font-semibold text-center" placeholder="Select Dates">
@@ -381,7 +422,7 @@
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 z-10 relative overflow-hidden">
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Total Trades</p><h2 id="dash-total-trades" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Total Closed</p><h2 id="dash-total-trades" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Win Rate</p><h2 id="dash-win-rate" class="text-3xl md:text-4xl font-bold text-brand-500 sensitive-data truncate">0.0%</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden col-span-2 md:col-span-1"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Net P&L</p><h2 id="dash-total-pnl" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden col-span-2 md:col-span-1"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">XIRR</p><h2 id="dash-xirr" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0.00%</h2></div>
@@ -401,9 +442,17 @@
 
         <!-- JOURNAL TAB -->
         <div id="view-trades" class="view-section space-y-6">
-            <div id="trade-input-panel" class="glass-card rounded-2xl p-4 md:p-6 relative z-50">
+            <!-- Grand Toggle -->
+            <div class="flex justify-center mb-4 z-50 relative">
+                <div class="bg-black/40 p-1.5 rounded-xl flex gap-2 border border-white/10 shadow-inner">
+                    <button class="jour-mode-btn mode-toggle-btn active px-8 py-2.5 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="intraday">Intraday</button>
+                    <button class="jour-mode-btn mode-toggle-btn inactive px-8 py-2.5 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="swing">Swing</button>
+                </div>
+            </div>
+
+            <div id="trade-input-panel" class="glass-card rounded-2xl p-4 md:p-6 relative z-50 transition-all">
                 <div class="flex justify-between items-center mb-4 md:mb-6">
-                    <h2 class="text-lg font-semibold text-brand-500 tracking-wider">JOURNAL ENTRY</h2>
+                    <h2 class="text-lg font-semibold text-brand-500 tracking-wider flex items-center gap-3">JOURNAL ENTRY <span id="jourModeLabel" class="text-[10px] bg-brand-500/20 text-brand-400 px-2 py-1 rounded">INTRADAY</span></h2>
                     <span id="tj-edit-badge" class="hidden text-xs font-bold bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full border border-brand-500/30">EDITING MODE</span>
                 </div>
                 
@@ -429,7 +478,7 @@
                         <div><label class="block text-xs md:text-sm text-gray-400 mb-1">B2 (0.10%)</label><input type="number" id="tj-b2" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
                         <div><label class="block text-xs md:text-sm text-gray-400 mb-1">B3 (0.20%)</label><input type="number" id="tj-b3" step="0.01" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm" placeholder="0.00"></div>
                         
-                        <div>
+                        <div id="jour-result-box">
                             <label class="block text-xs md:text-sm text-gray-400 mb-1">Result</label>
                             <select id="tj-result" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors" disabled>
                                 <option value="BREAKEVEN" class="text-gray-400">BREAKEVEN</option>
@@ -445,7 +494,7 @@
                     <h3 class="text-[10px] uppercase font-bold text-brand-500 mb-3 tracking-widest">Execution Details</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 items-end">
                         <div><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field py-2"></div>
-                        <div><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field py-2"></div>
+                        
                         <div class="col-span-2 md:col-span-1"><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field py-2 font-bold" placeholder="e.g. RELIANCE" list="nse-stocks" autocomplete="off"></div>
                         <div class="col-span-2 md:col-span-1">
                             <label class="block text-sm text-gray-400 mb-1">Strategy</label>
@@ -454,20 +503,22 @@
                                 <ul id="tj-strategy-list" class="custom-dropdown-list"></ul>
                             </div>
                         </div>
+
+                        <div class="col-span-2 md:col-span-4 lg:col-span-3"><label class="block text-sm text-gray-400 mb-1">Entry Remarks</label><input type="text" id="tj-remarks" class="input-field py-2" placeholder="Entry logic, confidence..."></div>
                         
-                        <div class="col-span-1 md:col-span-1"><label class="block text-sm text-gray-400 mb-1">Exit Price</label><input type="number" id="tj-exit-price" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        <div class="col-span-1 md:col-span-1"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        <!-- These fields might be hidden for new swing trades -->
+                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field py-2"></div>
+                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Exit Price</label><input type="number" id="tj-exit-price" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
                         
-                        <div class="col-span-1 md:col-span-1"><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        <div class="col-span-1 md:col-span-3 lg:col-span-3">
+                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        <div class="exit-fields-group col-span-1 md:col-span-2 lg:col-span-2">
                             <label class="block text-sm text-gray-400 mb-1">Verdict(s)</label>
                             <div class="custom-dropdown">
                                 <input type="text" id="tj-verdict" class="input-field py-2" placeholder="Select Verdicts..." autocomplete="off">
                                 <ul id="tj-verdict-list" class="custom-dropdown-list"></ul>
                             </div>
                         </div>
-                        
-                        <div class="col-span-2 md:col-span-4 lg:col-span-6"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="tj-remarks" class="input-field py-2" placeholder="Mistakes or lessons..."></div>
                     </div>
                     <div class="mt-5">
                         <button id="tj-save-btn" onclick="processTrade()" class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition shadow-lg shadow-brand-500/20">Save Trade</button>
@@ -489,6 +540,7 @@
                             <div id="col-dropdown" class="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl hidden z-50 p-3 flex flex-col gap-2">
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Date</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Symbol</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Status</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="strategy"> Strategy</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="entryInfo"> Entry/SL Stats</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="pnl"> Net P&L</label>
@@ -530,7 +582,7 @@
                     </button>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sensitive-data">
-                    <div class="glass-card rounded-xl p-4 border-l-2 border-l-brand-500"><p class="text-xs text-gray-500 mb-1">Total Corpus</p><p id="led-total" class="font-bold text-lg truncate">₹0.00</p></div>
+                    <div class="glass-card rounded-xl p-4 border-l-2 border-l-brand-500"><p class="text-xs text-gray-500 mb-1">Total Realized</p><p id="led-total" class="font-bold text-lg truncate">₹0.00</p></div>
                     <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Trade Ledger</p><p id="led-trade" class="font-semibold text-gray-300 truncate">₹0.00</p></div>
                     <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Liquid Fund</p><p id="led-liquid" class="font-semibold text-gray-300 truncate">₹0.00</p></div>
                     <div class="glass-card rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Reserve</p><p id="led-reserve" class="font-semibold text-gray-300 truncate">₹0.00</p></div>
@@ -611,6 +663,7 @@
             <button onclick="closeTradeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition">✕</button>
             <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4 pr-8">
                 <span id="tm-result-badge" class="px-3 py-1 rounded text-xs font-bold text-white tracking-widest uppercase"></span>
+                <span id="tm-mode-badge" class="px-2 py-0.5 rounded text-[10px] font-bold text-brand-300 bg-brand-500/20 border border-brand-500/30 uppercase"></span>
                 <h2 class="text-xl font-bold tracking-wider uppercase text-gray-200" id="tm-symbol"></h2>
             </div>
             
@@ -623,6 +676,60 @@
                 <p id="tm-remarks" class="text-gray-300 leading-relaxed"></p>
                 <div id="tm-verdicts" class="mt-3 flex flex-wrap gap-2"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Broker Settings Edit Modal -->
+    <div id="brokerModal" class="fixed inset-0 z-[200] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-lg rounded-2xl p-6 relative transform scale-95 transition-transform duration-300" id="brokerModalCard">
+            <button onclick="closeBrokerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition">✕</button>
+            <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4 pr-8">
+                <h2 class="text-xl font-bold tracking-wider text-gray-200">Configure Broker Charges</h2>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Editing settings for <strong class="text-white" id="bm-broker-name"></strong> in <strong class="text-brand-400 uppercase" id="bm-broker-mode"></strong> mode.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div><label class="block text-xs text-gray-400 mb-1">Brokerage (%)</label><input type="number" id="bm-pct" step="0.001" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Max per Order (₹)</label><input type="number" id="bm-max" step="1" class="input-field py-2"></div>
+                
+                <div><label class="block text-xs text-gray-400 mb-1">STT Multiplier (%)</label><input type="number" id="bm-stt" step="0.001" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Exchange Txn Chg (%)</label><input type="number" id="bm-exch" step="0.0001" class="input-field py-2"></div>
+                
+                <div><label class="block text-xs text-gray-400 mb-1">SEBI Chg (%)</label><input type="number" id="bm-sebi" step="0.0001" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Stamp Duty (%)</label><input type="number" id="bm-stamp" step="0.001" class="input-field py-2"></div>
+                
+                <div class="col-span-2"><label class="block text-xs text-gray-400 mb-1">GST (%)</label><input type="number" id="bm-gst" step="0.1" class="input-field py-2"></div>
+            </div>
+            <button onclick="saveBrokerModal()" class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition shadow-lg">Save Configuration</button>
+        </div>
+    </div>
+
+    <!-- Close Swing Trade Modal -->
+    <div id="closeTradeModal" class="fixed inset-0 z-[200] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-lg rounded-2xl p-6 relative transform scale-95 transition-transform duration-300" id="closeTradeModalCard">
+            <button onclick="closeCloseTradeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition">✕</button>
+            <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4 pr-8">
+                <h2 class="text-xl font-bold tracking-wider text-long uppercase">Close Position</h2>
+                <span id="ctm-symbol" class="font-semibold text-gray-400"></span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div><label class="block text-xs text-gray-400 mb-1">Exit Date</label><input type="text" id="ctm-exit-date" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Exit Time</label><input type="time" id="ctm-exit-time" class="input-field py-2"></div>
+                
+                <div><label class="block text-xs text-gray-400 mb-1">Exit Price (₹)</label><input type="number" id="ctm-exit-price" step="0.01" class="input-field py-2 text-lg font-bold"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Charges Paid (₹)</label><input type="number" id="ctm-charges" step="0.01" class="input-field py-2"></div>
+                
+                <div class="col-span-2"><label class="block text-xs text-gray-400 mb-1">Verdict(s)</label><input type="text" id="ctm-verdict" class="input-field py-2" placeholder="Comma separated..."></div>
+                <div class="col-span-2"><label class="block text-xs text-gray-400 mb-1">Exit Remarks</label><input type="text" id="ctm-remarks" class="input-field py-2" placeholder="Why did you exit?"></div>
+            </div>
+            
+            <div class="bg-black/40 p-4 rounded-xl border border-white/5 mb-6 flex justify-between items-center">
+                <span class="text-sm text-gray-400 font-semibold">Net P&L (Calc)</span>
+                <span id="ctm-calc-pnl" class="text-xl font-bold text-gray-200">-</span>
+            </div>
+
+            <button onclick="saveCloseTradeModal()" class="w-full py-3 rounded-lg bg-long hover:bg-long/80 text-white font-medium transition shadow-lg">Complete Trade</button>
         </div>
     </div>
 
@@ -690,18 +797,45 @@
             netCorpus: true, ledgerBal: false, remarks: true
         };
 
+        // --- Core Modes State ---
+        let activeCalcMode = 'intraday'; // 'intraday' or 'swing'
+        let activeJourMode = 'intraday';
+        let activeDashMode = 'both'; // 'intraday', 'swing', or 'both'
+
         // Broker & Exchange State Management
         let currentExchange = localStorage.getItem('pt_exchange') || 'NSE';
-        let brokerProfiles = JSON.parse(localStorage.getItem('pt_broker_profiles')) || {
-            "Dhan": { pct: 0.03, max: 20 },
-            "Zerodha": { pct: 0.03, max: 20 },
-            "Groww": { pct: 0.05, max: 20 }
+        
+        // Migrate or Load Broker Profiles to support new multi-mode config
+        let savedBrokers = localStorage.getItem('pt_broker_profiles');
+        let brokerProfiles = {};
+        const defaultBrokerConfig = {
+            "Dhan": {
+                "intraday": { pct: 0.03, max: 20, stt: 0.025, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.003 },
+                "swing": { pct: 0.1, max: 20, stt: 0.1, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.015 }
+            }
         };
-        let currentBroker = localStorage.getItem('pt_current_broker');
-        if (!currentBroker || !brokerProfiles[currentBroker]) currentBroker = "Dhan";
 
-        let editingTradeId = null; let editingCapitalId = null;
+        if (savedBrokers) {
+            brokerProfiles = JSON.parse(savedBrokers);
+            // Migration logic for older single-level config
+            Object.keys(brokerProfiles).forEach(k => {
+                if (typeof brokerProfiles[k].pct === 'number') {
+                    brokerProfiles[k] = {
+                        intraday: { pct: brokerProfiles[k].pct, max: brokerProfiles[k].max, stt: 0.025, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.003 },
+                        swing: { pct: 0.1, max: 20, stt: 0.1, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.015 }
+                    };
+                }
+            });
+        } else {
+            brokerProfiles = defaultBrokerConfig;
+        }
+
+        let currentBroker = localStorage.getItem('pt_current_broker');
+        if (!currentBroker || !brokerProfiles[currentBroker]) currentBroker = Object.keys(brokerProfiles)[0] || "Dhan";
+
+        let editingTradeId = null; let editingCapitalId = null; let closingTradeId = null;
         let selectedTrades = new Set(); let selectedCapital = new Set();
+        let manualSharesOverride = null;
         
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
@@ -714,6 +848,58 @@
 
         // --- Helpers ---
         const extractNum = (str) => parseFloat(str.replace(/[^0-9.-]+/g,"")) || '';
+        const formatMoney = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
+        const formatNum = (num) => new Intl.NumberFormat('en-IN').format(num || 0);
+
+        // --- Toggles setup ---
+        function initGlobalModes() {
+            // Calculator Toggles
+            const calcBtns = document.querySelectorAll('.calc-mode-btn');
+            calcBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    activeCalcMode = e.target.getAttribute('data-mode');
+                    calcBtns.forEach(b => { b.classList.remove('active'); b.classList.add('inactive'); });
+                    e.target.classList.remove('inactive'); e.target.classList.add('active');
+                    document.getElementById('setupModeLabel').textContent = activeCalcMode.toUpperCase();
+                    document.getElementById('broker-mode-badge').textContent = activeCalcMode.toUpperCase();
+                    loadCalcState();
+                    updateBrokerInputs();
+                });
+            });
+
+            // Journal Toggles
+            const jourBtns = document.querySelectorAll('.jour-mode-btn');
+            jourBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    activeJourMode = e.target.getAttribute('data-mode');
+                    jourBtns.forEach(b => { b.classList.remove('active'); b.classList.add('inactive'); });
+                    e.target.classList.remove('inactive'); e.target.classList.add('active');
+                    document.getElementById('jourModeLabel').textContent = activeJourMode.toUpperCase();
+                    
+                    // Hide/Show Exit fields based on mode
+                    const exitFields = document.querySelectorAll('.exit-fields-group');
+                    if (activeJourMode === 'swing' && !editingTradeId) {
+                        exitFields.forEach(f => f.classList.add('hidden'));
+                        document.getElementById('jour-result-box').classList.add('hidden');
+                    } else {
+                        exitFields.forEach(f => f.classList.remove('hidden'));
+                        document.getElementById('jour-result-box').classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Dashboard Toggles
+            const dashBtns = document.querySelectorAll('.dash-mode-toggle-btn');
+            dashBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    activeDashMode = e.target.getAttribute('data-mode');
+                    dashBtns.forEach(b => { b.classList.remove('active'); b.classList.add('inactive'); });
+                    e.target.classList.remove('inactive'); e.target.classList.add('active');
+                    document.getElementById('dashPerformanceLabel').textContent = activeDashMode.toUpperCase();
+                    updateDashboard();
+                });
+            });
+        }
 
         // --- Auth Token Persistence Logic ---
         function setToken(token, expiresIn) {
@@ -841,9 +1027,16 @@
                         if (cloudData.balances) balances = cloudData.balances;
                         if (cloudData.tradesDB) tradesDB = cloudData.tradesDB;
                         if (cloudData.capitalLedger) capitalLedger = cloudData.capitalLedger;
+                        if (cloudData.brokerProfiles) brokerProfiles = cloudData.brokerProfiles;
                         
                         if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
                         if (cloudData.customVerdicts) { customVerdicts.length = 0; cloudData.customVerdicts.forEach(x => customVerdicts.push(x)); }
+                        
+                        // Sanitize older trades adding default mode and status
+                        tradesDB.forEach(t => {
+                            if(!t.mode) t.mode = 'intraday';
+                            if(!t.status) t.status = 'CLOSED';
+                        });
                     }
                     
                     saveGlobalState(false);
@@ -888,7 +1081,7 @@
                     }
                 }
 
-                const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategies, customVerdicts });
+                const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategies, customVerdicts, brokerProfiles });
                 const blob = new Blob([content], { type: 'application/json' });
                 
                 if (driveFileId) {
@@ -927,6 +1120,7 @@
             localStorage.setItem('pt_capital', JSON.stringify(capitalLedger));
             localStorage.setItem('pt_strategies', JSON.stringify(customStrategies));
             localStorage.setItem('pt_verdicts', JSON.stringify(customVerdicts));
+            localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
             if (syncCloud && accessToken) {
                 uploadToDrive();
             }
@@ -942,7 +1136,8 @@
             let tempLiquid = 0, tempTrade = 0, tempReserve = 0;
             
             const timeline = [];
-            tradesDB.forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
+            // Filter to only include closed trades for corpus generation
+            tradesDB.filter(t => t.status === 'CLOSED').forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
             capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
             timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
             
@@ -1059,9 +1254,6 @@
             }
         }
 
-        const formatMoney = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
-        const formatNum = (num) => new Intl.NumberFormat('en-IN').format(num || 0);
-
         window.togglePrivacy = function(containerId, btnId) {
             const container = document.getElementById(containerId); const btn = document.getElementById(btnId);
             const isMasked = container.classList.toggle('privacy-enabled');
@@ -1069,10 +1261,19 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            initGlobalModes();
             initCalculator(); initNavigation(); initStocks(); initColToggles();
+            
+            // Clean un-migrated older trades
+            tradesDB.forEach(t => {
+                if(!t.mode) t.mode = 'intraday';
+                if(!t.status) t.status = 'CLOSED';
+            });
                          
             flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry').focus();} } });
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-action').focus();} } });
+            
+            // Fix Close Trade Modal flatpickr attachment problem later dynamically inside the open function
             
             setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, journalFlow, false);
             setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, journalFlow, true);
@@ -1080,11 +1281,7 @@
                          
             bindKeyboardFlows(); updateViews(); initDashboardFilters();
 
-            // Load Calculator Presets
-            const calcSavedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
-            document.getElementById('entry').value = calcSavedState.entry || '';
-            document.getElementById('stopLoss').value = calcSavedState.sl || '';
-            if(document.getElementById('entry').value) window.triggerGlobalCalculate();
+            loadCalcState(); // Initial load for calc settings
 
             // Setup close dropdown & modal when clicking outside
             document.addEventListener('click', (e) => {
@@ -1100,12 +1297,35 @@
                 if(!e.target.closest('#capitalModalCard') && e.target.id === 'capitalModal') {
                     closeCapitalModal();
                 }
+                if(!e.target.closest('#brokerModalCard') && e.target.id === 'brokerModal') {
+                    closeBrokerModal();
+                }
+                if(!e.target.closest('#closeTradeModalCard') && e.target.id === 'closeTradeModal') {
+                    closeCloseTradeModal();
+                }
             });
 
             if (checkToken()) {
                 loadFromDrive();
             }
         });
+        
+        function loadCalcState() {
+            const savedState = JSON.parse(localStorage.getItem('riskCalcSettings_' + activeCalcMode) || '{}');
+            document.getElementById('entry').value = savedState.entry || '';
+            document.getElementById('stopLoss').value = savedState.sl || '';
+            document.getElementById('margin').value = savedState.margin || '1';
+            document.getElementById('maxAllocPct').value = savedState.maxAlloc || '100';
+            document.getElementById('riskPct').value = savedState.riskPct || '1.0';
+            document.getElementById('targetPct').value = savedState.targetPct || '1.5';
+            
+            const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+            document.getElementById('corpus').value = initialCorpus > 0 ? initialCorpus : (savedState.corpus || '');
+            
+            manualSharesOverride = null;
+            document.getElementById('overrideNotice').classList.add('hidden');
+            if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
+        }
         
         function setupCapitalTransfers() {
             const clAction = document.getElementById('cl-action');
@@ -1360,20 +1580,31 @@
         function parse12HourTo24(time12) {
             if(!time12) return '';
             const [time, modifier] = time12.split(' '); let [hours, minutes] = time.split(':');
+            if(!hours || !minutes) return time12; // fallback if already 24h
             if (hours === '12') hours = '00'; if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
             return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
 
         window.editRecord = function(id, type, event) {
-            if(event) event.stopPropagation(); // prevent modal opening
+            if(event) event.stopPropagation();
 
             if (type === 'trade') {
                 const t = tradesDB.find(x => x.id === id); if(!t) return;
+                
+                // Force Mode Switching before loading
+                document.querySelector(`.jour-mode-btn[data-mode="${t.mode}"]`).click();
+
                 editingTradeId = id; document.getElementById('tj-date')._flatpickr.setDate(t.date);
                 let inTime = '', outTime = '';
-                if(t.session) { const parts = t.session.split(' - '); inTime = parse12HourTo24(parts[0]); outTime = parse12HourTo24(parts[1] || ''); }
-                document.getElementById('tj-entry-time').value = inTime; document.getElementById('tj-exit-time').value = outTime;
-                document.getElementById('tj-symbol').value = t.symbol; document.getElementById('tj-strategy').value = t.strategy || '';
+                if(t.session) { 
+                    const parts = t.session.split(' - '); 
+                    inTime = parse12HourTo24(parts[0]); 
+                    outTime = parse12HourTo24(parts[1] || ''); 
+                }
+                document.getElementById('tj-entry-time').value = inTime; 
+                document.getElementById('tj-exit-time').value = outTime;
+                document.getElementById('tj-symbol').value = t.symbol; 
+                document.getElementById('tj-strategy').value = t.strategy || '';
                 
                 document.getElementById('tj-entry').value = t.entry || '';
                 document.getElementById('tj-sl').value = t.sl || '';
@@ -1394,13 +1625,17 @@
                 document.getElementById('tj-b3').value = t.b3 || '';
 
                 document.getElementById('tj-exit-price').value = t.exitPrice || '';
-                document.getElementById('tj-pnl').value = t.netPnl; document.getElementById('tj-charges').value = t.charges || '';
-                document.getElementById('tj-result').value = t.result; document.getElementById('tj-verdict').value = t.verdict || '';
+                document.getElementById('tj-pnl').value = t.netPnl; 
+                document.getElementById('tj-charges').value = t.charges || '';
+                document.getElementById('tj-result').value = t.result || 'BREAKEVEN'; 
+                document.getElementById('tj-verdict').value = t.verdict || '';
                 document.getElementById('tj-remarks').value = t.remarks || '';
+                
                 const btn = document.getElementById('tj-save-btn');
                 btn.textContent = "Update Trade"; btn.classList.replace('bg-brand-600', 'bg-long'); btn.classList.replace('hover:bg-brand-500', 'hover:bg-long/80');
                 document.getElementById('tj-edit-badge').classList.remove('hidden'); document.getElementById('trade-input-panel').scrollIntoView({ behavior: 'smooth' });
-                document.getElementById('tj-pnl').dispatchEvent(new Event('input')); 
+                
+                if (t.status === 'CLOSED') document.getElementById('tj-pnl').dispatchEvent(new Event('input')); 
             } else {
                 const c = capitalLedger.find(x => x.id === id); if(!c) return;
                 editingCapitalId = id; document.getElementById('cl-date')._flatpickr.setDate(c.date);
@@ -1427,6 +1662,101 @@
                 recalculateTimeline();
             }
         }
+
+        // --- Close Trade Open Actions ---
+        window.openCloseTradeModal = function(id, event) {
+            if(event) event.stopPropagation();
+            const t = tradesDB.find(x => x.id === id); if(!t) return;
+            closingTradeId = id;
+
+            const modal = document.getElementById('closeTradeModal');
+            const card = document.getElementById('closeTradeModalCard');
+            
+            document.getElementById('ctm-symbol').textContent = `${t.symbol} (${t.mode.toUpperCase()})`;
+            
+            flatpickr("#ctm-exit-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today" });
+            
+            document.getElementById('ctm-exit-price').value = '';
+            document.getElementById('ctm-charges').value = '';
+            document.getElementById('ctm-verdict').value = '';
+            document.getElementById('ctm-remarks').value = '';
+            document.getElementById('ctm-calc-pnl').textContent = '-';
+            
+            setupCustomDropdown('ctm-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, [], true);
+
+            const calcNet = () => {
+                const ep = parseFloat(document.getElementById('ctm-exit-price').value) || 0;
+                const chg = parseFloat(document.getElementById('ctm-charges').value) || 0;
+                if(ep > 0 && t.entry && t.shares) {
+                    const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares;
+                    const net = gross - chg;
+                    const pnlSpan = document.getElementById('ctm-calc-pnl');
+                    pnlSpan.textContent = formatMoney(net);
+                    pnlSpan.className = `text-xl font-bold ${net > 0 ? 'text-long' : (net < 0 ? 'text-short' : 'text-gray-200')}`;
+                }
+            };
+            document.getElementById('ctm-exit-price').addEventListener('input', calcNet);
+            document.getElementById('ctm-charges').addEventListener('input', calcNet);
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 10);
+        }
+
+        window.closeCloseTradeModal = function() {
+            closingTradeId = null;
+            const modal = document.getElementById('closeTradeModal');
+            const card = document.getElementById('closeTradeModalCard');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        window.saveCloseTradeModal = function() {
+            if(!closingTradeId) return;
+            const t = tradesDB.find(x => x.id === closingTradeId); if(!t) return;
+            
+            const exDate = document.getElementById('ctm-exit-date').value;
+            const exTimeRaw = document.getElementById('ctm-exit-time').value;
+            const exTime = format12Hour(exTimeRaw);
+            const ep = parseFloat(document.getElementById('ctm-exit-price').value) || 0;
+            const chg = parseFloat(document.getElementById('ctm-charges').value) || 0;
+            const verdict = document.getElementById('ctm-verdict').value;
+            const remarks = document.getElementById('ctm-remarks').value;
+            
+            if(ep <= 0) return alert("Exit price required to close trade.");
+            
+            let net = 0;
+            if(t.entry && t.shares) {
+                const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares;
+                net = gross - chg;
+            }
+
+            t.exitPrice = ep;
+            t.charges = chg;
+            t.netPnl = net;
+            t.verdict = verdict;
+            if (remarks) t.remarks = (t.remarks ? t.remarks + " | Exit: " + remarks : "Exit: " + remarks);
+            
+            let sess = t.session;
+            if (sess) {
+                const parts = sess.split(' - ');
+                sess = `${parts[0]} - ${exDate} ${exTime}`;
+            } else {
+                sess = `Exited: ${exDate} ${exTime}`;
+            }
+            t.session = sess;
+            
+            t.result = net > 0 ? 'WIN' : (net < 0 ? 'LOSS' : 'BREAKEVEN');
+            t.status = 'CLOSED';
+
+            recalculateTimeline();
+            closeCloseTradeModal();
+        }
         
         window.openTradeModal = function(id) {
             const t = tradesDB.find(x => x.id === id); if(!t) return;
@@ -1435,24 +1765,37 @@
             
             document.getElementById('tm-symbol').textContent = `${t.symbol} (${formatToDDMMYYYY(t.date)})`;
             document.getElementById('tm-remarks').textContent = t.remarks || "No remarks provided.";
+            document.getElementById('tm-mode-badge').textContent = t.mode.toUpperCase();
             
             const badge = document.getElementById('tm-result-badge');
-            badge.textContent = t.result;
-            badge.className = `px-3 py-1 rounded text-xs font-bold text-white shadow ${t.result==='WIN'?'bg-long shadow-long/20':(t.result==='LOSS'?'bg-short shadow-short/20':'bg-gray-600 shadow-gray-500/20')}`;
+            
+            if (t.status === 'OPEN') {
+                badge.textContent = 'OPEN';
+                badge.className = 'px-3 py-1 rounded text-xs font-bold text-white shadow bg-brand-500 shadow-brand-500/20';
+            } else {
+                badge.textContent = t.result;
+                badge.className = `px-3 py-1 rounded text-xs font-bold text-white shadow ${t.result==='WIN'?'bg-long shadow-long/20':(t.result==='LOSS'?'bg-short shadow-short/20':'bg-gray-600 shadow-gray-500/20')}`;
+            }
 
             const addField = (label, val, classColor = "text-gray-200") => `<div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">${label}</p><p class="font-semibold ${classColor} text-sm md:text-base">${val}</p></div>`;
             
-            let html = addField("Net P&L", formatMoney(t.netPnl), t.netPnl > 0 ? "text-long" : (t.netPnl < 0 ? "text-short" : "text-gray-400"));
-            html += addField("Charges", formatMoney(t.charges || 0));
-            html += addField("Exit Price", t.exitPrice ? formatMoney(t.exitPrice) : "-");
-            html += addField("% Change", `${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%`, t.pctChange > 0 ? "text-long" : (t.pctChange < 0 ? "text-short" : "text-gray-400"));
+            let html = '';
+            if (t.status === 'CLOSED') {
+                html += addField("Net P&L", formatMoney(t.netPnl), t.netPnl > 0 ? "text-long" : (t.netPnl < 0 ? "text-short" : "text-gray-400"));
+                html += addField("Charges", formatMoney(t.charges || 0));
+                html += addField("Exit Price", t.exitPrice ? formatMoney(t.exitPrice) : "-");
+                html += addField("% Change", `${t.pctChange > 0 ? '+' : ''}${(t.pctChange || 0).toFixed(2)}%`, t.pctChange > 0 ? "text-long" : (t.pctChange < 0 ? "text-short" : "text-gray-400"));
+                html += addField("End Corpus", formatMoney(t.endCorpus));
+            } else {
+                html += `<div class="col-span-full mb-2"><p class="text-xs text-brand-400 italic">This trade is currently OPEN. Capital is reserved but P&L is unrealized.</p></div>`;
+            }
             
-            html += addField("End Corpus", formatMoney(t.endCorpus));
             html += addField("Session Time", t.session || "-");
             html += addField("Strategy", t.strategy || "-");
             
             if(t.entry || t.sl) {
                 html += `<div class="col-span-full border-t border-white/5 mt-1 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">`;
+                html += addField("Direction", t.direction || (t.entry > t.sl ? 'LONG' : 'SHORT'), (t.direction === 'SHORT' || t.entry < t.sl) ? 'text-short' : 'text-long');
                 html += addField("Entry Price", t.entry ? formatMoney(t.entry) : "-");
                 html += addField("Stop Loss", t.sl ? formatMoney(t.sl) : "-");
                 html += addField("Target %", t.target ? `${t.target}%` : "-");
@@ -1571,16 +1914,16 @@
 
         function format12Hour(timeStr) {
             if(!timeStr) return '';
-            let [h, m] = timeStr.split(':'); h = parseInt(h); const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${m} ${ampm}`;
+            let [h, m] = timeStr.split(':'); 
+            if(!h || !m) return timeStr;
+            h = parseInt(h); const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${m} ${ampm}`;
         }
 
         window.processTrade = function() {
             const date = document.getElementById('tj-date').value;
             const entryTime = format12Hour(document.getElementById('tj-entry-time').value);
-            const exitTime = format12Hour(document.getElementById('tj-exit-time').value);
-            const session = (entryTime && exitTime) ? `${entryTime} - ${exitTime}` : (entryTime || exitTime || '');
-                         
-            const symbol = document.getElementById('tj-symbol').value.toUpperCase(); const strategy = document.getElementById('tj-strategy').value;
+            const symbol = document.getElementById('tj-symbol').value.toUpperCase(); 
+            const strategy = document.getElementById('tj-strategy').value;
             
             const entry = parseFloat(document.getElementById('tj-entry').value) || '';
             const sl = parseFloat(document.getElementById('tj-sl').value) || '';
@@ -1599,25 +1942,59 @@
             const b1 = parseFloat(document.getElementById('tj-b1').value) || '';
             const b2 = parseFloat(document.getElementById('tj-b2').value) || '';
             const b3 = parseFloat(document.getElementById('tj-b3').value) || '';
-
-            const exitPrice = parseFloat(document.getElementById('tj-exit-price').value) || '';
-            const pnl = parseFloat(document.getElementById('tj-pnl').value) || 0; const charges = parseFloat(document.getElementById('tj-charges').value) || 0;
-            const result = document.getElementById('tj-result').value; const verdict = document.getElementById('tj-verdict').value; const remarks = document.getElementById('tj-remarks').value;
+            
+            const remarks = document.getElementById('tj-remarks').value;
             
             if(!symbol) return alert('Symbol is required.');
-            const tradeData = { 
-                date, session, symbol, strategy, 
+
+            let tradeData = { 
+                mode: activeJourMode,
+                date, symbol, strategy, 
                 entry, sl, margin, risk, target, 
                 shares, targetPrice, rps, posValue, maxLoss, actualRisk, b0, b1, b2, b3,
-                exitPrice, netPnl: pnl, charges, result, verdict, remarks 
+                direction: entry > sl ? 'LONG' : 'SHORT'
             };
+
+            if (activeJourMode === 'swing' && !editingTradeId) {
+                // New Swing trade -> Goes to OPEN state
+                tradeData.status = 'OPEN';
+                tradeData.session = entryTime ? `Entered: ${entryTime}` : '';
+                tradeData.exitPrice = 0;
+                tradeData.netPnl = 0;
+                tradeData.charges = 0;
+                tradeData.result = 'OPEN';
+                tradeData.verdict = '';
+                tradeData.remarks = remarks;
+            } else {
+                // Intraday or Editing closed trade -> FULL State
+                const exitTime = format12Hour(document.getElementById('tj-exit-time').value);
+                const session = (entryTime && exitTime) ? `${entryTime} - ${exitTime}` : (entryTime || exitTime || '');
+                
+                const exitPrice = parseFloat(document.getElementById('tj-exit-price').value) || '';
+                const pnl = parseFloat(document.getElementById('tj-pnl').value) || 0; 
+                const charges = parseFloat(document.getElementById('tj-charges').value) || 0;
+                const result = document.getElementById('tj-result').value; 
+                const verdict = document.getElementById('tj-verdict').value; 
+                
+                tradeData.status = 'CLOSED';
+                tradeData.session = session;
+                tradeData.exitPrice = exitPrice;
+                tradeData.netPnl = pnl;
+                tradeData.charges = charges;
+                tradeData.result = result;
+                tradeData.verdict = verdict;
+                tradeData.remarks = remarks;
+            }
             
             if (editingTradeId) {
                 const idx = tradesDB.findIndex(t => t.id === editingTradeId); if(idx > -1) tradesDB[idx] = { ...tradesDB[idx], ...tradeData };
                 editingTradeId = null; const btn = document.getElementById('tj-save-btn');
                 btn.textContent = "Save Trade"; btn.classList.replace('bg-long', 'bg-brand-600'); btn.classList.replace('hover:bg-long/80', 'hover:bg-brand-500');
                 document.getElementById('tj-edit-badge').classList.add('hidden');
-            } else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); }
+            } else { 
+                tradeData.id = Date.now(); 
+                tradesDB.unshift(tradeData); 
+            }
             
             recalculateTimeline();
             
@@ -1673,13 +2050,14 @@
         function recalculateTimeline(syncCloud = true) {
             balances = { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 };
             const timeline = [];
-            tradesDB.forEach(t => timeline.push({ ...t, evType: 'TRADE' })); capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
+            // For Timeline, we only count CLOSED trades towards realized balance.
+            tradesDB.filter(t => t.status === 'CLOSED').forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
+            capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
                          
             timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
                          
             timeline.forEach(ev => {
                 if (ev.evType === 'CAPITAL') {
-                    // Match Exact normalized string logic mapping for both legacy and new types
                     const tStr = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(); 
                     const a = ev.amount;
                     
@@ -1707,6 +2085,14 @@
             });
             tradesDB.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id);
             capitalLedger.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id);
+            
+            // Sync Current Realized Corpus to input if missing/changed wildly
+            const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
+            const corpusInput = document.getElementById('corpus');
+            if(initialCorpus > 0 && !corpusInput.value) {
+                corpusInput.value = initialCorpus;
+            }
+
             saveGlobalState(syncCloud); updateViews();
         }
 
@@ -1717,7 +2103,8 @@
             let cols = tradeTableColumns;
             let thHTML = `<th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-trades" onclick="toggleAll('trades')"></th>
                           <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th>
-                          <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Symbol</th>`;
+                          <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Symbol</th>
+                          <th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-center">Status</th>`;
                           
             if (cols.strategy) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Strategy</th>`;
             if (cols.entryInfo) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Entry / SL</th>`;
@@ -1732,26 +2119,48 @@
             thead.innerHTML = thHTML;
             
             const tbody = document.getElementById('tradesBody');
-            if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
+            if(tradesDB.length === 0) { tbody.innerHTML = `<tr><td colspan="13" class="text-center py-4 text-gray-500">No trades logged.</td></tr>`; return; }
                          
             tbody.innerHTML = tradesDB.map(t => {
                 let rowHTML = `
-                <tr class="clickable-row align-top group" onclick="openTradeModal(${t.id})">
+                <tr class="clickable-row align-top group ${t.status === 'OPEN' ? 'bg-brand-500/5 hover:bg-brand-500/10' : ''}" onclick="openTradeModal(${t.id})">
                     <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades w-3 h-3 md:w-4 md:h-4" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
                     <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300 leading-tight">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${t.session || ''}</span></td>
-                    <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm text-gray-100 group-hover:text-brand-400 transition-colors">${t.symbol}</td>`;
+                    <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm text-gray-100 group-hover:text-brand-400 transition-colors flex flex-col">
+                        ${t.symbol}
+                        <span class="text-[8px] md:text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">${t.mode || 'INTRADAY'}</span>
+                    </td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center">
+                        <span class="text-[8px] md:text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${t.status === 'OPEN' ? 'bg-brand-500 text-white' : 'bg-gray-800 text-gray-400'}">${t.status}</span>
+                    </td>`;
                     
                 if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
                 if (cols.entryInfo) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">SL: ${t.sl || '-'}</span></div></td>`;
-                if (cols.pnl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`;
-                if (cols.charges) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`;
-                if (cols.result) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`;
-                if (cols.pctChange) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${t.pctChange.toFixed(2)}%</td>`;
-                if (cols.corpus) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-300">${formatMoney(t.endCorpus)}</td>`;
+                if (cols.pnl) {
+                    if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm text-gray-500 italic">-</td>`;
+                    else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`;
+                }
+                if (cols.charges) {
+                    if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-500 whitespace-nowrap font-medium text-[9px] md:text-sm italic">-</td>`;
+                    else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`;
+                }
+                if (cols.result) {
+                    if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`;
+                    else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`;
+                }
+                if (cols.pctChange) {
+                    if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm text-gray-500 italic">-</td>`;
+                    else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${(t.pctChange || 0).toFixed(2)}%</td>`;
+                }
+                if (cols.corpus) {
+                    if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-500 italic">-</td>`;
+                    else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-300">${formatMoney(t.endCorpus)}</td>`;
+                }
                 if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${t.remarks || '-'}</td>`;
                 
                 rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap">
                         <div class="flex items-center justify-end gap-1 md:gap-2">
+                            ${t.status === 'OPEN' ? `<button onclick="openCloseTradeModal(${t.id}, event)" class="text-long hover:text-white bg-long/10 hover:bg-long/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition" title="Close Trade">Finish</button>` : ''}
                             <button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
                             <button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                         </div>
@@ -1889,7 +2298,12 @@
             document.getElementById('led-liquid').innerHTML = `${formatMoney(balances.liquidFund)} <span class="text-xs text-gray-500 font-medium ml-1">(${calcPct(balances.liquidFund)})</span>`;
             document.getElementById('led-reserve').innerHTML = `${formatMoney(balances.sliceReserve)} <span class="text-xs text-gray-500 font-medium ml-1">(${calcPct(balances.sliceReserve)})</span>`;
             
-            let filteredTrades = [...tradesDB]; 
+            // Filter Dashboard metrics by mode AND status = CLOSED
+            let filteredTrades = tradesDB.filter(t => t.status === 'CLOSED');
+            if (activeDashMode !== 'both') {
+                filteredTrades = filteredTrades.filter(t => t.mode === activeDashMode);
+            }
+
             let rangeLabel = "";
             let rangeStart = null, rangeEnd = null;
 
@@ -1902,20 +2316,27 @@
                 rangeEnd = range.end;
                 
                 btnPrev.classList.remove('hidden'); btnNext.classList.remove('hidden'); lbl.classList.remove('hidden');
-                filteredTrades = tradesDB.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= range.start && d <= range.end; });
+                filteredTrades = filteredTrades.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= range.start && d <= range.end; });
             } else {
                 btnPrev.classList.add('hidden'); btnNext.classList.add('hidden'); lbl.classList.add('hidden');
                 if (dashFilterMode === 'custom' && customDateStart && customDateEnd) { 
                     rangeStart = customDateStart; 
                     rangeEnd = customDateEnd;
-                    filteredTrades = tradesDB.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= customDateStart && d <= customDateEnd; }); 
+                    filteredTrades = filteredTrades.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= customDateStart && d <= customDateEnd; }); 
                 }
             }
             
-            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd);
+            // Note: Timeline XIRR relies on global history, it gets tricky to filter XIRR by mode since capital isn't segregated by mode.
+            // For now, we will calculate XIRR globally, maybe disabling mode-filter for XIRR, or just accept it's a rough approximation if mode-filtered.
+            // Let's pass the filteredTrades constraint to calculateTimeframeXIRR implicitly by hacking tradesDB temporary? No, let's keep XIRR for entire portfolio regardless of mode, or just let it calculate based on all closed trades in that timeframe.
+            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd); // This uses all CLOSED trades right now. Keeping as Portfolio XIRR.
+            
             const xirrEl = document.getElementById('dash-xirr');
-            xirrEl.textContent = xirrValue.toFixed(2) + '%';
-            xirrEl.className = `text-3xl md:text-4xl font-bold sensitive-data truncate ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : '')}`;
+            xirrEl.textContent = activeDashMode === 'both' ? (xirrValue.toFixed(2) + '%') : 'N/A';
+            if(activeDashMode !== 'both') xirrEl.title = 'XIRR only available in BOTH OVERVIEW mode due to unified capital ledger.';
+            else xirrEl.title = '';
+
+            xirrEl.className = `text-3xl md:text-4xl font-bold sensitive-data truncate ${xirrValue > 0 && activeDashMode === 'both' ? 'text-long' : (xirrValue < 0 && activeDashMode === 'both' ? 'text-short' : 'text-gray-500')}`;
 
             lbl.textContent = rangeLabel;
             let totalPnl = 0, wins = 0; filteredTrades.forEach(t => { totalPnl += t.netPnl; if (t.result === 'WIN') wins++; });
@@ -1963,13 +2384,6 @@
                 });
             };
 
-            const updateBrokerInputs = () => {
-                inp.value = currentBroker;
-                const prof = brokerProfiles[currentBroker];
-                document.getElementById('broker-details').textContent = `${prof.pct}% | Max ₹${prof.max}/order`;
-                if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate(); 
-            };
-
             inp.addEventListener('mousedown', (e) => {
                 e.preventDefault(); 
                 list.classList.toggle('active');
@@ -1985,9 +2399,7 @@
                 if (e.target.id === 'add-broker-btn') {
                     let name = prompt("Enter new broker name (e.g. Upstox):");
                     if (name && name.trim()) {
-                        let p = prompt(`Enter Brokerage % for ${name.trim()} (e.g., 0.05):`, "0.03");
-                        let m = prompt(`Enter Max Brokerage per order for ${name.trim()} (e.g., 20):`, "20");
-                        brokerProfiles[name.trim()] = { pct: parseFloat(p)||0, max: parseFloat(m)||0 };
+                        brokerProfiles[name.trim()] = JSON.parse(JSON.stringify(defaultBrokerConfig['Dhan'])); // Clone default
                         currentBroker = name.trim();
                         localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
                         localStorage.setItem('pt_current_broker', currentBroker);
@@ -2017,7 +2429,66 @@
                 }
             });
 
+            // Bind Edit Config Button
+            document.getElementById('editBrokerBtn').addEventListener('click', openBrokerModal);
+
             updateBrokerInputs();
+        }
+
+        function updateBrokerInputs() {
+            const inp = document.getElementById('broker-input');
+            inp.value = currentBroker;
+            if(!brokerProfiles[currentBroker]) return;
+            const prof = brokerProfiles[currentBroker][activeCalcMode];
+            document.getElementById('broker-details').textContent = `${prof.pct}% | Max ₹${prof.max}/order`;
+            if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate(); 
+        }
+
+        function openBrokerModal() {
+            const prof = brokerProfiles[currentBroker][activeCalcMode];
+            document.getElementById('bm-broker-name').textContent = currentBroker;
+            document.getElementById('bm-broker-mode').textContent = activeCalcMode;
+            
+            document.getElementById('bm-pct').value = prof.pct;
+            document.getElementById('bm-max').value = prof.max;
+            document.getElementById('bm-stt').value = prof.stt;
+            document.getElementById('bm-exch').value = prof.exch;
+            document.getElementById('bm-sebi').value = prof.sebi;
+            document.getElementById('bm-stamp').value = prof.stamp;
+            document.getElementById('bm-gst').value = prof.gst;
+
+            const modal = document.getElementById('brokerModal');
+            const card = document.getElementById('brokerModalCard');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeBrokerModal() {
+            const modal = document.getElementById('brokerModal');
+            const card = document.getElementById('brokerModalCard');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function saveBrokerModal() {
+            const prof = brokerProfiles[currentBroker][activeCalcMode];
+            prof.pct = parseFloat(document.getElementById('bm-pct').value) || 0;
+            prof.max = parseFloat(document.getElementById('bm-max').value) || 0;
+            prof.stt = parseFloat(document.getElementById('bm-stt').value) || 0;
+            prof.exch = parseFloat(document.getElementById('bm-exch').value) || 0;
+            prof.sebi = parseFloat(document.getElementById('bm-sebi').value) || 0;
+            prof.stamp = parseFloat(document.getElementById('bm-stamp').value) || 0;
+            prof.gst = parseFloat(document.getElementById('bm-gst').value) || 0;
+
+            localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
+            updateBrokerInputs();
+            closeBrokerModal();
         }
 
         // --- Exchange Toggle Logic ---
@@ -2049,45 +2520,51 @@
 
             const cInputs = {
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'),
-                corpus: document.getElementById('corpus'), margin: document.getElementById('margin'),
+                corpus: document.getElementById('corpus'), margin: document.getElementById('margin'), maxAlloc: document.getElementById('maxAllocPct'),
                 risk: document.getElementById('riskPct'), target: document.getElementById('targetPct'), 
-                msg: document.getElementById('validationMsg')
+                msg: document.getElementById('validationMsg'),
+                sharesOut: document.getElementById('outSharesInput')
             };
             
-            const savedState = JSON.parse(localStorage.getItem('riskCalcSettings') || '{}');
-            const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
-            cInputs.corpus.value = initialCorpus > 0 ? initialCorpus : (savedState.corpus || '');
-            
-            cInputs.margin.value = savedState.margin || '1'; 
-            cInputs.risk.value = savedState.riskPct || '1.0';
-            cInputs.target.value = savedState.targetPct || '1.5';
-
             cInputs.entry.addEventListener('focus', function(e) { this.select(); });
             cInputs.sl.addEventListener('focus', function(e) { this.select(); });
             
-            const calcCharges = (qty, ent, exitPrice, dir, bPct, bMax, exchCode) => {
+            const calcCharges = (qty, ent, exitPrice, dir, brkProf, exchCode) => {
                 const pBuy = dir === 'LONG' ? ent : exitPrice;
                 const pSell = dir === 'LONG' ? exitPrice : ent;
                 const tBuy = qty * pBuy;
                 const tSell = qty * pSell;
                 const tTotal = tBuy + tSell;
 
-                const bBuy = Math.min(tBuy * (bPct / 100), bMax);
-                const bSell = Math.min(tSell * (bPct / 100), bMax);
+                const bBuy = Math.min(tBuy * (brkProf.pct / 100), brkProf.max);
+                const bSell = Math.min(tSell * (brkProf.pct / 100), brkProf.max);
                 const broker = bBuy + bSell;
                 
-                let brokerTxt = `${bPct}% on Total`;
-                if(bBuy >= bMax || bSell >= bMax) brokerTxt = `Max ₹${bMax}/side`;
+                let brokerTxt = `${brkProf.pct}% on Total`;
+                if(bBuy >= brkProf.max || bSell >= brkProf.max) brokerTxt = `Max ₹${brkProf.max}/side`;
 
-                const stt = Math.round(tSell * 0.00025);
-                const exchRate = exchCode === 'NSE' ? 0.0000307 : 0.0000375;
+                // Calculate STT based on profile (usually applies to sell for intraday, total for swing. Let's strictly use the configured STT% on standard sides).
+                // Simplified generic model: apply configured STT% to Total value for generic, or strictly to Sell for intraday.
+                // Best flexibility: STT in India applies mostly to Sell for Intraday (0.025%), both for Swing (0.1% each).
+                let sttAmount = 0;
+                let sttTxt = '';
+                if(activeCalcMode === 'intraday') {
+                    sttAmount = tSell * (brkProf.stt / 100);
+                    sttTxt = `${brkProf.stt}% on Sell`;
+                } else {
+                    sttAmount = tTotal * (brkProf.stt / 100);
+                    sttTxt = `${brkProf.stt}% on Total`;
+                }
+                const stt = Math.round(sttAmount);
+
+                const exchRate = exchCode === 'NSE' ? (brkProf.exch / 100) : (0.00375 / 100); // Usually NSE is customized
                 const exch = tTotal * exchRate;
-                const sebi = tTotal * 0.000001; 
-                const stamp = Math.round(tBuy * 0.00003); 
-                const gst = (broker + exch + sebi) * 0.18;
+                const sebi = tTotal * (brkProf.sebi / 100); 
+                const stamp = Math.round(tBuy * (brkProf.stamp / 100)); 
+                const gst = (broker + exch + sebi) * (brkProf.gst / 100);
                 const total = broker + stt + exch + sebi + stamp + gst;
 
-                return { broker, brokerTxt, stt, exch, exchRate, sebi, gst, stamp, total };
+                return { broker, brokerTxt, stt, sttTxt, exch, exchRate, sebi, gst, stamp, total };
             };
 
             const calculate = () => {
@@ -2095,18 +2572,18 @@
                 const entry = parseFloat(cInputs.entry.value); const sl = parseFloat(cInputs.sl.value);
                 const corpus = parseFloat(cInputs.corpus.value); const marginRaw = parseFloat(cInputs.margin.value); 
                 const riskPct = parseFloat(cInputs.risk.value); const targetPct = parseFloat(cInputs.target.value);
+                const maxAllocPct = parseFloat(cInputs.maxAlloc.value) || 100;
                 
-                const activeBroker = brokerProfiles[currentBroker];
-                const brkPct = activeBroker.pct; const brkMax = activeBroker.max;
+                const activeBrokerConfig = brokerProfiles[currentBroker][activeCalcMode];
                 
-                localStorage.setItem('riskCalcSettings', JSON.stringify({ 
-                    corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, 
+                localStorage.setItem('riskCalcSettings_' + activeCalcMode, JSON.stringify({ 
+                    corpus: cInputs.corpus.value, margin: cInputs.margin.value, maxAlloc: cInputs.maxAlloc.value, riskPct: cInputs.risk.value, 
                     targetPct: cInputs.target.value, entry: cInputs.entry.value, sl: cInputs.sl.value 
                 }));
                 
                 const clear = () => {
-                    document.getElementById('outShares').textContent = '0'; document.getElementById('outDirection').textContent = 'WAITING';
-                    document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300";
+                    cInputs.sharesOut.value = '0'; document.getElementById('outDirection').textContent = 'WAITING';
+                    document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase";
                     document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-40";
                     document.getElementById('outTargetPrice').textContent = '₹0.00';
                     ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00');
@@ -2128,31 +2605,38 @@
                 const direction = entry > sl ? "LONG" : "SHORT";
                 const riskPerShare = Math.abs(entry - sl); 
                 const riskBudget = corpus * (riskPct / 100);
+                const maxAllocBudget = (corpus * (maxAllocPct / 100)) * marginMult;
                 
                 let q = Math.floor(riskBudget / riskPerShare);
+                let allocQ = Math.floor(maxAllocBudget / entry);
+                
                 let estChargesSL = {};
                 let totalRiskWithCharges = 0;
+                let finalShares = Math.min(q, allocQ);
                 
-                while (q > 0) {
-                    estChargesSL = calcCharges(q, entry, sl, direction, brkPct, brkMax, currentExchange);
-                    totalRiskWithCharges = (q * riskPerShare) + estChargesSL.total;
+                // Account for charges eating into risk budget
+                while (finalShares > 0 && manualSharesOverride === null) {
+                    estChargesSL = calcCharges(finalShares, entry, sl, direction, activeBrokerConfig, currentExchange);
+                    totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
                     if (totalRiskWithCharges <= riskBudget) break;
-                    q--;
+                    finalShares--;
                 }
                 
-                let finalShares = q;
-
-                const marginLimitShares = Math.floor((corpus * marginMult) / entry);
-                if (finalShares > marginLimitShares) {
-                    finalShares = marginLimitShares;
-                    estChargesSL = calcCharges(finalShares, entry, sl, direction, brkPct, brkMax, currentExchange);
+                if(manualSharesOverride !== null) {
+                    finalShares = manualSharesOverride;
+                    estChargesSL = calcCharges(finalShares, entry, sl, direction, activeBrokerConfig, currentExchange);
                     totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
                 }
-                
-                if (finalShares === 0) {
-                    cInputs.msg.textContent = "Corpus/Risk is too low to afford 1 share including statutory charges."; cInputs.msg.classList.remove('hidden'); 
+
+                if (finalShares <= 0) {
+                    if (manualSharesOverride === null) {
+                        cInputs.msg.textContent = "Corpus/Risk/Alloc too low to afford 1 share inc. charges."; cInputs.msg.classList.remove('hidden'); 
+                    }
                     return clear();
                 }
+
+                cInputs.sharesOut.value = finalShares;
+                document.getElementById('overrideNotice').classList.toggle('hidden', manualSharesOverride === null);
 
                 const actualMarginReq = (finalShares * entry) / marginMult; 
                 
@@ -2160,10 +2644,10 @@
                 const targetProfitPerShare = targetProfitTotal / finalShares;
                 const targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
 
-                const estChargesTG = calcCharges(finalShares, entry, targetPrice, direction, brkPct, brkMax, currentExchange);
+                const estChargesTG = calcCharges(finalShares, entry, targetPrice, direction, activeBrokerConfig, currentExchange);
                 
                 const dirMult = direction === 'LONG' ? 1 : -1;
-                const baseChg = calcCharges(finalShares, entry, entry, direction, brkPct, brkMax, currentExchange);
+                const baseChg = calcCharges(finalShares, entry, entry, direction, activeBrokerConfig, currentExchange);
                 const reqPts = baseChg.total / finalShares;
                 
                 const getTargetPriceForNet = (targetNet, startPrice) => {
@@ -2172,7 +2656,7 @@
                     let iter = 0;
                     
                     while (iter < 1000) {
-                        let chg = calcCharges(finalShares, entry, p, direction, brkPct, brkMax, currentExchange);
+                        let chg = calcCharges(finalShares, entry, p, direction, activeBrokerConfig, currentExchange);
                         let gross = finalShares * (p - entry) * dirMult;
                         net = gross - chg.total;
                         if (net >= targetNet) break;
@@ -2182,12 +2666,12 @@
 
                     while (net > targetNet + 5 && iter < 1500) {
                         p -= 0.05 * dirMult;
-                        let chg = calcCharges(finalShares, entry, p, direction, brkPct, brkMax, currentExchange);
+                        let chg = calcCharges(finalShares, entry, p, direction, activeBrokerConfig, currentExchange);
                         let gross = finalShares * (p - entry) * dirMult;
                         net = gross - chg.total;
                         if (net < targetNet) {
                             p += 0.05 * dirMult;
-                            let fChg = calcCharges(finalShares, entry, p, direction, brkPct, brkMax, currentExchange);
+                            let fChg = calcCharges(finalShares, entry, p, direction, activeBrokerConfig, currentExchange);
                             net = (finalShares * (p - entry) * dirMult) - fChg.total;
                             break;
                         }
@@ -2201,21 +2685,25 @@
                 let b2 = getTargetPriceForNet(corpus * 0.0010, b1.price);
                 let b3 = getTargetPriceForNet(corpus * 0.0020, b2.price);
 
-                document.getElementById('outShares').textContent = formatNum(finalShares); 
                 document.getElementById('outDirection').textContent = direction;
-                document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
+                document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 uppercase ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
                 document.getElementById('resultCard').className = `glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 ${direction === 'LONG' ? 'border-l-long' : 'border-l-short'} z-40`;
                 document.getElementById('dirGlow').style.backgroundColor = direction === 'LONG' ? '#10b981' : '#ef4444';
-                                                                                                 
+                                                                                                                             
                 document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); 
                 document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); 
                 document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1);
                 if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
-                                                                                                 
+                                                                                                                             
                 document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); 
                 document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
-                document.getElementById('outTradeType').textContent = finalShares === q ? "Risk Limited" : "Capital Limited";
+                
+                let constraintReason = "-";
+                if(manualSharesOverride !== null) constraintReason = "Manual Override";
+                else if(finalShares === allocQ) constraintReason = "Max Allocation Limit";
+                else constraintReason = "Risk Budget Limit";
+                document.getElementById('outTradeType').textContent = constraintReason;
 
                 document.getElementById('outB0').textContent = formatMoney(b0.price);
                 document.getElementById('outB0Net').textContent = `Net: ${b0.net > 0 ? '+' : ''}₹${b0.net.toFixed(2)}`;
@@ -2234,27 +2722,43 @@
                 document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker);
                 document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt;
                 document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt);
+                document.getElementById('slSTTTxt').innerHTML = `STT<br>${estChargesSL.sttTxt}`;
                 document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch);
                 document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`;
                 document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi);
+                document.getElementById('slSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`;
                 document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst);
+                document.getElementById('slGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S`;
                 document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp);
+                document.getElementById('slStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`;
                 document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
 
                 document.getElementById('tgBrokerage').textContent = formatMoney(estChargesTG.broker);
                 document.getElementById('tgBrokerageTxt').textContent = estChargesTG.brokerTxt;
                 document.getElementById('tgSTT').textContent = formatMoney(estChargesTG.stt);
+                document.getElementById('tgSTTTxt').innerHTML = `STT<br>${estChargesTG.sttTxt}`;
                 document.getElementById('tgExch').textContent = formatMoney(estChargesTG.exch);
                 document.getElementById('tgExchTxt').innerHTML = `Exchange<br>${(estChargesTG.exchRate * 100).toFixed(5)}% on Total`;
                 document.getElementById('tgSebi').textContent = formatMoney(estChargesTG.sebi);
+                document.getElementById('tgSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`;
                 document.getElementById('tgGST').textContent = formatMoney(estChargesTG.gst);
+                document.getElementById('tgGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S`;
                 document.getElementById('tgStamp').textContent = formatMoney(estChargesTG.stamp);
+                document.getElementById('tgStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`;
                 document.getElementById('tgTotal').textContent = formatMoney(estChargesTG.total);
             };
             
             window.triggerGlobalCalculate = calculate;
 
-            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => cInputs[k].addEventListener('input', calculate));
+            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target', 'maxAlloc'].forEach(k => {
+                cInputs[k].addEventListener('input', () => { manualSharesOverride = null; calculate(); });
+            });
+            
+            cInputs.sharesOut.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                manualSharesOverride = !isNaN(val) && val >= 0 ? val : 0;
+                calculate();
+            });
             
             cInputs.entry.addEventListener('keydown', (e) => { 
                 if(e.key === 'Enter') cInputs.sl.focus(); 
@@ -2273,9 +2777,15 @@
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; cInputs.entry.focus(); calculate(); });
-            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; calculate(); });
+            document.getElementById('syncCorpusBtn').addEventListener('click', () => { 
+                cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; 
+                manualSharesOverride = null;
+                calculate(); 
+            });
             
             document.getElementById('logJournalBtn').addEventListener('click', () => {
+                // Ensure Journal matches Calculator Mode
+                document.querySelector(`.jour-mode-btn[data-mode="${activeCalcMode}"]`).click();
                 document.querySelector('.nav-btn[data-target="view-trades"]').click();
                 
                 document.getElementById('tj-entry').value = cInputs.entry.value;
@@ -2284,7 +2794,7 @@
                 document.getElementById('tj-risk').value = cInputs.risk.value;
                 document.getElementById('tj-target').value = cInputs.target.value;
                 
-                document.getElementById('tj-shares').value = extractNum(document.getElementById('outShares').textContent);
+                document.getElementById('tj-shares').value = cInputs.sharesOut.value;
                 document.getElementById('tj-target-price').value = extractNum(document.getElementById('outTargetPrice').textContent);
                 document.getElementById('tj-rps').value = extractNum(document.getElementById('outRiskShare').textContent);
                 document.getElementById('tj-pos-value').value = extractNum(document.getElementById('outPosValue').textContent);
