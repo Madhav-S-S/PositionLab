@@ -122,6 +122,7 @@
 
             <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full">
                 <div class="contents lg:flex lg:flex-col w-full lg:w-1/3 gap-6 lg:gap-8">
+                    <!-- Trade Setup -->
                     <section class="order-1 w-full z-50">
                         <div class="glass-card rounded-2xl p-6 relative">
                             <div class="mb-6"><h2 class="text-lg font-semibold tracking-wider flex justify-between items-center">TRADE SETUP <span id="setupModeLabel" class="text-xs bg-brand-500/20 text-brand-400 px-2 py-1 rounded uppercase">INTRADAY</span></h2></div>
@@ -130,10 +131,12 @@
                                 <div>
                                     <label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label>
                                     <input type="number" id="stopLoss" step="0.01" class="input-field text-lg font-bold" placeholder="0.00">
+                                    
                                     <div id="attachedSlBlock" class="hidden mt-1.5 text-[11px] text-brand-300 bg-brand-500/10 px-2 py-1 rounded border border-brand-500/30 flex justify-between items-center font-semibold">
                                         <span>Attached SL: ₹<span id="attachedSlVal">0.00</span></span>
                                         <button id="removeAttachedSlBtn" class="text-brand-400 hover:text-white px-1">✕</button>
                                     </div>
+
                                     <div id="recSlBlock" class="hidden mt-2 text-xs flex items-center gap-1.5 bg-black/30 p-2 rounded-lg border border-brand-500/20">
                                         <span class="text-gray-400">Rec. SL to match risk:</span>
                                         <button id="applyRecSlBtn" class="text-brand-400 font-bold hover:text-brand-300 bg-brand-500/10 px-2 py-1 rounded transition ml-auto border border-brand-500/30 shadow-sm"></button>
@@ -163,6 +166,7 @@
                         </div>
                     </section>
                     
+                    <!-- Brokerage Settings Card -->
                     <section class="order-3 w-full z-30">
                         <div class="glass-card rounded-2xl p-5 relative">
                             <div class="flex justify-between items-center mb-3">
@@ -192,6 +196,7 @@
                 </div>
 
                 <div class="contents lg:flex lg:flex-col w-full lg:w-2/3 gap-6 lg:gap-8">
+                    <!-- Recommended Shares Result Card -->
                     <section class="order-2 w-full z-40">
                         <div id="resultCard" class="glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 border-l-transparent">
                             <div id="dirGlow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500"></div>
@@ -233,6 +238,7 @@
                         </div>
                     </section>
 
+                    <!-- Extended Detailed Charges Output -->
                     <section class="order-4 w-full z-20">
                         <div id="chargesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300 opacity-50 relative">
                             <div class="glass-card rounded-2xl p-5">
@@ -821,7 +827,7 @@
                     let fileRes = await apiFetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`); let cloudData = await fileRes.json();
                     if (cloudData) {
                         if (cloudData.balances) balances = cloudData.balances; if (cloudData.tradesDB) tradesDB = cloudData.tradesDB; if (cloudData.capitalLedger) capitalLedger = cloudData.capitalLedger; if (cloudData.brokerProfiles) brokerProfiles = cloudData.brokerProfiles;
-                        if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
+                        if (cloudData.customStrategies) { customStrategies.length = 0; customStrategies.forEach(x => customStrategies.push(x)); }
                         if (cloudData.customVerdicts) { customVerdicts.length = 0; customVerdicts.forEach(x => customVerdicts.push(x)); }
                         tradesDB.forEach(t => { if(!t.mode) t.mode = 'intraday'; if(!t.status) t.status = 'CLOSED'; });
                     }
@@ -1314,159 +1320,6 @@
             if(window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('ledger-hist-container'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } 
             else { document.getElementById('cl-action').focus(); }
         }
-
-        function recalculateTimeline(syncCloud = true) {
-            balances = { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 }; const timeline = [];
-            tradesDB.filter(t => t.status === 'CLOSED').forEach(t => timeline.push({ ...t, evType: 'TRADE' })); capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
-            timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
-            timeline.forEach(ev => {
-                if (ev.evType === 'CAPITAL') {
-                    const tStr = ev.type.replace(/[^a-zA-Z]/g, '').toLowerCase(), a = ev.amount;
-                    if (tStr === "depositfund" || tStr === "liquidfundinterest" || tStr === "depositliquidfund" || tStr === "depositliquidfundinterest") balances.liquidFund += a; 
-                    else if (tStr === "withdrawfund" || tStr === "withdrawliquidfund") balances.liquidFund -= a;
-                    else if (tStr === "deposittradeledger") balances.tradeLedger += a; else if (tStr === "depositreserve") balances.sliceReserve += a;
-                    else if (tStr === "withdrawtradeledger") balances.tradeLedger -= a; else if (tStr === "withdrawreserve") balances.sliceReserve -= a;
-                    else if (tStr === "liquidfundtradeledger" || tStr === "transferliquidfundtradeledger") { balances.liquidFund -= a; balances.tradeLedger += a; } 
-                    else if (tStr === "tradeledgerliquidfund" || tStr === "transfertradeledgerliquidfund") { balances.tradeLedger -= a; balances.liquidFund += a; }
-                    else if (tStr === "liquidfundreserve" || tStr === "liquidfundslicereserve" || tStr === "transferliquidfundreserve") { balances.liquidFund -= a; balances.sliceReserve += a; } 
-                    else if (tStr === "reserveliquidfund" || tStr === "slicereserveliquidfund" || tStr === "transferreserveliquidfund") { balances.sliceReserve -= a; balances.liquidFund += a; }
-                    else if (tStr === "tradeledgerreserve" || tStr === "tradeledgerslicereserve" || tStr === "transfertradeledgerreserve") { balances.tradeLedger -= a; balances.sliceReserve += a; } 
-                    else if (tStr === "reservetradeledger" || tStr === "slicereservetradeledger" || tStr === "transferreservetradeledger") { balances.sliceReserve -= a; balances.tradeLedger += a; }
-                    const ref = capitalLedger.find(c => c.id === ev.id); if(ref) { ref.tradeLedger = balances.tradeLedger; ref.liquidFund = balances.liquidFund; ref.sliceReserve = balances.sliceReserve; ref.netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; }
-                } else if (ev.evType === 'TRADE') {
-                    const oldT = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; balances.tradeLedger += ev.netPnl; const newT = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
-                    const ref = tradesDB.find(t => t.id === ev.id); if(ref) { ref.pctChange = oldT > 0 ? (ev.netPnl / oldT) * 100 : 0; ref.endCorpus = newT; }
-                }
-            });
-            tradesDB.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id); capitalLedger.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id);
-            const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; const corpusInput = document.getElementById('corpus'); if(initialCorpus > 0 && !corpusInput.value) { corpusInput.value = initialCorpus; }
-            saveGlobalState(syncCloud); updateViews();
-        }
-
-        function updateViews() { renderTradesTable(); renderCapitalTable(); updateDashboard(); }
-        
-        function renderTradesTable() {
-            const thead = document.getElementById('tradeTableHeader'); let cols = tradeTableColumns; const visibleTrades = tradesDB.filter(t => t.mode === activeJourMode);
-            let thHTML = `<th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-trades" onclick="toggleAll('trades')"></th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Symbol</th>`;
-            if (cols.strategy && activeJourMode === 'intraday') thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Strategy</th>`;
-            if (cols.entryExit) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Entry / Exit</th>`;
-            if (cols.sl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Stop Loss</th>`;
-            if (cols.pnl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Net P&L</th>`;
-            if (cols.charges) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Charges</th>`;
-            if (cols.result) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-center">Result</th>`;
-            if (cols.pctChange) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">% Chg</th>`;
-            if (cols.corpus) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">End Corpus</th>`;
-            if (cols.remarks) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs w-full max-w-[80px] md:max-w-none md:min-w-[200px]">Remarks</th>`;
-            thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-right whitespace-nowrap">Act</th>`; thead.innerHTML = thHTML;
-            const tbody = document.getElementById('tradesBody'); if(visibleTrades.length === 0) { tbody.innerHTML = `<tr><td colspan="13" class="text-center py-4 text-gray-500">No trades logged in ${activeJourMode.toUpperCase()} mode.</td></tr>`; return; }
-                         
-            tbody.innerHTML = visibleTrades.map(t => {
-                let rowHTML = `
-                <tr class="clickable-row align-top group ${t.status === 'OPEN' ? 'bg-brand-500/5 hover:bg-brand-500/10' : ''}" onclick="openTradeModal(${t.id})">
-                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades w-3 h-3 md:w-4 md:h-4" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
-                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300 leading-tight">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${t.session || ''}</span></td>
-                    <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm text-gray-100 group-hover:text-brand-400 transition-colors flex items-center gap-2">
-                        ${t.symbol}
-                        ${t.mode === 'swing' ? `<span class="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${t.status === 'OPEN' ? 'bg-brand-500 text-white shadow shadow-brand-500/20' : 'bg-gray-800 text-gray-400 border border-white/5'}">${t.status}</span>` : ''}
-                    </td>`;
-                if (cols.strategy && activeJourMode === 'intraday') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
-                if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
-                if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${t.sl || '-'}</td>`;
-                if (cols.pnl) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`; }
-                if (cols.charges) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-500 whitespace-nowrap font-medium text-[9px] md:text-sm italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`; }
-                if (cols.result) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`; }
-                if (cols.pctChange) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${(t.pctChange || 0).toFixed(2)}%</td>`; }
-                if (cols.corpus) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-300">${formatMoney(t.endCorpus)}</td>`; }
-                if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${t.remarks || '-'}</td>`;
-                
-                rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap"><div class="flex items-center justify-end gap-1 md:gap-2">${t.status === 'OPEN' ? `<button onclick="openCloseTradeModal(${t.id}, event)" class="text-long hover:text-white bg-long/10 hover:bg-long/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition border border-long/20" title="Close Trade">Finish</button>` : ''}<button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button><button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`;
-                return rowHTML;
-            }).join('');
-            document.getElementById('chk-all-trades').checked = (selectedTrades.size === visibleTrades.length && visibleTrades.length > 0); updateBulkActionVisibility('trades');
-        }
-
-        function renderCapitalTable() {
-            const thead = document.getElementById('capitalTableHeader');
-            let thHTML = `<th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-cap" onclick="toggleAll('cap')"></th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-center">Type</th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Amount</th>`;
-            if (capTableColumns.netCorpus) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Net Corpus</th>`;
-            if (capTableColumns.ledgerBal) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Ledger Bal.</th>`;
-            if (capTableColumns.remarks) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs w-full max-w-[80px] md:max-w-none md:min-w-[200px]">Remarks</th>`;
-            thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-right whitespace-nowrap">Act</th>`; thead.innerHTML = thHTML;
-            const tbody = document.getElementById('capitalBody'); if(capitalLedger.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">No transfers logged.</td></tr>`; return; }
-            tbody.innerHTML = capitalLedger.map(c => {
-                let displayType = "", badgeClass = "text-gray-300 border-gray-600 bg-gray-800/50", amountColor = "text-brand-500", formattedAmount = formatMoney(c.amount);
-                const tStr = c.type.toLowerCase();
-                if (tStr.includes("deposit") || tStr.includes("interest")) { badgeClass = "text-long border-long/40 bg-long/10"; amountColor = "text-long"; formattedAmount = "+" + formatMoney(c.amount); displayType = "Deposit"; } 
-                else if (tStr.includes("withdraw")) { badgeClass = "text-short border-short/40 bg-short/10"; amountColor = "text-short"; formattedAmount = "-" + formatMoney(c.amount); displayType = "Withdraw"; } 
-                else { displayType = "Transfer"; }
-                badge.textContent = displayType; badge.className = `px-3 py-1 rounded text-xs font-bold tracking-widest uppercase ${badgeClass}`;
-                const addField = (label, val, classColor = "text-gray-200") => `<div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">${label}</p><p class="font-semibold ${classColor} text-sm md:text-base">${val}</p></div>`;
-                let html = addField("Amount", formattedAmount, amountColor);
-                let routeStr = c.type; if (c.type.startsWith("Transfer - ")) routeStr = c.type.replace("Transfer - ", ""); else if (c.type.startsWith("Deposit - ")) routeStr = c.type.replace("Deposit - ", ""); else if (c.type.startsWith("Withdraw - ")) routeStr = c.type.replace("Withdraw - ", "");
-                html += addField("Account / Route", routeStr); html += addField("Net Corpus", formatMoney(c.netCorpus));
-                html += `<div class="col-span-full border-t border-white/5 mt-1 pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">`; html += addField("Trade Ledger", formatMoney(c.tradeLedger)); html += addField("Liquid Fund", formatMoney(c.liquidFund)); html += addField("Reserve", formatMoney(c.sliceReserve)); html += `</div>`;
-                document.getElementById('capitalModalContent').innerHTML = html;
-                modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
-            }
-
-            window.closeCapitalModal = function() { const modal = document.getElementById('capitalModal'); const card = document.getElementById('capitalModalCard'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300); }
-
-            function format12Hour(timeStr) { if(!timeStr) return ''; let [h, m] = timeStr.split(':'); if(!h || !m) return timeStr; h = parseInt(h); const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${m} ${ampm}`; }
-
-            window.processTrade = function() {
-                const date = document.getElementById('tj-date').value; const entryTime = format12Hour(document.getElementById('tj-entry-time').value);
-                const symbol = document.getElementById('tj-symbol').value.toUpperCase(); const strategy = document.getElementById('tj-strategy').value;
-                const entry = parseFloat(document.getElementById('tj-entry').value) || ''; const sl = parseFloat(document.getElementById('tj-sl').value) || '';
-                const margin = parseFloat(document.getElementById('tj-margin').value) || ''; const risk = parseFloat(document.getElementById('tj-risk').value) || ''; const target = parseFloat(document.getElementById('tj-target').value) || '';
-                const shares = parseFloat(document.getElementById('tj-shares').value) || ''; const targetPrice = parseFloat(document.getElementById('tj-target-price').value) || ''; const rps = parseFloat(document.getElementById('tj-rps').value) || '';
-                const posValue = parseFloat(document.getElementById('tj-pos-value').value) || ''; const maxLoss = parseFloat(document.getElementById('tj-max-loss').value) || ''; const actualRisk = parseFloat(document.getElementById('tj-actual-risk').value) || '';
-                const b0 = parseFloat(document.getElementById('tj-b0').value) || ''; const b1 = parseFloat(document.getElementById('tj-b1').value) || ''; const b2 = parseFloat(document.getElementById('tj-b2').value) || ''; const b3 = parseFloat(document.getElementById('tj-b3').value) || '';
-                const remarks = document.getElementById('tj-remarks').value;
-                if(!symbol) return alert('Symbol is required.');
-
-                let tradeData = { mode: activeJourMode, date, symbol, strategy, entry, sl, margin, risk, target, shares, targetPrice, rps, posValue, maxLoss, actualRisk, b0, b1, b2, b3, direction: entry > sl ? 'LONG' : 'SHORT' };
-
-                const existingTrade = editingTradeId ? tradesDB.find(t => t.id === editingTradeId) : null;
-
-                if (activeJourMode === 'swing' && (!editingTradeId || (existingTrade && existingTrade.status === 'OPEN'))) {
-                    tradeData.status = 'OPEN'; tradeData.session = entryTime ? `Entered: ${entryTime}` : ''; tradeData.exitPrice = 0; tradeData.netPnl = 0; tradeData.charges = 0; tradeData.result = 'OPEN'; tradeData.verdict = ''; tradeData.remarks = remarks;
-                } else {
-                    const exDateRaw = document.getElementById('tj-exit-date').value || date;
-                    const exitTime = format12Hour(document.getElementById('tj-exit-time').value);
-                    let sessionStr = "";
-                    if (activeJourMode === 'swing') {
-                        if (entryTime && exitTime) sessionStr = `Entered: ${entryTime} - ${exDateRaw} ${exitTime}`;
-                        else if (exitTime) sessionStr = `Exited: ${exDateRaw} ${exitTime}`;
-                        else sessionStr = `Exited: ${exDateRaw}`;
-                    } else {
-                        sessionStr = (entryTime && exitTime) ? `${entryTime} - ${exitTime}` : (entryTime || exitTime || '');
-                    }
-
-                    const exitPrice = parseFloat(document.getElementById('tj-exit-price').value) || ''; const pnl = parseFloat(document.getElementById('tj-pnl').value) || 0; const charges = parseFloat(document.getElementById('tj-charges').value) || 0;
-                    const result = document.getElementById('tj-result').value, verdict = document.getElementById('tj-verdict').value; 
-                    tradeData.status = 'CLOSED'; tradeData.session = sessionStr; tradeData.exitPrice = exitPrice; tradeData.netPnl = pnl; tradeData.charges = charges; tradeData.result = result; tradeData.verdict = verdict; tradeData.remarks = remarks;
-                }
-                
-                if (editingTradeId) { const idx = tradesDB.findIndex(t => t.id === editingTradeId); if(idx > -1) tradesDB[idx] = { ...tradesDB[idx], ...tradeData }; cancelEdit(); } 
-                else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); ['tj-entry-time', 'tj-exit-date', 'tj-exit-time', 'tj-symbol', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-remarks', 'tj-strategy', 'tj-verdict'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; }); document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors"; }
-                
-                recalculateTimeline();
-                if(window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('trade-db-container'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } 
-                else { document.getElementById('tj-entry-time').focus(); }
-            }
-
-            window.processCapitalTx = function() {
-                const date = document.getElementById('cl-date').value, action = document.getElementById('cl-action').value, subType = document.getElementById('cl-sub-type').value, type = `${action} - ${subType}`;
-                const amount = parseFloat(document.getElementById('cl-amount').value) || 0, remarks = document.getElementById('cl-remarks').value;
-                if (amount <= 0) return alert('Amount must be positive.');
-                const capData = { date, type, amount, remarks };
-                if (editingCapitalId) { const idx = capitalLedger.findIndex(c => c.id === editingCapitalId); if(idx > -1) capitalLedger[idx] = { ...capitalLedger[idx], ...capData }; editingCapitalId = null; const btn = document.getElementById('cl-save-btn'); btn.textContent = "Process Request"; btn.classList.remove('bg-long', 'text-white', 'border-none'); document.getElementById('cl-edit-badge').classList.add('hidden'); } 
-                else { capData.id = Date.now(); capitalLedger.unshift(capData); }
-                recalculateTimeline();
-                document.getElementById('cl-amount').value = ''; document.getElementById('cl-remarks').value = ''; 
-                if(window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('ledger-hist-container'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } 
-                else { document.getElementById('cl-action').focus(); }
-            }
-        </script>
-    </body>
+    </script>
+</body>
 </html>
