@@ -450,7 +450,8 @@
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Date</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" checked disabled> Symbol</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="strategy"> Strategy</label>
-                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="entryInfo"> Entry/SL Stats</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="entryExit"> Entry / Exit</label>
+                               <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="sl"> Stop Loss</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="pnl"> Net P&L</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="charges"> Charges</label>
                                <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" class="custom-checkbox col-toggle w-3 h-3 md:w-4 md:h-4" data-col="result"> Result</label>
@@ -621,7 +622,7 @@
                 <span class="text-sm text-gray-400 font-semibold">Net P&L (Calc)</span>
                 <span id="ctm-calc-pnl" class="text-xl font-bold text-gray-200">-</span>
             </div>
-            <button onclick="saveCloseTradeModal()" class="w-full py-3 rounded-lg bg-long hover:bg-long/80 text-white font-medium transition shadow-lg">Complete Trade</button>
+            <button id="ctm-save-btn" onclick="saveCloseTradeModal()" class="w-full py-3 rounded-lg bg-long hover:bg-long/80 text-white font-medium transition shadow-lg">Complete Trade</button>
         </div>
     </div>
 
@@ -662,7 +663,9 @@
         let customStrategies = JSON.parse(localStorage.getItem('pt_strategies')) || ["Trend Reversal", "Breakout", "Pullback"];
         let customVerdicts = JSON.parse(localStorage.getItem('pt_verdicts')) || ["Followed Rules", "FOMO", "Early Exit"];
         
-        let tradeTableColumns = JSON.parse(localStorage.getItem('pt_visible_cols')) || { strategy: false, pnl: true, charges: false, result: false, pctChange: true, corpus: true, remarks: true, entryInfo: false };
+        let savedCols = JSON.parse(localStorage.getItem('pt_visible_cols'));
+        if (savedCols && savedCols.entryInfo !== undefined) { savedCols.entryExit = savedCols.entryInfo; savedCols.sl = false; delete savedCols.entryInfo; localStorage.setItem('pt_visible_cols', JSON.stringify(savedCols)); }
+        let tradeTableColumns = savedCols || { strategy: false, entryExit: true, sl: false, pnl: true, charges: false, result: false, pctChange: true, corpus: true, remarks: true };
         let capTableColumns = JSON.parse(localStorage.getItem('pt_visible_cap_cols')) || { netCorpus: true, ledgerBal: false, remarks: true };
 
         let activeCalcMode = 'intraday', activeJourMode = 'intraday', activeDashMode = 'both';
@@ -842,10 +845,11 @@
             if (syncCloud && accessToken) uploadToDrive();
         }
 
-        function calculateTimeframeXIRR(rangeStart, rangeEnd) {
+        function calculateTimeframeXIRR(rangeStart, rangeEnd, modeFilter = 'both') {
             let today = new Date(); today.setHours(23,59,59,999); let actualEnd = rangeEnd ? (rangeEnd > today ? today : rangeEnd) : today;
             let cfs = [], tempLiquid = 0, tempTrade = 0, tempReserve = 0; const timeline = [];
-            tradesDB.filter(t => t.status === 'CLOSED').forEach(t => timeline.push({ ...t, evType: 'TRADE' })); capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
+            tradesDB.filter(t => t.status === 'CLOSED' && (modeFilter === 'both' || t.mode === modeFilter)).forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
+            capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
             timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
             
             let actualStart = rangeStart;
@@ -893,10 +897,14 @@
             'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 
             'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-strategy', 'tj-verdict', 'tj-remarks', 'tj-save-btn'
         ];
+        const closeTradeFlow = ['ctm-exit-date', 'ctm-exit-time', 'ctm-exit-price', 'ctm-charges', 'ctm-verdict', 'ctm-remarks', 'ctm-save-btn'];
         const capitalFlow = ['cl-date', 'cl-action', 'cl-sub-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
         
         function focusNextElement(currentId) {
-            let flowArray = currentId.startsWith('cl-') ? capitalFlow : baseJournalFlow.filter(id => {
+            let flowArray = [];
+            if (currentId.startsWith('cl-')) flowArray = capitalFlow;
+            else if (currentId.startsWith('ctm-')) flowArray = closeTradeFlow;
+            else flowArray = baseJournalFlow.filter(id => {
                 const el = document.getElementById(id);
                 if (!el || el.disabled) return false;
                 let curr = el;
@@ -906,12 +914,14 @@
                 }
                 return true;
             });
+
             let idx = flowArray.indexOf(currentId);
             if(idx === -1) return;
             if (idx < flowArray.length - 1) {
                 const nextId = flowArray[idx + 1];
                 if (nextId === 'tj-save-btn') { processTrade(); return; }
                 if (nextId === 'cl-save-btn') { processCapitalTx(); return; }
+                if (nextId === 'ctm-save-btn') { saveCloseTradeModal(); return; }
                 document.getElementById(nextId).focus();
             } else {
                 document.getElementById(currentId).blur();
@@ -925,10 +935,11 @@
             tradesDB.forEach(t => { if(!t.mode) t.mode = 'intraday'; if(!t.status) t.status = 'CLOSED'; });
             flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry').focus();} } });
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-action').focus();} } });
-            
+            flatpickr("#ctm-exit-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('ctm-exit-time').focus();} } });
+
             setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, baseJournalFlow, false);
             setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, baseJournalFlow, true);
-            setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts', customVerdicts, true, [], true);
+            setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts', customVerdicts, true, closeTradeFlow, true);
             setupCapitalTransfers();
             bindKeyboardFlows(); updateViews(); initDashboardFilters(); loadCalcState();
 
@@ -980,10 +991,10 @@
         }
 
         function bindKeyboardFlows() {
-            [...baseJournalFlow, ...capitalFlow].forEach(id => {
+            [...baseJournalFlow, ...capitalFlow, ...closeTradeFlow].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
-                if (['tj-symbol', 'tj-strategy', 'tj-verdict', 'ctm-verdict', 'cl-action', 'cl-sub-type', 'dash-filter-input', 'tj-date', 'cl-date'].includes(id)) return;
+                if (['tj-symbol', 'tj-strategy', 'tj-verdict', 'ctm-verdict', 'cl-action', 'cl-sub-type', 'dash-filter-input', 'tj-date', 'cl-date', 'ctm-exit-date'].includes(id)) return;
                 el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); focusNextElement(id); } });
             });
             document.getElementById('tj-symbol').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); const val = e.target.value.toUpperCase(); const match = nseStocks.find(s => s.startsWith(val)); if (match) e.target.value = match; focusNextElement('tj-symbol'); } });
@@ -1131,7 +1142,7 @@
             if(event) event.stopPropagation(); const t = tradesDB.find(x => x.id === id); if(!t) return; closingTradeId = id;
             const modal = document.getElementById('closeTradeModal'); const card = document.getElementById('closeTradeModalCard');
             document.getElementById('ctm-symbol').textContent = `${t.symbol} (${t.mode.toUpperCase()})`;
-            flatpickr("#ctm-exit-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today" });
+            
             document.getElementById('ctm-exit-price').value = ''; document.getElementById('ctm-charges').value = ''; document.getElementById('ctm-verdict').value = ''; document.getElementById('ctm-remarks').value = ''; document.getElementById('ctm-calc-pnl').textContent = '-';
             const calcNet = () => {
                 const ep = parseFloat(document.getElementById('ctm-exit-price').value) || 0; const chg = parseFloat(document.getElementById('ctm-charges').value) || 0;
@@ -1172,7 +1183,7 @@
             if(t.entry || t.sl) {
                 html += `<div class="col-span-full border-t border-white/5 mt-1 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">`;
                 html += addField("Direction", t.direction || (t.entry > t.sl ? 'LONG' : 'SHORT'), (t.direction === 'SHORT' || t.entry < t.sl) ? 'text-short' : 'text-long');
-                html += addField("Entry Price", t.entry ? formatMoney(t.entry) : "-"); html += addField("Stop Loss", t.sl ? formatMoney(t.sl) : "-"); html += addField("Target %", t.target ? `${t.target}%` : "-"); html += addField("Risk % & Margin", `${t.risk ? t.risk + '%' : '-'} | ${t.margin ? t.margin + 'x' : '-'}`); html += addField("Shares", t.shares || "-"); html += addField("Target Price", t.targetPrice ? formatMoney(t.targetPrice) : "-"); html += addField("Risk / Share", t.rps ? formatMoney(t.rps) : "-"); html += addField("Position Value", t.posValue ? formatMoney(t.posValue) : "-"); html += addField("Max Loss", t.maxLoss ? formatMoney(t.maxLoss) : "-", "text-red-400"); html += addField("Actual Risk", t.actualRisk ? t.actualRisk + '%' : "-");
+                html += addField("Entry Price", t.entry ? formatMoney(t.entry) : "-"); html += addField("Stop Loss", t.sl ? formatMoney(t.sl) : "-"); html += addField("Risk / Target %", `${t.risk ? t.risk + '%' : '-'} / ${t.target ? t.target + '%' : '-'}`); html += addField("Margin", `${t.margin ? t.margin + 'x' : '-'}`); html += addField("Shares", t.shares || "-"); html += addField("Target Price", t.targetPrice ? formatMoney(t.targetPrice) : "-"); html += addField("Risk / Share", t.rps ? formatMoney(t.rps) : "-"); html += addField("Position Value", t.posValue ? formatMoney(t.posValue) : "-"); html += addField("Max Loss", t.maxLoss ? formatMoney(t.maxLoss) : "-", "text-red-400"); html += addField("Actual Risk", t.actualRisk ? t.actualRisk + '%' : "-");
                 if (t.mode === 'intraday') { html += addField("B0 (0.00%)", t.b0 ? formatMoney(t.b0) : "-"); html += addField("B1 (0.03%)", t.b1 ? formatMoney(t.b1) : "-", "text-brand-400"); html += addField("B2 (0.10%)", t.b2 ? formatMoney(t.b2) : "-", "text-long"); html += addField("B3 (0.20%)", t.b3 ? formatMoney(t.b3) : "-", "text-blue-400"); }
                 html += `</div>`;
             }
@@ -1283,7 +1294,8 @@
             const thead = document.getElementById('tradeTableHeader'); let cols = tradeTableColumns; const visibleTrades = tradesDB.filter(t => t.mode === activeJourMode);
             let thHTML = `<th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-trades" onclick="toggleAll('trades')"></th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Symbol</th>`;
             if (cols.strategy && activeJourMode === 'intraday') thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Strategy</th>`;
-            if (cols.entryInfo) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Entry / SL</th>`;
+            if (cols.entryExit) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Entry / Exit</th>`;
+            if (cols.sl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Stop Loss</th>`;
             if (cols.pnl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Net P&L</th>`;
             if (cols.charges) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Charges</th>`;
             if (cols.result) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-center">Result</th>`;
@@ -1291,7 +1303,7 @@
             if (cols.corpus) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">End Corpus</th>`;
             if (cols.remarks) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs w-full max-w-[80px] md:max-w-none md:min-w-[200px]">Remarks</th>`;
             thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-right whitespace-nowrap">Act</th>`; thead.innerHTML = thHTML;
-            const tbody = document.getElementById('tradesBody'); if(visibleTrades.length === 0) { tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-gray-500">No trades logged in ${activeJourMode.toUpperCase()} mode.</td></tr>`; return; }
+            const tbody = document.getElementById('tradesBody'); if(visibleTrades.length === 0) { tbody.innerHTML = `<tr><td colspan="13" class="text-center py-4 text-gray-500">No trades logged in ${activeJourMode.toUpperCase()} mode.</td></tr>`; return; }
                          
             tbody.innerHTML = visibleTrades.map(t => {
                 let rowHTML = `
@@ -1303,7 +1315,8 @@
                         ${t.mode === 'swing' ? `<span class="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${t.status === 'OPEN' ? 'bg-brand-500 text-white shadow shadow-brand-500/20' : 'bg-gray-800 text-gray-400 border border-white/5'}">${t.status}</span>` : ''}
                     </td>`;
                 if (cols.strategy && activeJourMode === 'intraday') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
-                if (cols.entryInfo) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">SL: ${t.sl || '-'}</span></div></td>`;
+                if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
+                if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${t.sl || '-'}</td>`;
                 if (cols.pnl) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`; }
                 if (cols.charges) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-500 whitespace-nowrap font-medium text-[9px] md:text-sm italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`; }
                 if (cols.result) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`; }
@@ -1399,10 +1412,10 @@
                 if (dashFilterMode === 'custom' && customDateStart && customDateEnd) { rangeStart = customDateStart; rangeEnd = customDateEnd; filteredTrades = filteredTrades.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= customDateStart && d <= customDateEnd; }); }
             }
             
-            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd);
-            const xirrEl = document.getElementById('dash-xirr'); xirrEl.textContent = activeDashMode === 'both' ? (xirrValue.toFixed(2) + '%') : 'N/A';
-            if(activeDashMode !== 'both') xirrEl.title = 'XIRR only available in BOTH OVERVIEW mode due to unified capital ledger.'; else xirrEl.title = '';
-            xirrEl.className = `text-3xl md:text-4xl font-bold sensitive-data truncate ${xirrValue > 0 && activeDashMode === 'both' ? 'text-long' : (xirrValue < 0 && activeDashMode === 'both' ? 'text-short' : 'text-gray-500')}`;
+            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd, activeDashMode);
+            const xirrEl = document.getElementById('dash-xirr'); xirrEl.textContent = (xirrValue.toFixed(2) + '%');
+            xirrEl.title = '';
+            xirrEl.className = `text-3xl md:text-4xl font-bold sensitive-data truncate ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : 'text-gray-500')}`;
 
             lbl.textContent = rangeLabel; let totalPnl = 0, wins = 0; filteredTrades.forEach(t => { totalPnl += t.netPnl; if (t.result === 'WIN') wins++; });
             const winRate = filteredTrades.length > 0 ? ((wins / filteredTrades.length) * 100).toFixed(1) : 0;
