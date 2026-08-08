@@ -804,7 +804,7 @@
                     if (cloudData) {
                         if (cloudData.balances) balances = cloudData.balances; if (cloudData.tradesDB) tradesDB = cloudData.tradesDB; if (cloudData.capitalLedger) capitalLedger = cloudData.capitalLedger; if (cloudData.brokerProfiles) brokerProfiles = cloudData.brokerProfiles;
                         if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
-                        if (cloudData.customVerdicts) { customVerdicts.length = 0; cloudData.customVerdicts.forEach(x => customVerdicts.push(x)); }
+                        if (cloudData.customVerdicts) { customVerdicts.length = 0; customVerdicts.forEach(x => customVerdicts.push(x)); }
                         tradesDB.forEach(t => { if(!t.mode) t.mode = 'intraday'; if(!t.status) t.status = 'CLOSED'; });
                     }
                     saveGlobalState(false); recalculateTimeline(false);
@@ -1229,7 +1229,7 @@
             }
             
             if (editingTradeId) { const idx = tradesDB.findIndex(t => t.id === editingTradeId); if(idx > -1) tradesDB[idx] = { ...tradesDB[idx], ...tradeData }; cancelEdit(); } 
-            else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-remarks'].forEach(id => document.getElementById(id).value = ''); document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors"; }
+            else { tradeData.id = Date.now(); tradesDB.unshift(tradeData); ['tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-remarks', 'tj-strategy', 'tj-verdict'].forEach(id => document.getElementById(id).value = ''); document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors"; }
             
             recalculateTimeline();
             if(window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('trade-db-container'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } 
@@ -1537,18 +1537,27 @@
 
                 if ((manualSharesOverride !== null || attachedSL !== null) && finalShares > 0) {
                     const dirMult = direction === 'LONG' ? 1 : -1;
-                    let testSL = entry, iter = 0, estLoss = 0, step = 0.05 * (direction === 'LONG' ? -1 : 1);
-                    while(iter < 2000) {
-                        testSL += step; let chg = calcCharges(finalShares, entry, testSL, direction, activeBrokerConfig, currentExchange);
-                        estLoss = (finalShares * Math.abs(entry - testSL)) + chg.total;
-                        if(estLoss >= riskBudget) break;
-                        iter++;
+                    let testSL = entry, lastValidSL = entry, iter = 0, step = 0.05 * (direction === 'LONG' ? -1 : 1);
+                    let initialChg = calcCharges(finalShares, entry, entry, direction, activeBrokerConfig, currentExchange);
+                    
+                    if (initialChg.total <= riskBudget) {
+                        while(iter < 5000) {
+                            let nextSL = testSL + step;
+                            if (nextSL <= 0 && direction === 'LONG') break; 
+                            let chg = calcCharges(finalShares, entry, nextSL, direction, activeBrokerConfig, currentExchange);
+                            let estLoss = (finalShares * Math.abs(entry - nextSL)) + chg.total;
+                            if(estLoss > riskBudget) break;
+                            testSL = nextSL;
+                            lastValidSL = nextSL;
+                            iter++;
+                        }
                     }
-                    if (Math.abs(testSL - effectiveSL) > 0.01 && testSL > 0) {
+
+                    if (Math.abs(lastValidSL - entry) > 0 && Math.abs(lastValidSL - effectiveSL) > 0.01) {
                         document.getElementById('recSlBlock').classList.remove('hidden');
-                        document.getElementById('applyRecSlBtn').textContent = `₹${testSL.toFixed(2)}`;
+                        document.getElementById('applyRecSlBtn').textContent = `₹${lastValidSL.toFixed(2)}`;
                         document.getElementById('applyRecSlBtn').onclick = () => { 
-                            attachedSL = parseFloat(testSL.toFixed(2));
+                            attachedSL = parseFloat(lastValidSL.toFixed(2));
                             document.getElementById('attachedSlBlock').classList.remove('hidden');
                             document.getElementById('attachedSlVal').textContent = attachedSL.toFixed(2);
                             calculate(); 
