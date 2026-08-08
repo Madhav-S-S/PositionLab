@@ -131,6 +131,12 @@
                                 <div>
                                     <label class="block text-sm text-gray-400 mb-1">Stop Loss (₹)</label>
                                     <input type="number" id="stopLoss" step="0.01" class="input-field text-lg font-bold" placeholder="0.00">
+                                    
+                                    <div id="attachedSlBlock" class="hidden mt-1.5 text-[11px] text-brand-300 bg-brand-500/10 px-2 py-1 rounded border border-brand-500/30 flex justify-between items-center font-semibold">
+                                        <span>Attached SL: ₹<span id="attachedSlVal">0.00</span></span>
+                                        <button id="removeAttachedSlBtn" class="text-brand-400 hover:text-white px-1">✕</button>
+                                    </div>
+
                                     <div id="recSlBlock" class="hidden mt-2 text-xs flex items-center gap-1.5 bg-black/30 p-2 rounded-lg border border-brand-500/20">
                                         <span class="text-gray-400">Rec. SL to match risk:</span>
                                         <button id="applyRecSlBtn" class="text-brand-400 font-bold hover:text-brand-300 bg-brand-500/10 px-2 py-1 rounded transition ml-auto border border-brand-500/30 shadow-sm"></button>
@@ -390,33 +396,29 @@
                 <div>
                     <h3 class="text-[10px] uppercase font-bold text-brand-500 mb-3 tracking-widest">Execution Details</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 items-end">
-                        <div><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field py-2"></div>
-                        <div class="col-span-2 md:col-span-1"><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field py-2 font-bold" placeholder="e.g. RELIANCE" list="nse-stocks" autocomplete="off"></div>
                         
-                        <div class="col-span-2 md:col-span-1 swing-hide">
+                        <div class="col-span-1"><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field py-2"></div>
+                        <div class="col-span-1 exit-fields-group"><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field py-2"></div>
+                        <div class="col-span-2"><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field py-2 font-bold" placeholder="e.g. RELIANCE" list="nse-stocks" autocomplete="off"></div>
+                        <div class="col-span-1 exit-fields-group"><label class="block text-sm text-gray-400 mb-1">Exit Price</label><input type="number" id="tj-exit-price" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        <div class="col-span-1 exit-fields-group"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        
+                        <div class="col-span-1 exit-fields-group"><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
+                        <div class="col-span-2 md:col-span-1 lg:col-span-2 swing-hide">
                             <label class="block text-sm text-gray-400 mb-1">Strategy</label>
                             <div class="custom-dropdown">
                                 <input type="text" id="tj-strategy" class="input-field py-2" placeholder="Select Strategy..." autocomplete="off">
                                 <ul id="tj-strategy-list" class="custom-dropdown-list"></ul>
                             </div>
                         </div>
-
-                        <div class="col-span-2 md:col-span-3 lg:col-span-3"><label class="block text-sm text-gray-400 mb-1">Entry Remarks</label><input type="text" id="tj-remarks" class="input-field py-2" placeholder="Entry logic, confidence..."></div>
-                        
-                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field py-2"></div>
-                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Exit Price</label><input type="number" id="tj-exit-price" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        <div class="exit-fields-group col-span-1"><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        
-                        <div class="exit-fields-group col-span-2 md:col-span-2 lg:col-span-2">
+                        <div class="col-span-2 lg:col-span-2 exit-fields-group">
                             <label class="block text-sm text-gray-400 mb-1">Verdict(s)</label>
                             <div class="custom-dropdown">
                                 <input type="text" id="tj-verdict" class="input-field py-2" placeholder="Select Verdicts..." autocomplete="off">
                                 <ul id="tj-verdict-list" class="custom-dropdown-list"></ul>
                             </div>
                         </div>
-                        
-                        <div class="exit-fields-group col-span-2 md:col-span-2 lg:col-span-2" id="jour-result-box">
+                        <div class="col-span-1 exit-fields-group" id="jour-result-box">
                             <label class="block text-xs md:text-sm text-gray-400 mb-1">Result</label>
                             <select id="tj-result" class="input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors" disabled>
                                 <option value="BREAKEVEN" class="text-gray-400">BREAKEVEN</option>
@@ -424,6 +426,9 @@
                                 <option value="LOSS" class="text-short">LOSS</option>
                             </select>
                         </div>
+                        
+                        <div class="col-span-2 md:col-span-4 lg:col-span-full"><label class="block text-sm text-gray-400 mb-1">Remarks</label><input type="text" id="tj-remarks" class="input-field py-2" placeholder="Execution logic, confidence, mistakes..."></div>
+
                     </div>
                     <div class="mt-5">
                         <button id="tj-save-btn" onclick="processTrade()" class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium transition shadow-lg shadow-brand-500/20">Save Trade</button>
@@ -690,6 +695,7 @@
         let editingTradeId = null, editingCapitalId = null, closingTradeId = null;
         let selectedTrades = new Set(), selectedCapital = new Set();
         let manualSharesOverride = null;
+        let attachedSL = null;
         
         const nseStocks = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LICI", "ITC", "HINDUNILVR", "LT", "BAJFINANCE", "HCLTECH", "MARUTI", "SUNPHARMA", "TATAMOTORS", "TATASTEEL", "ASIANPAINT", "COALINDIA", "HAL", "TITAN", "NTPC", "KOTAKBANK", "ADANIENT", "AXISBANK", "POWERGRID", "WIPRO", "M&M", "ULTRACEMCO", "BAJAJFINSV", "ONGC", "ZOMATO", "JSWSTEEL", "HINDZINC", "TRENT", "GRASIM", "TECHM", "HDFCLIFE", "SBILIFE", "INDUSINDBK", "CIPLA", "EICHERMOT", "DIVISLAB", "DRREDDY", "APOLLOHOSP", "HEROMOTOCO", "BRITANNIA", "BAJAJ-AUTO"].sort();
 
@@ -697,6 +703,11 @@
         const extractNum = (str) => parseFloat(str.replace(/[^0-9.-]+/g,"")) || '';
         const formatMoney = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
         const formatNum = (num) => new Intl.NumberFormat('en-IN').format(num || 0);
+
+        function clearAttachedSL() {
+            attachedSL = null;
+            document.getElementById('attachedSlBlock').classList.add('hidden');
+        }
 
         function initGlobalModes() {
             document.querySelectorAll('.calc-mode-btn').forEach(btn => {
@@ -877,8 +888,10 @@
         }
 
         const baseJournalFlow = [
-            'tj-date', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 
-            'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 'tj-entry-time', 'tj-symbol', 'tj-strategy', 'tj-remarks', 'tj-exit-time', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-verdict', 'tj-save-btn'
+            'tj-date', 'tj-entry', 'tj-sl', 'tj-margin', 'tj-risk', 'tj-target', 
+            'tj-shares', 'tj-target-price', 'tj-rps', 'tj-pos-value', 'tj-max-loss', 'tj-actual-risk', 
+            'tj-b0', 'tj-b1', 'tj-b2', 'tj-b3', 
+            'tj-entry-time', 'tj-exit-time', 'tj-symbol', 'tj-exit-price', 'tj-pnl', 'tj-charges', 'tj-strategy', 'tj-verdict', 'tj-remarks', 'tj-save-btn'
         ];
         const capitalFlow = ['cl-date', 'cl-action', 'cl-sub-type', 'cl-amount', 'cl-remarks', 'cl-save-btn'];
         
@@ -919,6 +932,10 @@
             setupCapitalTransfers();
             bindKeyboardFlows(); updateViews(); initDashboardFilters(); loadCalcState();
 
+            document.getElementById('removeAttachedSlBtn').addEventListener('click', (e) => {
+                e.preventDefault(); clearAttachedSL(); window.triggerGlobalCalculate();
+            });
+
             document.addEventListener('click', (e) => {
                 if(!e.target.closest('#btn-cols') && !e.target.closest('#col-dropdown')) document.getElementById('col-dropdown').classList.add('hidden');
                 if(!e.target.closest('#btn-cap-cols') && !e.target.closest('#cap-col-dropdown')) document.getElementById('cap-col-dropdown').classList.add('hidden');
@@ -940,7 +957,7 @@
             document.getElementById('targetPct').value = savedState.targetPct || '1.5';
             const initialCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
             document.getElementById('corpus').value = initialCorpus > 0 ? initialCorpus : (savedState.corpus || '');
-            manualSharesOverride = null; document.getElementById('overrideNotice').classList.add('hidden');
+            manualSharesOverride = null; clearAttachedSL(); document.getElementById('overrideNotice').classList.add('hidden');
             if(typeof window.triggerGlobalCalculate === 'function') window.triggerGlobalCalculate();
         }
         
@@ -1498,27 +1515,27 @@
                 if (entry <= 0 || sl <= 0 || corpus <= 0 || riskPct <= 0 || targetPct <= 0) { cInputs.msg.textContent = "Values > 0 required."; cInputs.msg.classList.remove('hidden'); return clear(); }
                 if (entry === sl) { cInputs.msg.textContent = "Entry/SL cannot be equal."; cInputs.msg.classList.remove('hidden'); return clear(); }
                 
-                const marginMult = Math.max(1, isNaN(marginRaw) ? 1 : marginRaw), direction = entry > sl ? "LONG" : "SHORT", riskPerShare = Math.abs(entry - sl), riskBudget = corpus * (riskPct / 100), maxAllocBudget = (corpus * (maxAllocPct / 100)) * marginMult;
+                const effectiveSL = attachedSL !== null ? attachedSL : sl;
+                const marginMult = Math.max(1, isNaN(marginRaw) ? 1 : marginRaw), direction = entry > effectiveSL ? "LONG" : "SHORT", riskPerShare = Math.abs(entry - effectiveSL), riskBudget = corpus * (riskPct / 100), maxAllocBudget = (corpus * (maxAllocPct / 100)) * marginMult;
                 let q = Math.floor(riskBudget / riskPerShare), allocQ = Math.floor(maxAllocBudget / entry), estChargesSL = {}, totalRiskWithCharges = 0, finalShares = Math.min(q, allocQ);
                 
-                while (finalShares > 0 && manualSharesOverride === null) {
-                    estChargesSL = calcCharges(finalShares, entry, sl, direction, activeBrokerConfig, currentExchange);
+                while (finalShares > 0 && manualSharesOverride === null && attachedSL === null) {
+                    estChargesSL = calcCharges(finalShares, entry, effectiveSL, direction, activeBrokerConfig, currentExchange);
                     totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
                     if (totalRiskWithCharges <= riskBudget) break;
                     finalShares--;
                 }
                 
-                if(manualSharesOverride !== null) {
-                    finalShares = manualSharesOverride;
-                    estChargesSL = calcCharges(finalShares, entry, sl, direction, activeBrokerConfig, currentExchange);
+                if(manualSharesOverride !== null || attachedSL !== null) {
+                    if (manualSharesOverride !== null) finalShares = manualSharesOverride;
+                    estChargesSL = calcCharges(finalShares, entry, effectiveSL, direction, activeBrokerConfig, currentExchange);
                     totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
                 }
 
-                if (finalShares <= 0) { if (manualSharesOverride === null) { cInputs.msg.textContent = "Corpus/Risk/Alloc too low to afford 1 share inc. charges."; cInputs.msg.classList.remove('hidden'); } return clear(); }
+                if (finalShares <= 0) { if (manualSharesOverride === null && attachedSL === null) { cInputs.msg.textContent = "Corpus/Risk/Alloc too low to afford 1 share inc. charges."; cInputs.msg.classList.remove('hidden'); } return clear(); }
                 cInputs.sharesOut.value = finalShares; document.getElementById('overrideNotice').classList.toggle('hidden', manualSharesOverride === null);
 
-                // Recommended SL Calculation
-                if (manualSharesOverride !== null && finalShares > 0) {
+                if ((manualSharesOverride !== null || attachedSL !== null) && finalShares > 0) {
                     const dirMult = direction === 'LONG' ? 1 : -1;
                     let testSL = entry, iter = 0, estLoss = 0, step = 0.05 * (direction === 'LONG' ? -1 : 1);
                     while(iter < 2000) {
@@ -1527,10 +1544,15 @@
                         if(estLoss >= riskBudget) break;
                         iter++;
                     }
-                    if (testSL !== sl && testSL > 0) {
+                    if (Math.abs(testSL - effectiveSL) > 0.01 && testSL > 0) {
                         document.getElementById('recSlBlock').classList.remove('hidden');
                         document.getElementById('applyRecSlBtn').textContent = `₹${testSL.toFixed(2)}`;
-                        document.getElementById('applyRecSlBtn').onclick = () => { cInputs.sl.value = testSL.toFixed(2); manualSharesOverride = null; cInputs.sharesOut.value = finalShares; calculate(); };
+                        document.getElementById('applyRecSlBtn').onclick = () => { 
+                            attachedSL = parseFloat(testSL.toFixed(2));
+                            document.getElementById('attachedSlBlock').classList.remove('hidden');
+                            document.getElementById('attachedSlVal').textContent = attachedSL.toFixed(2);
+                            calculate(); 
+                        };
                     } else { document.getElementById('recSlBlock').classList.add('hidden'); }
                 } else { document.getElementById('recSlBlock').classList.add('hidden'); }
 
@@ -1566,17 +1588,17 @@
             
             window.triggerGlobalCalculate = calculate;
 
-            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target', 'maxAlloc'].forEach(k => { cInputs[k].addEventListener('input', () => { manualSharesOverride = null; calculate(); }); });
-            cInputs.sharesOut.addEventListener('input', (e) => { const val = parseFloat(e.target.value); manualSharesOverride = !isNaN(val) && val >= 0 ? val : 0; calculate(); });
+            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target', 'maxAlloc'].forEach(k => { cInputs[k].addEventListener('input', () => { manualSharesOverride = null; clearAttachedSL(); calculate(); }); });
+            cInputs.sharesOut.addEventListener('input', (e) => { const val = parseFloat(e.target.value); manualSharesOverride = !isNaN(val) && val >= 0 ? val : 0; clearAttachedSL(); calculate(); });
             cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
             cInputs.sl.addEventListener('keydown', (e) => { if(e.key === 'Enter') { if (window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('resultCard'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } } });
 
-            document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; cInputs.entry.focus(); calculate(); });
-            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; calculate(); });
+            document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); cInputs.entry.focus(); calculate(); });
+            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); });
             
             document.getElementById('logJournalBtn').addEventListener('click', () => {
                 document.querySelector(`.jour-mode-btn[data-mode="${activeCalcMode}"]`).click(); document.querySelector('.nav-btn[data-target="view-trades"]').click();
-                document.getElementById('tj-entry').value = cInputs.entry.value; document.getElementById('tj-sl').value = cInputs.sl.value; document.getElementById('tj-margin').value = cInputs.margin.value; document.getElementById('tj-risk').value = cInputs.risk.value; document.getElementById('tj-target').value = cInputs.target.value;
+                document.getElementById('tj-entry').value = cInputs.entry.value; document.getElementById('tj-sl').value = attachedSL !== null ? attachedSL : cInputs.sl.value; document.getElementById('tj-margin').value = cInputs.margin.value; document.getElementById('tj-risk').value = cInputs.risk.value; document.getElementById('tj-target').value = cInputs.target.value;
                 document.getElementById('tj-shares').value = cInputs.sharesOut.value; document.getElementById('tj-target-price').value = extractNum(document.getElementById('outTargetPrice').textContent); document.getElementById('tj-rps').value = extractNum(document.getElementById('outRiskShare').textContent); document.getElementById('tj-pos-value').value = extractNum(document.getElementById('outPosValue').textContent); document.getElementById('tj-max-loss').value = extractNum(document.getElementById('outMaxLoss').textContent); document.getElementById('tj-actual-risk').value = extractNum(document.getElementById('outActualRisk').textContent);
                 document.getElementById('tj-b0').value = extractNum(document.getElementById('outB0').textContent); document.getElementById('tj-b1').value = extractNum(document.getElementById('outB1').textContent); document.getElementById('tj-b2').value = extractNum(document.getElementById('outB2').textContent); document.getElementById('tj-b3').value = extractNum(document.getElementById('outB3').textContent);
                 setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
