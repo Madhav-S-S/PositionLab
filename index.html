@@ -150,12 +150,12 @@
                                     <input type="number" id="corpus" step="0.01" class="input-field" placeholder="0.00">
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="margin" step="1" min="0" class="input-field" placeholder="1"></div>
-                                    <div><label class="block text-sm text-gray-400 mb-1">Max Alloc (%)</label><input type="number" id="maxAllocPct" step="1" min="1" max="100" class="input-field" placeholder="100"></div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
                                     <div><label class="block text-sm text-gray-400 mb-1">Risk (%)</label><input type="number" id="riskPct" step="0.1" min="0.1" class="input-field" placeholder="1.0"></div>
                                     <div><label class="block text-sm text-gray-400 mb-1">Target (%)</label><input type="number" id="targetPct" step="0.1" min="0.1" class="input-field" placeholder="1.5"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="block text-sm text-gray-400 mb-1">Margin (x)</label><input type="number" id="margin" step="1" min="0" class="input-field" placeholder="1"></div>
+                                    <div><label class="block text-sm text-gray-400 mb-1">Max Alloc (%)</label><input type="number" id="maxAllocPct" step="1" min="1" max="100" class="input-field" placeholder="100"></div>
                                 </div>
                             </div>
                             <div id="validationMsg" class="mt-4 text-sm text-red-500 hidden"></div>
@@ -411,7 +411,7 @@
                         <div class="col-span-1 exit-fields-group"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
                         
                         <div class="col-span-1 exit-fields-group"><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        <div class="col-span-2 md:col-span-2 lg:col-span-2 swing-hide">
+                        <div class="col-span-2 md:col-span-1 lg:col-span-2 swing-hide">
                             <label class="block text-sm text-gray-400 mb-1">Strategy</label>
                             <div class="custom-dropdown">
                                 <input type="text" id="tj-strategy" class="input-field py-2" placeholder="Select Strategy..." autocomplete="off">
@@ -1194,7 +1194,7 @@
                 if(ep > 0 && t.entry && t.shares) { const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares; const net = gross - chg; const pnlSpan = document.getElementById('ctm-calc-pnl'); pnlSpan.textContent = formatMoney(net); pnlSpan.className = `text-xl font-bold ${net > 0 ? 'text-long' : (net < 0 ? 'text-short' : 'text-gray-200')}`; }
             };
             document.getElementById('ctm-exit-price').addEventListener('input', calcNet); document.getElementById('ctm-charges').addEventListener('input', calcNet);
-            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); document.getElementById('ctm-exit-time').focus(); }, 10);
         }
 
         window.closeCloseTradeModal = function() {
@@ -1568,4 +1568,121 @@
 
             const calculate = () => {
                 cInputs.msg.classList.add('hidden');
-                const entry = parseFloat(cInputs.entry.value), sl = parseFloat(cInputs.sl.value), corpus = parseFloat(cInputsI'm having a hard time fulfilling your request. Can I help you with something else instead?
+                const entry = parseFloat(cInputs.entry.value), sl = parseFloat(cInputs.sl.value), corpus = parseFloat(cInputs.corpus.value), marginRaw = parseFloat(cInputs.margin.value), riskPct = parseFloat(cInputs.risk.value), targetPct = parseFloat(cInputs.target.value), maxAllocPct = parseFloat(cInputs.maxAlloc.value) || 100;
+                const activeBrokerConfig = brokerProfiles[currentBroker][activeCalcMode];
+                
+                localStorage.setItem('riskCalcSettings_' + activeCalcMode, JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, maxAlloc: cInputs.maxAlloc.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value, entry: cInputs.entry.value, sl: cInputs.sl.value }));
+                
+                const clear = () => {
+                    cInputs.sharesOut.value = '0'; document.getElementById('outDirection').textContent = 'WAITING'; document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase"; document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-40";
+                    document.getElementById('outTargetPrice').textContent = '₹0.00'; ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00'); document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
+                    ['outB0', 'outB1', 'outB2', 'outB3'].forEach(id => document.getElementById(id).textContent = '₹0.00'); ['outB0Net', 'outB1Net', 'outB2Net', 'outB3Net'].forEach(id => document.getElementById(id).textContent = 'Net: ₹0.00');
+                    document.getElementById('chargesContainer').classList.add('opacity-50'); ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00'); ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
+                    document.getElementById('recSlBlock').classList.add('hidden');
+                };
+                
+                if (isNaN(entry) || isNaN(sl) || isNaN(corpus) || isNaN(riskPct) || isNaN(targetPct)) return clear();
+                if (entry <= 0 || sl <= 0 || corpus <= 0 || riskPct <= 0 || targetPct <= 0) { cInputs.msg.textContent = "Values > 0 required."; cInputs.msg.classList.remove('hidden'); return clear(); }
+                if (entry === sl) { cInputs.msg.textContent = "Entry/SL cannot be equal."; cInputs.msg.classList.remove('hidden'); return clear(); }
+                
+                const effectiveSL = attachedSL !== null ? attachedSL : sl;
+                const marginMult = Math.max(1, isNaN(marginRaw) ? 1 : marginRaw), direction = entry > effectiveSL ? "LONG" : "SHORT", riskPerShare = Math.abs(entry - effectiveSL), riskBudget = corpus * (riskPct / 100), maxAllocBudget = (corpus * (maxAllocPct / 100)) * marginMult;
+                let q = Math.floor(riskBudget / riskPerShare), allocQ = Math.floor(maxAllocBudget / entry), estChargesSL = {}, totalRiskWithCharges = 0, finalShares = Math.min(q, allocQ);
+                
+                while (finalShares > 0 && manualSharesOverride === null && attachedSL === null) {
+                    estChargesSL = calcCharges(finalShares, entry, effectiveSL, direction, activeBrokerConfig, currentExchange);
+                    totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
+                    if (totalRiskWithCharges <= riskBudget) break;
+                    finalShares--;
+                }
+                
+                if(manualSharesOverride !== null || attachedSL !== null) {
+                    if (manualSharesOverride !== null) finalShares = manualSharesOverride;
+                    estChargesSL = calcCharges(finalShares, entry, effectiveSL, direction, activeBrokerConfig, currentExchange);
+                    totalRiskWithCharges = (finalShares * riskPerShare) + estChargesSL.total;
+                }
+
+                if (finalShares <= 0) { if (manualSharesOverride === null && attachedSL === null) { cInputs.msg.textContent = "Corpus/Risk/Alloc too low to afford 1 share inc. charges."; cInputs.msg.classList.remove('hidden'); } return clear(); }
+                cInputs.sharesOut.value = finalShares; document.getElementById('overrideNotice').classList.toggle('hidden', manualSharesOverride === null);
+
+                if ((manualSharesOverride !== null || attachedSL !== null) && finalShares > 0) {
+                    const dirMult = direction === 'LONG' ? 1 : -1;
+                    let testSL = entry, lastValidSL = entry, iter = 0, step = 0.05 * (direction === 'LONG' ? -1 : 1);
+                    let initialChg = calcCharges(finalShares, entry, entry, direction, activeBrokerConfig, currentExchange);
+                    
+                    if (initialChg.total <= riskBudget) {
+                        while(iter < 5000) {
+                            let nextSL = testSL + step;
+                            if (nextSL <= 0 && direction === 'LONG') break; 
+                            let chg = calcCharges(finalShares, entry, nextSL, direction, activeBrokerConfig, currentExchange);
+                            let estLoss = (finalShares * Math.abs(entry - nextSL)) + chg.total;
+                            if(estLoss > riskBudget) break;
+                            testSL = nextSL;
+                            lastValidSL = nextSL;
+                            iter++;
+                        }
+                    }
+
+                    if (Math.abs(lastValidSL - entry) > 0 && Math.abs(lastValidSL - effectiveSL) > 0.01) {
+                        document.getElementById('recSlBlock').classList.remove('hidden');
+                        document.getElementById('applyRecSlBtn').textContent = `₹${lastValidSL.toFixed(2)}`;
+                        document.getElementById('applyRecSlBtn').onclick = () => { 
+                            cInputs.sl.value = lastValidSL.toFixed(2);
+                            manualSharesOverride = finalShares; 
+                            clearAttachedSL();
+                            calculate(); 
+                        };
+                    } else { document.getElementById('recSlBlock').classList.add('hidden'); }
+                } else { document.getElementById('recSlBlock').classList.add('hidden'); }
+
+                const actualMarginReq = (finalShares * entry) / marginMult, targetProfitTotal = corpus * (targetPct / 100), targetProfitPerShare = targetProfitTotal / finalShares, targetPrice = entry + (targetProfitPerShare * (direction === "LONG" ? 1 : -1));
+                const estChargesTG = calcCharges(finalShares, entry, targetPrice, direction, activeBrokerConfig, currentExchange);
+                const dirMult = direction === 'LONG' ? 1 : -1, baseChg = calcCharges(finalShares, entry, entry, direction, activeBrokerConfig, currentExchange), reqPts = baseChg.total / finalShares;
+                
+                const getTargetPriceForNet = (targetNet, startPrice) => {
+                    let p = startPrice, net = -1, iter = 0;
+                    while (iter < 1000) { let chg = calcCharges(finalShares, entry, p, direction, activeBrokerConfig, currentExchange); let gross = finalShares * (p - entry) * dirMult; net = gross - chg.total; if (net >= targetNet) break; p += 0.05 * dirMult; iter++; }
+                    while (net > targetNet + 5 && iter < 1500) { p -= 0.05 * dirMult; let chg = calcCharges(finalShares, entry, p, direction, activeBrokerConfig, currentExchange); let gross = finalShares * (p - entry) * dirMult; net = gross - chg.total; if (net < targetNet) { p += 0.05 * dirMult; let fChg = calcCharges(finalShares, entry, p, direction, activeBrokerConfig, currentExchange); net = (finalShares * (p - entry) * dirMult) - fChg.total; break; } iter++; }
+                    return { price: p, net: net };
+                };
+
+                let b0 = getTargetPriceForNet(0, entry + (reqPts * dirMult)), b1 = getTargetPriceForNet(corpus * 0.0003, b0.price), b2 = getTargetPriceForNet(corpus * 0.0010, b1.price), b3 = getTargetPriceForNet(corpus * 0.0020, b2.price);
+
+                document.getElementById('outDirection').textContent = direction; document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 uppercase ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
+                document.getElementById('resultCard').className = `glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 ${direction === 'LONG' ? 'border-l-long' : 'border-l-short'} z-40`; document.getElementById('dirGlow').style.backgroundColor = direction === 'LONG' ? '#10b981' : '#ef4444';
+                                                                                                                             
+                document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
+                document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1); if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
+                                                                                                                             
+                document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
+                let constraintReason = "-"; if(manualSharesOverride !== null) constraintReason = "Manual Override"; else if(finalShares === allocQ) constraintReason = "Max Allocation Limit"; else constraintReason = "Risk Budget Limit"; document.getElementById('outTradeType').textContent = constraintReason;
+                document.getElementById('outB0').textContent = formatMoney(b0.price); document.getElementById('outB0Net').textContent = `Net: ${b0.net > 0 ? '+' : ''}₹${b0.net.toFixed(2)}`;
+                document.getElementById('outB1').textContent = formatMoney(b1.price); document.getElementById('outB1Net').textContent = `Net: ${b1.net > 0 ? '+' : ''}₹${b1.net.toFixed(2)}`;
+                document.getElementById('outB2').textContent = formatMoney(b2.price); document.getElementById('outB2Net').textContent = `Net: ${b2.net > 0 ? '+' : ''}₹${b2.net.toFixed(2)}`;
+                document.getElementById('outB3').textContent = formatMoney(b3.price); document.getElementById('outB3Net').textContent = `Net: ${b3.net > 0 ? '+' : ''}₹${b3.net.toFixed(2)}`;
+                document.getElementById('chargesContainer').classList.remove('opacity-50');
+                document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker); document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt; document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt); document.getElementById('slSTTTxt').innerHTML = `STT<br>${estChargesSL.sttTxt}`; document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch); document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi); document.getElementById('slSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst); document.getElementById('slGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S`; document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp); document.getElementById('slStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
+                document.getElementById('tgBrokerage').textContent = formatMoney(estChargesTG.broker); document.getElementById('tgBrokerageTxt').textContent = estChargesTG.brokerTxt; document.getElementById('tgSTT').textContent = formatMoney(estChargesTG.stt); document.getElementById('tgSTTTxt').innerHTML = `STT<br>${estChargesTG.sttTxt}`; document.getElementById('tgExch').textContent = formatMoney(estChargesTG.exch); document.getElementById('tgExchTxt').innerHTML = `Exchange<br>${(estChargesTG.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('tgSebi').textContent = formatMoney(estChargesTG.sebi); document.getElementById('tgSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('tgGST').textContent = formatMoney(estChargesTG.gst); document.getElementById('tgGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S`; document.getElementById('tgStamp').textContent = formatMoney(estChargesTG.stamp); document.getElementById('tgStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('tgTotal').textContent = formatMoney(estChargesTG.total);
+            };
+            
+            window.triggerGlobalCalculate = calculate;
+
+            ['entry', 'sl', 'corpus', 'margin', 'risk', 'target', 'maxAlloc'].forEach(k => { cInputs[k].addEventListener('input', () => { manualSharesOverride = null; clearAttachedSL(); calculate(); }); });
+            cInputs.sharesOut.addEventListener('input', (e) => { const val = parseFloat(e.target.value); manualSharesOverride = !isNaN(val) && val >= 0 ? val : 0; clearAttachedSL(); calculate(); });
+            cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
+            cInputs.sl.addEventListener('keydown', (e) => { if(e.key === 'Enter') { if (window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('resultCard'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } } });
+
+            document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); cInputs.entry.focus(); calculate(); });
+            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); });
+            
+            document.getElementById('logJournalBtn').addEventListener('click', () => {
+                document.querySelector(`.jour-mode-btn[data-mode="${activeCalcMode}"]`).click(); document.querySelector('.nav-btn[data-target="view-trades"]').click();
+                document.getElementById('tj-entry').value = cInputs.entry.value; document.getElementById('tj-sl').value = attachedSL !== null ? attachedSL : cInputs.sl.value; document.getElementById('tj-margin').value = cInputs.margin.value; document.getElementById('tj-risk').value = cInputs.risk.value; document.getElementById('tj-target').value = cInputs.target.value;
+                document.getElementById('tj-shares').value = cInputs.sharesOut.value; document.getElementById('tj-target-price').value = extractNum(document.getElementById('outTargetPrice').textContent); document.getElementById('tj-rps').value = extractNum(document.getElementById('outRiskShare').textContent); document.getElementById('tj-pos-value').value = extractNum(document.getElementById('outPosValue').textContent); document.getElementById('tj-max-loss').value = extractNum(document.getElementById('outMaxLoss').textContent); document.getElementById('tj-actual-risk').value = extractNum(document.getElementById('outActualRisk').textContent);
+                document.getElementById('tj-b0').value = extractNum(document.getElementById('outB0').textContent); document.getElementById('tj-b1').value = extractNum(document.getElementById('outB1').textContent); document.getElementById('tj-b2').value = extractNum(document.getElementById('outB2').textContent); document.getElementById('tj-b3').value = extractNum(document.getElementById('outB3').textContent);
+                setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
+            });
+        }
+    </script>
+</body>
+</html>
