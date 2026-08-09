@@ -252,6 +252,7 @@
                                     <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slSebiTxt">SEBI</p></div>
                                     <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slGSTTxt">GST</p></div>
                                     <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slStampTxt">Stamp Duty</p></div>
+                                    <div><p class="text-xs text-gray-300 font-semibold mb-0.5" id="slIPFT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="slIPFTTxt">IPFT</p></div>
                                 </div>
                                 <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
                                     <span class="text-xs font-semibold text-gray-400">Total Deductions</span><span class="text-sm font-bold text-short" id="slTotal">₹0.00</span>
@@ -268,6 +269,7 @@
                                     <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgSebi">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgSebiTxt">SEBI</p></div>
                                     <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgGST">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgGSTTxt">GST</p></div>
                                     <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgStamp">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgStampTxt">Stamp Duty</p></div>
+                                    <div><p class="text-xs text-gray-200 font-semibold mb-0.5" id="tgIPFT">₹0.00</p><p class="text-[9px] text-gray-500 leading-tight" id="tgIPFTTxt">IPFT</p></div>
                                 </div>
                                 <div class="mt-4 pt-3 border-t border-brand-500/20 flex justify-between items-center">
                                     <span class="text-xs font-semibold text-brand-400">Total Deductions</span><span class="text-sm font-bold text-brand-400" id="tgTotal">₹0.00</span>
@@ -594,8 +596,10 @@
                 <div><label class="block text-xs text-gray-400 mb-1">Brokerage (%)</label><input type="number" id="bm-pct" step="0.001" class="input-field py-2"></div>
                 <div><label class="block text-xs text-gray-400 mb-1">Max per Order (₹)</label><input type="number" id="bm-max" step="1" class="input-field py-2"></div>
                 <div><label class="block text-xs text-gray-400 mb-1">STT Multiplier (%)</label><input type="number" id="bm-stt" step="0.001" class="input-field py-2"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">Exchange Txn Chg (%)</label><input type="number" id="bm-exch" step="0.0001" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">NSE Txn Chg (%)</label><input type="number" id="bm-exch-nse" step="0.000001" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">BSE Txn Chg (%)</label><input type="number" id="bm-exch-bse" step="0.000001" class="input-field py-2"></div>
                 <div><label class="block text-xs text-gray-400 mb-1">SEBI Chg (%)</label><input type="number" id="bm-sebi" step="0.0001" class="input-field py-2"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">IPFT (%)</label><input type="number" id="bm-ipft" step="0.0000001" class="input-field py-2"></div>
                 <div><label class="block text-xs text-gray-400 mb-1">Stamp Duty (%)</label><input type="number" id="bm-stamp" step="0.001" class="input-field py-2"></div>
                 <div class="col-span-2"><label class="block text-xs text-gray-400 mb-1">GST (%)</label><input type="number" id="bm-gst" step="0.1" class="input-field py-2"></div>
             </div>
@@ -680,8 +684,8 @@
         
         const defaultBrokerConfig = {
             "Dhan": {
-                "intraday": { pct: 0.03, max: 20, stt: 0.025, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.003 },
-                "swing": { pct: 0.1, max: 20, stt: 0.1, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.015 }
+                "intraday": { pct: 0.03, max: 20, stt: 0.025, exchNSE: 0.0030699, exchBSE: 0.00375, sebi: 0.0001, gst: 18, stamp: 0.003, ipft: 0.0000001 },
+                "swing": { pct: 0.1, max: 20, stt: 0.1, exchNSE: 0.0030699, exchBSE: 0.00375, sebi: 0.0001, gst: 18, stamp: 0.015, ipft: 0.0000001 }
             }
         };
 
@@ -691,10 +695,21 @@
             brokerProfiles = JSON.parse(savedBrokers);
             Object.keys(brokerProfiles).forEach(k => {
                 if (typeof brokerProfiles[k].pct === 'number') {
+                    // Safe migration from v1 profiles to new split structures
                     brokerProfiles[k] = {
-                        intraday: { pct: brokerProfiles[k].pct, max: brokerProfiles[k].max, stt: 0.025, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.003 },
-                        swing: { pct: 0.1, max: 20, stt: 0.1, exch: 0.003, sebi: 0.0001, gst: 18, stamp: 0.015 }
+                        intraday: { pct: brokerProfiles[k].pct, max: brokerProfiles[k].max, stt: 0.025, exchNSE: 0.0030699, exchBSE: 0.00375, sebi: 0.0001, gst: 18, stamp: 0.003, ipft: 0.0000001 },
+                        swing: { pct: 0.1, max: 20, stt: 0.1, exchNSE: 0.0030699, exchBSE: 0.00375, sebi: 0.0001, gst: 18, stamp: 0.015, ipft: 0.0000001 }
                     };
+                } else {
+                    // Injecting new variables onto existing separated profiles
+                    ['intraday', 'swing'].forEach(mode => {
+                        if (brokerProfiles[k][mode].exchNSE === undefined) {
+                            brokerProfiles[k][mode].exchNSE = brokerProfiles[k][mode].exch || 0.0030699;
+                            brokerProfiles[k][mode].exchBSE = 0.00375;
+                            brokerProfiles[k][mode].ipft = 0.0000001;
+                            delete brokerProfiles[k][mode].exch;
+                        }
+                    });
                 }
             });
         } else { brokerProfiles = defaultBrokerConfig; }
@@ -1522,7 +1537,7 @@
 
         function openBrokerModal() {
             const prof = brokerProfiles[currentBroker][activeCalcMode]; document.getElementById('bm-broker-name').textContent = currentBroker; document.getElementById('bm-broker-mode').textContent = activeCalcMode;
-            document.getElementById('bm-pct').value = prof.pct; document.getElementById('bm-max').value = prof.max; document.getElementById('bm-stt').value = prof.stt; document.getElementById('bm-exch').value = prof.exch; document.getElementById('bm-sebi').value = prof.sebi; document.getElementById('bm-stamp').value = prof.stamp; document.getElementById('bm-gst').value = prof.gst;
+            document.getElementById('bm-pct').value = prof.pct; document.getElementById('bm-max').value = prof.max; document.getElementById('bm-stt').value = prof.stt; document.getElementById('bm-exch-nse').value = prof.exchNSE; document.getElementById('bm-exch-bse').value = prof.exchBSE; document.getElementById('bm-sebi').value = prof.sebi; document.getElementById('bm-ipft').value = prof.ipft; document.getElementById('bm-stamp').value = prof.stamp; document.getElementById('bm-gst').value = prof.gst;
             const modal = document.getElementById('brokerModal'), card = document.getElementById('brokerModalCard'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
         }
 
@@ -1530,7 +1545,7 @@
 
         function saveBrokerModal() {
             const prof = brokerProfiles[currentBroker][activeCalcMode];
-            prof.pct = parseFloat(document.getElementById('bm-pct').value) || 0; prof.max = parseFloat(document.getElementById('bm-max').value) || 0; prof.stt = parseFloat(document.getElementById('bm-stt').value) || 0; prof.exch = parseFloat(document.getElementById('bm-exch').value) || 0; prof.sebi = parseFloat(document.getElementById('bm-sebi').value) || 0; prof.stamp = parseFloat(document.getElementById('bm-stamp').value) || 0; prof.gst = parseFloat(document.getElementById('bm-gst').value) || 0;
+            prof.pct = parseFloat(document.getElementById('bm-pct').value) || 0; prof.max = parseFloat(document.getElementById('bm-max').value) || 0; prof.stt = parseFloat(document.getElementById('bm-stt').value) || 0; prof.exchNSE = parseFloat(document.getElementById('bm-exch-nse').value) || 0; prof.exchBSE = parseFloat(document.getElementById('bm-exch-bse').value) || 0; prof.sebi = parseFloat(document.getElementById('bm-sebi').value) || 0; prof.ipft = parseFloat(document.getElementById('bm-ipft').value) || 0; prof.stamp = parseFloat(document.getElementById('bm-stamp').value) || 0; prof.gst = parseFloat(document.getElementById('bm-gst').value) || 0;
             localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles)); updateBrokerInputs(); closeBrokerModal();
         }
 
@@ -1562,8 +1577,8 @@
                 if(activeCalcMode === 'intraday') { sttAmount = tSell * (brkProf.stt / 100); sttTxt = `${brkProf.stt}% on Sell`; } 
                 else { sttAmount = tTotal * (brkProf.stt / 100); sttTxt = `${brkProf.stt}% on Total`; }
                 const stt = Math.round(sttAmount);
-                const exchRate = exchCode === 'NSE' ? (brkProf.exch / 100) : (0.00375 / 100), exch = tTotal * exchRate, sebi = tTotal * (brkProf.sebi / 100), stamp = Math.round(tBuy * (brkProf.stamp / 100)), gst = (broker + exch + sebi) * (brkProf.gst / 100), total = broker + stt + exch + sebi + stamp + gst;
-                return { broker, brokerTxt, stt, sttTxt, exch, exchRate, sebi, gst, stamp, total };
+                const exchRate = exchCode === 'NSE' ? (brkProf.exchNSE / 100) : (brkProf.exchBSE / 100), exch = tTotal * exchRate, sebi = tTotal * (brkProf.sebi / 100), ipft = tTotal * (brkProf.ipft / 100), stamp = Math.round(tBuy * (brkProf.stamp / 100)), gst = (broker + exch + sebi + ipft) * (brkProf.gst / 100), total = broker + stt + exch + sebi + stamp + gst + ipft;
+                return { broker, brokerTxt, stt, sttTxt, exch, exchRate, sebi, gst, stamp, ipft, total };
             };
 
             const calculate = () => {
@@ -1577,7 +1592,7 @@
                     cInputs.sharesOut.value = '0'; document.getElementById('outDirection').textContent = 'WAITING'; document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase"; document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-40";
                     document.getElementById('outTargetPrice').textContent = '₹0.00'; ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00'); document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                     ['outB0', 'outB1', 'outB2', 'outB3'].forEach(id => document.getElementById(id).textContent = '₹0.00'); ['outB0Net', 'outB1Net', 'outB2Net', 'outB3Net'].forEach(id => document.getElementById(id).textContent = 'Net: ₹0.00');
-                    document.getElementById('chargesContainer').classList.add('opacity-50'); ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00'); ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
+                    document.getElementById('chargesContainer').classList.add('opacity-50'); ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slIPFT', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00'); ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgIPFT', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
                     document.getElementById('recSlBlock').classList.add('hidden');
                 };
                 
@@ -1650,10 +1665,10 @@
 
                 document.getElementById('outDirection').textContent = direction; document.getElementById('outDirection').className = `text-sm font-bold px-2 py-1 rounded mb-2 uppercase ${direction === 'LONG' ? 'bg-long/20 text-long' : 'bg-short/20 text-short'}`;
                 document.getElementById('resultCard').className = `glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all duration-300 border-l-4 ${direction === 'LONG' ? 'border-l-long' : 'border-l-short'} z-40`; document.getElementById('dirGlow').style.backgroundColor = direction === 'LONG' ? '#10b981' : '#ef4444';
-                                                                                                                             
+                                                                                                                                                                                                         
                 document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1); if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
-                                                                                                                             
+                                                                                                                                                                                                         
                 document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
                 let constraintReason = "-"; if(manualSharesOverride !== null) constraintReason = "Manual Override"; else if(finalShares === allocQ) constraintReason = "Max Allocation Limit"; else constraintReason = "Risk Budget Limit"; document.getElementById('outTradeType').textContent = constraintReason;
                 document.getElementById('outB0').textContent = formatMoney(b0.price); document.getElementById('outB0Net').textContent = `Net: ${b0.net > 0 ? '+' : ''}₹${b0.net.toFixed(2)}`;
@@ -1661,8 +1676,8 @@
                 document.getElementById('outB2').textContent = formatMoney(b2.price); document.getElementById('outB2Net').textContent = `Net: ${b2.net > 0 ? '+' : ''}₹${b2.net.toFixed(2)}`;
                 document.getElementById('outB3').textContent = formatMoney(b3.price); document.getElementById('outB3Net').textContent = `Net: ${b3.net > 0 ? '+' : ''}₹${b3.net.toFixed(2)}`;
                 document.getElementById('chargesContainer').classList.remove('opacity-50');
-                document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker); document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt; document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt); document.getElementById('slSTTTxt').innerHTML = `STT<br>${estChargesSL.sttTxt}`; document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch); document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi); document.getElementById('slSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst); document.getElementById('slGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S`; document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp); document.getElementById('slStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
-                document.getElementById('tgBrokerage').textContent = formatMoney(estChargesTG.broker); document.getElementById('tgBrokerageTxt').textContent = estChargesTG.brokerTxt; document.getElementById('tgSTT').textContent = formatMoney(estChargesTG.stt); document.getElementById('tgSTTTxt').innerHTML = `STT<br>${estChargesTG.sttTxt}`; document.getElementById('tgExch').textContent = formatMoney(estChargesTG.exch); document.getElementById('tgExchTxt').innerHTML = `Exchange<br>${(estChargesTG.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('tgSebi').textContent = formatMoney(estChargesTG.sebi); document.getElementById('tgSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('tgGST').textContent = formatMoney(estChargesTG.gst); document.getElementById('tgGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S`; document.getElementById('tgStamp').textContent = formatMoney(estChargesTG.stamp); document.getElementById('tgStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('tgTotal').textContent = formatMoney(estChargesTG.total);
+                document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker); document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt; document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt); document.getElementById('slSTTTxt').innerHTML = `STT<br>${estChargesSL.sttTxt}`; document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch); document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi); document.getElementById('slSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('slIPFT').textContent = formatMoney(estChargesSL.ipft); document.getElementById('slIPFTTxt').innerHTML = `IPFT<br>${activeBrokerConfig.ipft}% on Total`; document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst); document.getElementById('slGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S+I`; document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp); document.getElementById('slStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
+                document.getElementById('tgBrokerage').textContent = formatMoney(estChargesTG.broker); document.getElementById('tgBrokerageTxt').textContent = estChargesTG.brokerTxt; document.getElementById('tgSTT').textContent = formatMoney(estChargesTG.stt); document.getElementById('tgSTTTxt').innerHTML = `STT<br>${estChargesTG.sttTxt}`; document.getElementById('tgExch').textContent = formatMoney(estChargesTG.exch); document.getElementById('tgExchTxt').innerHTML = `Exchange<br>${(estChargesTG.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('tgSebi').textContent = formatMoney(estChargesTG.sebi); document.getElementById('tgSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('tgIPFT').textContent = formatMoney(estChargesTG.ipft); document.getElementById('tgIPFTTxt').innerHTML = `IPFT<br>${activeBrokerConfig.ipft}% on Total`; document.getElementById('tgGST').textContent = formatMoney(estChargesTG.gst); document.getElementById('tgGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S+I`; document.getElementById('tgStamp').textContent = formatMoney(estChargesTG.stamp); document.getElementById('tgStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('tgTotal').textContent = formatMoney(estChargesTG.total);
             };
             
             window.triggerGlobalCalculate = calculate;
