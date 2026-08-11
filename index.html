@@ -113,16 +113,13 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 md:px-0 mb-12 w-full">
         <!-- CALCULATOR TAB -->
         <div id="view-calculator" class="view-section active">
-            <div class="flex justify-center mb-6 z-50 relative">
-                <div class="bg-black/40 p-1.5 rounded-xl flex gap-2 border border-white/10 shadow-inner">
-                    <button class="calc-mode-btn mode-toggle-btn active px-8 py-2.5 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="intraday">Intraday</button>
-                    <button class="calc-mode-btn mode-toggle-btn inactive px-8 py-2.5 rounded-lg font-bold text-sm tracking-wider uppercase" data-mode="swing">Swing</button>
-                </div>
-            </div>
-            
             <!-- Allocation Dashboard -->
             <div class="glass-card rounded-2xl p-4 md:p-5 mb-8 relative z-50 flex flex-col md:flex-row items-center justify-between gap-4 border border-white/5 bg-black/20">
-                <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="flex items-center gap-3 w-full md:w-auto flex-wrap">
+                    <div class="bg-black/40 p-1 rounded-lg flex gap-1 border border-white/10 shadow-inner">
+                        <button class="calc-mode-btn mode-toggle-btn active px-4 py-1.5 rounded-md font-bold text-[11px] tracking-wider uppercase" data-mode="intraday">Intraday</button>
+                        <button class="calc-mode-btn mode-toggle-btn inactive px-4 py-1.5 rounded-md font-bold text-[11px] tracking-wider uppercase" data-mode="swing">Swing</button>
+                    </div>
                     <h3 class="text-sm font-bold text-brand-500 uppercase tracking-wider" id="alloc-title">INTRADAY ALLOC</h3>
                     <div class="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10">
                         <input type="number" id="global-alloc-pct" class="bg-transparent w-12 text-center font-bold text-white outline-none" value="100" min="1" max="100">
@@ -474,7 +471,7 @@
             
             <div id="trade-db-container" class="glass-card rounded-2xl p-2 md:p-6 z-40 relative privacy-enabled">
                 <div class="flex justify-between items-center mb-4 px-2 md:px-0">
-                    <h3 class="text-[11px] md:text-sm font-semibold text-gray-400 uppercase tracking-wider">Trade Database</h3>
+                    <h3 id="trade-db-title" class="text-[11px] md:text-sm font-semibold text-gray-400 uppercase tracking-wider">Intraday Database</h3>
                     <div class="flex items-center gap-2 md:gap-3">
                         <button id="btn-del-trades" class="hidden px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-bold bg-short/20 text-short hover:bg-short/40 rounded transition border border-short/30" onclick="bulkDelete('trades')">Delete</button>
                         
@@ -613,7 +610,7 @@
                     <div><label class="block text-xs text-gray-400 mb-1">Max Planned Loss</label><p id="tm-max-loss" class="input-field py-2 font-semibold text-red-400">₹0.00</p></div>
                     <div><button id="tm-calc-target-btn" class="w-full py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold transition">Calculate Target Price</button></div>
                 </div>
-                <div class="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3"><span class="text-xs text-gray-400">Target Price</span><span id="tm-target-price" class="text-xl font-bold text-brand-400">-</span><span id="tm-target-net" class="text-[10px] bg-brand-500/20 text-brand-400 px-2 py-1 rounded border border-brand-500/30">Net: -</span></div>
+                <div class="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3"><span class="text-xs text-gray-400">Target Price</span><span id="tm-target-price" class="text-xl font-bold text-brand-400">-</span><span id="tm-target-net" class="text-[10px] bg-brand-500/20 text-brand-400 px-2 py-1 rounded border border-brand-500/30">Net: -</span></div><div class="mt-3 flex justify-end"><button id="tm-save-tools-btn" class="px-4 py-2 rounded-lg bg-long/20 hover:bg-long/30 text-long font-semibold text-xs border border-long/30 transition">Save Target &amp; Breakeven</button></div>
             </div>
             <div id="tm-breakeven-tools" class="hidden mb-6 p-4 rounded-xl border border-white/10 bg-black/20">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
@@ -833,6 +830,7 @@
                     e.target.classList.remove('inactive'); e.target.classList.add('active');
                     document.getElementById('setupModeLabel').textContent = activeCalcMode.toUpperCase();
                     document.getElementById('broker-mode-badge').textContent = activeCalcMode.toUpperCase();
+                    document.getElementById('alloc-title').textContent = activeCalcMode.toUpperCase() + ' ALLOC';
                     loadCalcState(); updateBrokerInputs();
                 });
             });
@@ -840,6 +838,8 @@
             document.querySelectorAll('.jour-mode-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     activeJourMode = e.target.getAttribute('data-mode');
+                    const dbTitle = document.getElementById('trade-db-title');
+                    if (dbTitle) dbTitle.textContent = activeJourMode === 'swing' ? 'Swing Database' : 'Intraday Database';
                     document.querySelectorAll('.jour-mode-btn').forEach(b => { b.classList.remove('active'); b.classList.add('inactive'); });
                     e.target.classList.remove('inactive'); e.target.classList.add('active');
                     document.getElementById('jourModeLabel').textContent = activeJourMode.toUpperCase();
@@ -1474,7 +1474,34 @@
             const beTools=document.getElementById('tm-breakeven-tools'),beSelect=document.getElementById('tm-breakeven-select');
             if(t.entry&&t.shares){beTools.classList.remove('hidden');beSelect.value=lastBreakevenSelection;if(!BREAKEVEN_META[beSelect.value])beSelect.value='b3';const renderBE=()=>{const key=beSelect.value,price=Number(t[key]);document.getElementById('tm-breakeven-price').textContent=price>0?formatMoney(price):'Not available';if(price>0){const cfg=getBrokerProfileForTrade(t),chg=calculateTradeCharges(t.shares,t.entry,price,t.direction,cfg.profile,cfg.exchange,cfg.mode),gross=t.shares*(price-t.entry)*(t.direction==='SHORT'?-1:1),net=gross-chg.total;document.getElementById('tm-breakeven-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)}`;document.getElementById('tm-breakeven-net').className=`text-sm font-semibold ${net>0?'text-long':(net<0?'text-short':'text-gray-300')}`;}else document.getElementById('tm-breakeven-net').textContent='Net: -';}; beSelect.onchange=()=>{lastBreakevenSelection=beSelect.value;localStorage.setItem('pt_last_breakeven',lastBreakevenSelection);renderBE();}; renderBE();}else beTools.classList.add('hidden');
             const openTools=document.getElementById('openTradeTools');
-            if(t.status==='OPEN'&&t.entry&&t.shares&&Number(t.maxLoss)>0){openTools.classList.remove('hidden');document.getElementById('tm-target-x').value=t.target||2;document.getElementById('tm-max-loss').textContent=formatMoney(t.maxLoss);const dir=t.direction||(t.entry>t.sl?'LONG':'SHORT'),d=document.getElementById('tm-open-direction');d.textContent=dir;d.className=`text-[10px] font-bold px-2 py-1 rounded uppercase ${dir==='LONG'?'bg-long/20 text-long':'bg-short/20 text-short'}`;const calc=()=>{const x=parseFloat(document.getElementById('tm-target-x').value);if(!(x>0))return;const cfg=getBrokerProfileForTrade(t),price=solvePriceForNetProfit(t.shares,t.entry,dir,x*Number(t.maxLoss),cfg.mode,cfg.profile,cfg.exchange);if(price===null){document.getElementById('tm-target-price').textContent='Unable to solve';document.getElementById('tm-target-net').textContent='Net: -';return;}const chg=calculateTradeCharges(t.shares,t.entry,price,dir,cfg.profile,cfg.exchange,cfg.mode),gross=t.shares*(price-t.entry)*(dir==='SHORT'?-1:1),net=gross-chg.total;document.getElementById('tm-target-price').textContent=formatMoney(price);document.getElementById('tm-target-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)} (${x}R)`;};document.getElementById('tm-calc-target-btn').onclick=calc;document.getElementById('tm-target-x').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();calc();}};calc();}else openTools.classList.add('hidden');
+            const saveToolsBtn=document.getElementById('tm-save-tools-btn');
+            if(t.status==='OPEN'&&t.entry&&t.shares&&Number(t.maxLoss)>0){
+                openTools.classList.remove('hidden');
+                document.getElementById('tm-target-x').value=t.target||2;
+                document.getElementById('tm-max-loss').textContent=formatMoney(t.maxLoss);
+                const dir=t.direction||(t.entry>t.sl?'LONG':'SHORT'),d=document.getElementById('tm-open-direction');
+                d.textContent=dir; d.className=`text-[10px] font-bold px-2 py-1 rounded uppercase ${dir==='LONG'?'bg-long/20 text-long':'bg-short/20 text-short'}`;
+                let calculatedTargetPrice=Number(t.targetPrice)||0;
+                const calc=()=>{
+                    const x=parseFloat(document.getElementById('tm-target-x').value); if(!(x>0))return;
+                    const cfg=getBrokerProfileForTrade(t),price=solvePriceForNetProfit(t.shares,t.entry,dir,x*Number(t.maxLoss),cfg.mode,cfg.profile,cfg.exchange);
+                    if(price===null){document.getElementById('tm-target-price').textContent='Unable to solve';document.getElementById('tm-target-net').textContent='Net: -';calculatedTargetPrice=0;return;}
+                    calculatedTargetPrice=price;
+                    const chg=calculateTradeCharges(t.shares,t.entry,price,dir,cfg.profile,cfg.exchange,cfg.mode),gross=t.shares*(price-t.entry)*(dir==='SHORT'?-1:1),net=gross-chg.total;
+                    document.getElementById('tm-target-price').textContent=formatMoney(price); document.getElementById('tm-target-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)} (${x}R)`;
+                };
+                document.getElementById('tm-calc-target-btn').onclick=calc;
+                document.getElementById('tm-target-x').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();calc();}};
+                saveToolsBtn.onclick=()=>{
+                    const x=parseFloat(document.getElementById('tm-target-x').value),beKey=document.getElementById('tm-breakeven-select').value||lastBreakevenSelection;
+                    if(!(x>0)||!(calculatedTargetPrice>0)){alert('Calculate a valid target price before saving.');return;}
+                    t.target=x; t.targetPrice=calculatedTargetPrice; t.selectedBreakeven=beKey;
+                    lastBreakevenSelection=beKey; localStorage.setItem('pt_last_breakeven',beKey);
+                    recalculateTimeline(); renderTradesTable();
+                    saveToolsBtn.textContent='Saved ✓'; setTimeout(()=>saveToolsBtn.textContent='Save Target & Breakeven',1400);
+                };
+                calc();
+            }else openTools.classList.add('hidden');
             let verdictsHtml='';if(t.verdict){t.verdict.split(',').forEach(v=>{if(v.trim())verdictsHtml+=`<span class="text-xs bg-white/5 text-brand-300 border border-brand-500/20 px-2 py-1 rounded">${v.trim()}</span>`;});}document.getElementById('tm-verdicts').innerHTML=verdictsHtml||'-';
             modal.classList.remove('hidden');setTimeout(()=>{modal.classList.remove('opacity-0');card.classList.remove('scale-95');card.classList.add('scale-100');},10);
         }
