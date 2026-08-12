@@ -363,11 +363,13 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 z-10 relative overflow-hidden">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 z-10 relative overflow-hidden">
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Total Closed</p><h2 id="dash-total-trades" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0</h2></div>
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Win Rate</p><h2 id="dash-win-rate" class="text-3xl md:text-4xl font-bold text-brand-500 sensitive-data truncate">0.0%</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden col-span-2 md:col-span-1"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Net P&L</p><h2 id="dash-total-pnl" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden col-span-2 md:col-span-1"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">XIRR</p><h2 id="dash-xirr" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0.00%</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Net P&amp;L</p><h2 id="dash-total-pnl" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Average Win Trade</p><h2 id="dash-avg-win" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Average Loss Trade</p><h2 id="dash-avg-loss" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">XIRR</p><h2 id="dash-xirr" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0.00%</h2></div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10 relative">
@@ -605,19 +607,18 @@
                     <div><h3 class="text-[11px] font-bold text-brand-400 uppercase tracking-widest">Open Trade Tools</h3><p class="text-[10px] text-gray-500 mt-1">Target price is solved from net P&amp;L after charges.</p></div>
                     <span id="tm-open-direction" class="text-[10px] font-bold px-2 py-1 rounded bg-gray-800 text-gray-300 uppercase"></span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
                     <div><label class="block text-xs text-gray-400 mb-1">Target (R)</label><input type="number" id="tm-target-x" step="0.1" min="0.1" class="input-field py-2" placeholder="2.0"></div>
-                    <div><label class="block text-xs text-gray-400 mb-1">Max Planned Loss</label><p id="tm-max-loss" class="input-field py-2 font-semibold text-red-400">₹0.00</p></div>
                     <div><button id="tm-calc-target-btn" class="w-full py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold transition">Calculate Target Price</button></div>
                 </div>
                 <div class="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3"><span class="text-xs text-gray-400">Target Price</span><span id="tm-target-price" class="text-xl font-bold text-brand-400">-</span><span id="tm-target-net" class="text-[10px] bg-brand-500/20 text-brand-400 px-2 py-1 rounded border border-brand-500/30">Net: -</span></div><div class="mt-3 flex justify-end"><button id="tm-save-tools-btn" class="px-4 py-2 rounded-lg bg-long/20 hover:bg-long/30 text-long font-semibold text-xs border border-long/30 transition">Save Target &amp; Breakeven</button></div>
-            </div>
             <div id="tm-breakeven-tools" class="hidden mb-6 p-4 rounded-xl border border-white/10 bg-black/20">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                     <div><label class="block text-[10px] text-gray-500 uppercase tracking-wider mb-1">Breakeven</label><select id="tm-breakeven-select" class="input-field py-2 text-sm font-semibold"><option value="b0">B0 (0.00%)</option><option value="b3">B3 (3%)</option><option value="b10">B10 (10%)</option><option value="b20">B20 (20%)</option></select></div>
                     <div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Selected Price</p><p id="tm-breakeven-price" class="text-lg font-bold text-brand-400">₹0.00</p></div>
                     <div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Net P&amp;L</p><p id="tm-breakeven-net" class="text-sm font-semibold text-gray-300">Net: ₹0.00</p></div>
                 </div>
+            </div>
             </div>
             <div class="pt-4 border-t border-white/10">
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Remarks & Verdict</p>
@@ -974,6 +975,7 @@
                         if (cloudData.globalAllocSettings) globalAllocSettings = cloudData.globalAllocSettings;
                         if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
                         if (cloudData.customVerdicts) { customVerdicts.length = 0; customVerdicts.forEach(x => customVerdicts.push(x)); }
+                        if (cloudData.customVerdicts) window.refreshCustomDropdowns?.('pt_verdicts');
                         tradesDB.forEach(t => { if(!t.mode) t.mode = 'intraday'; if(!t.status) t.status = 'CLOSED'; if(!t.selectedBreakeven) t.selectedBreakeven = lastBreakevenSelection; if(!t.brokerName) t.brokerName = currentBroker; if(!t.exchange) t.exchange = currentExchange; });
 
                         if (cloudData.uiSettings) {
@@ -1286,7 +1288,21 @@
                 e.preventDefault(); 
                 if (e.target.classList.contains('delete-opt')) {
                     e.stopPropagation(); const valToDelete = e.target.getAttribute('data-del');
-                    if (confirm(`Remove "${valToDelete}" from options?`)) { const idx = optionsArray.indexOf(valToDelete); if (idx > -1) { optionsArray.splice(idx, 1); saveGlobalState(); renderList(""); } } return; 
+                    if (confirm(`Remove "${valToDelete}" from options?`)) {
+                        const idx = optionsArray.indexOf(valToDelete);
+                        if (idx > -1) {
+                            optionsArray.splice(idx, 1);
+                            if (storageKey === 'pt_verdicts') {
+                                document.querySelectorAll('#tj-verdict, #ctm-verdict').forEach(el => {
+                                    const vals = el.value.split(',').map(s => s.trim()).filter(Boolean).filter(v => v !== valToDelete);
+                                    el.value = vals.join(', ');
+                                });
+                            }
+                            saveGlobalState(true);
+                            window.refreshCustomDropdowns?.(storageKey);
+                            renderList("");
+                        }
+                    } return; 
                 }
                 const item = e.target.closest('.custom-dropdown-item');
                 if (item) {
@@ -1294,8 +1310,11 @@
                     if (val === '_add_') {
                         const newVal = prompt("Enter new option:");
                         if (newVal && newVal.trim() !== '') { 
-                            optionsArray.unshift(newVal.trim()); saveGlobalState(); 
-                            if (isMulti) { let currentVals = input.value.split(',').map(s => s.trim()).filter(s => optionsArray.includes(s)); currentVals.push(newVal.trim()); input.value = currentVals.join(', '); } 
+                            const cleanNewVal = newVal.trim();
+                            if (!optionsArray.includes(cleanNewVal)) optionsArray.unshift(cleanNewVal);
+                            saveGlobalState(true);
+                            window.refreshCustomDropdowns?.(storageKey);
+                            if (isMulti) { let currentVals = input.value.split(',').map(s => s.trim()).filter(s => optionsArray.includes(s)); currentVals.push(cleanNewVal); input.value = [...new Set(currentVals)].join(', '); } 
                             else { input.value = newVal.trim(); }
                             input.dispatchEvent(new Event('change'));
                         }
@@ -1320,7 +1339,14 @@
                 } else { if (e.key === 'Enter') { e.preventDefault(); if(flowArray.length>0) focusNextElement(input.id); } }
             });
             function updateFocus(items) { items.forEach(i => i.classList.remove('focused')); if (items[focusedIndex]) { items[focusedIndex].classList.add('focused'); items[focusedIndex].scrollIntoView({ block: 'nearest' }); } }
+            input._refreshOptions = () => { renderList(""); };
         }
+
+        window.refreshCustomDropdowns = function(storageKey) {
+            document.querySelectorAll('input').forEach(input => {
+                if (input._refreshOptions) input._refreshOptions();
+            });
+        };
 
         function initNavigation() {
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1491,8 +1517,11 @@
             t.session = sess; 
             
             t.result = net > 0 ? 'WIN' : (net < 0 ? 'LOSS' : 'BREAKEVEN'); 
-            t.status = 'CLOSED'; 
-            recalculateTimeline(); 
+            t.mode = t.mode || activeJourMode;
+            t.brokerName = t.brokerName || currentBroker;
+            t.exchange = t.exchange || currentExchange;
+            t.selectedBreakeven = t.selectedBreakeven || lastBreakevenSelection;
+            recalculateTimeline(true); 
             closeCloseTradeModal();
         }
         
@@ -1506,37 +1535,74 @@
             const dispSession=t.session?t.session.replace(/Entered:\s*/g,'').replace(/Exited:\s*/g,''):'-'; html+=addField('Session Time',dispSession); if(t.mode==='intraday')html+=addField('Strategy',t.strategy||'-');
             if(t.entry||t.sl){html+=`<div class="col-span-full border-t border-white/5 mt-1 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">`;html+=addField('Direction',t.direction||(t.entry>t.sl?'LONG':'SHORT'),(t.direction==='SHORT'||t.entry<t.sl)?'text-short':'text-long');html+=addField('Entry Price',t.entry?formatMoney(t.entry):'-');html+=addField('Stop Loss',t.sl?formatMoney(t.sl):'-');html+=addField('Risk / Target',`${t.risk?t.risk+'%':'-'} / ${t.target?t.target+'R':'-'}`);html+=addField('Margin',`${t.margin?t.margin+'x':'-'}`);html+=addField('Shares',t.shares||'-');html+=addField('Target Price',t.targetPrice?formatMoney(t.targetPrice):'-');html+=addField('Risk / Share',t.rps?formatMoney(t.rps):'-');html+=addField('Position Value',t.posValue?formatMoney(t.posValue):'-');html+=addField('Max Loss',t.maxLoss?formatMoney(t.maxLoss):'-','text-red-400');html+=addField('Actual Risk',t.actualRisk?t.actualRisk+'%':'-');html+=`</div>`;}
             document.getElementById('tradeModalContent').innerHTML=html;
-            const beTools=document.getElementById('tm-breakeven-tools'),beSelect=document.getElementById('tm-breakeven-select');
-            if(t.entry&&t.shares){beTools.classList.remove('hidden');beSelect.value=lastBreakevenSelection;if(!BREAKEVEN_META[beSelect.value])beSelect.value='b20';const renderBE=()=>{const key=beSelect.value,price=Number(t[key]);document.getElementById('tm-breakeven-price').textContent=price>0?formatMoney(price):'Not available';if(price>0){const cfg=getBrokerProfileForTrade(t),chg=calculateTradeCharges(t.shares,t.entry,price,t.direction,cfg.profile,cfg.exchange,cfg.mode),gross=t.shares*(price-t.entry)*(t.direction==='SHORT'?-1:1),net=gross-chg.total;document.getElementById('tm-breakeven-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)}`;document.getElementById('tm-breakeven-net').className=`text-sm font-semibold ${net>0?'text-long':(net<0?'text-short':'text-gray-300')}`;}else document.getElementById('tm-breakeven-net').textContent='Net: -';}; beSelect.onchange=()=>{lastBreakevenSelection=beSelect.value;localStorage.setItem('pt_last_breakeven',lastBreakevenSelection);renderBE();}; renderBE();}else beTools.classList.add('hidden');
             const openTools=document.getElementById('openTradeTools');
+            const beTools=document.getElementById('tm-breakeven-tools'),beSelect=document.getElementById('tm-breakeven-select');
             const saveToolsBtn=document.getElementById('tm-save-tools-btn');
-            if(t.status==='OPEN'&&t.entry&&t.shares&&Number(t.maxLoss)>0){
+            const isOpenTrade = t.status==='OPEN' && t.entry && t.shares && Number(t.maxLoss)>0;
+            if(isOpenTrade){
                 openTools.classList.remove('hidden');
+                beTools.classList.remove('hidden');
+                beSelect.value=lastBreakevenSelection;
+                if(!BREAKEVEN_META[beSelect.value]) beSelect.value='b20';
+
+                const renderBE=()=>{
+                    const key=beSelect.value;
+                    const price=Number(t[key]);
+                    document.getElementById('tm-breakeven-price').textContent=price>0?formatMoney(price):'Not available';
+                    if(price>0){
+                        const cfg=getBrokerProfileForTrade(t);
+                        const chg=calculateTradeCharges(t.shares,t.entry,price,t.direction,cfg.profile,cfg.exchange,cfg.mode);
+                        const gross=t.shares*(price-t.entry)*(t.direction==='SHORT'?-1:1);
+                        const net=gross-chg.total;
+                        document.getElementById('tm-breakeven-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)}`;
+                        document.getElementById('tm-breakeven-net').className=`text-sm font-semibold ${net>0?'text-long':(net<0?'text-short':'text-gray-300')}`;
+                    } else {
+                        document.getElementById('tm-breakeven-net').textContent='Net: -';
+                    }
+                };
+                beSelect.onchange=()=>{
+                    lastBreakevenSelection=beSelect.value;
+                    localStorage.setItem('pt_last_breakeven',lastBreakevenSelection);
+                    renderBE();
+                };
+                renderBE();
+
                 document.getElementById('tm-target-x').value=t.target||2;
-                document.getElementById('tm-max-loss').textContent=formatMoney(t.maxLoss);
                 const dir=t.direction||(t.entry>t.sl?'LONG':'SHORT'),d=document.getElementById('tm-open-direction');
                 d.textContent=dir; d.className=`text-[10px] font-bold px-2 py-1 rounded uppercase ${dir==='LONG'?'bg-long/20 text-long':'bg-short/20 text-short'}`;
                 let calculatedTargetPrice=Number(t.targetPrice)||0;
                 const calc=()=>{
                     const x=parseFloat(document.getElementById('tm-target-x').value); if(!(x>0))return;
-                    const cfg=getBrokerProfileForTrade(t),price=solvePriceForNetProfit(t.shares,t.entry,dir,x*Number(t.maxLoss),cfg.mode,cfg.profile,cfg.exchange);
-                    if(price===null){document.getElementById('tm-target-price').textContent='Unable to solve';document.getElementById('tm-target-net').textContent='Net: -';calculatedTargetPrice=0;return;}
+                    const cfg=getBrokerProfileForTrade(t);
+                    // t.maxLoss is the maximum planned loss including SL charges.
+                    const price=solvePriceForNetProfit(t.shares,t.entry,dir,x*Number(t.maxLoss),cfg.mode,cfg.profile,cfg.exchange);
+                    if(price===null){
+                        document.getElementById('tm-target-price').textContent='Unable to solve';
+                        document.getElementById('tm-target-net').textContent='Net: -';
+                        calculatedTargetPrice=0;
+                        return;
+                    }
                     calculatedTargetPrice=price;
-                    const chg=calculateTradeCharges(t.shares,t.entry,price,dir,cfg.profile,cfg.exchange,cfg.mode),gross=t.shares*(price-t.entry)*(dir==='SHORT'?-1:1),net=gross-chg.total;
-                    document.getElementById('tm-target-price').textContent=formatMoney(price); document.getElementById('tm-target-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)} (${x}R)`;
+                    const chg=calculateTradeCharges(t.shares,t.entry,price,dir,cfg.profile,cfg.exchange,cfg.mode);
+                    const gross=t.shares*(price-t.entry)*(dir==='SHORT'?-1:1),net=gross-chg.total;
+                    document.getElementById('tm-target-price').textContent=formatMoney(price);
+                    document.getElementById('tm-target-net').textContent=`Net: ${net>0?'+':''}${formatMoney(net)} (${x}R)`;
                 };
                 document.getElementById('tm-calc-target-btn').onclick=calc;
                 document.getElementById('tm-target-x').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();calc();}};
                 saveToolsBtn.onclick=()=>{
-                    const x=parseFloat(document.getElementById('tm-target-x').value),beKey=document.getElementById('tm-breakeven-select').value||lastBreakevenSelection;
+                    const x=parseFloat(document.getElementById('tm-target-x').value),beKey=beSelect.value||lastBreakevenSelection;
                     if(!(x>0)||!(calculatedTargetPrice>0)){alert('Calculate a valid target price before saving.');return;}
                     t.target=x; t.targetPrice=calculatedTargetPrice; t.selectedBreakeven=beKey;
                     lastBreakevenSelection=beKey; localStorage.setItem('pt_last_breakeven',beKey);
-                    recalculateTimeline(); renderTradesTable();
+                    recalculateTimeline(); renderTradesTable(); updateDashboard();
                     saveToolsBtn.textContent='Saved ✓'; setTimeout(()=>saveToolsBtn.textContent='Save Target & Breakeven',1400);
                 };
                 calc();
-            }else openTools.classList.add('hidden');
+            }else{
+                openTools.classList.add('hidden');
+                beTools.classList.add('hidden');
+            }
             let verdictsHtml='';if(t.verdict){t.verdict.split(',').forEach(v=>{if(v.trim())verdictsHtml+=`<span class="text-xs bg-white/5 text-brand-300 border border-brand-500/20 px-2 py-1 rounded">${v.trim()}</span>`;});}document.getElementById('tm-verdicts').innerHTML=verdictsHtml||'-';
             modal.classList.remove('hidden');setTimeout(()=>{modal.classList.remove('opacity-0');card.classList.remove('scale-95');card.classList.add('scale-100');},10);
         }
@@ -1883,14 +1949,27 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             xirrEl.className = `text-3xl md:text-4xl font-bold sensitive-data truncate ${xirrValue > 0 ? 'text-long' : (xirrValue < 0 ? 'text-short' : 'text-gray-500')}`;
 
             lbl.textContent = rangeLabel; 
-            let totalPnl = 0, wins = 0; 
-            filteredTrades.forEach(t => { totalPnl += t.netPnl; if (t.result === 'WIN') wins++; });
+            let totalPnl = 0, wins = 0, winPnl = 0, lossPnl = 0, lossCount = 0; 
+            filteredTrades.forEach(t => {
+                const pnl = Number(t.netPnl) || 0;
+                totalPnl += pnl;
+                if (t.result === 'WIN') { wins++; winPnl += pnl; }
+                else if (t.result === 'LOSS') { lossPnl += pnl; lossCount++; }
+            });
             const winRate = filteredTrades.length > 0 ? ((wins / filteredTrades.length) * 100).toFixed(1) : 0;
+            const avgWin = wins > 0 ? winPnl / wins : 0;
+            const avgLoss = lossCount > 0 ? lossPnl / lossCount : 0;
             document.getElementById('dash-total-trades').textContent = filteredTrades.length; 
             document.getElementById('dash-win-rate').textContent = winRate + '%';
-                          
+
             const pnlEl = document.getElementById('dash-total-pnl'); pnlEl.textContent = formatMoney(totalPnl);
             pnlEl.className = `text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center ${totalPnl > 0 ? 'text-long' : (totalPnl < 0 ? 'text-short' : '')}`;
+            const avgWinEl = document.getElementById('dash-avg-win');
+            avgWinEl.textContent = formatMoney(avgWin);
+            avgWinEl.className = `text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center ${avgWin > 0 ? 'text-long' : 'text-gray-500'}`;
+            const avgLossEl = document.getElementById('dash-avg-loss');
+            avgLossEl.textContent = formatMoney(avgLoss);
+            avgLossEl.className = `text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center ${avgLoss < 0 ? 'text-short' : 'text-gray-500'}`;
             
             let formatStr;
             if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
