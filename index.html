@@ -363,13 +363,13 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 z-10 relative overflow-hidden">
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Total Closed</p><h2 id="dash-total-trades" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Win Rate</p><h2 id="dash-win-rate" class="text-3xl md:text-4xl font-bold text-brand-500 sensitive-data truncate">0.0%</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Net P&amp;L</p><h2 id="dash-total-pnl" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Average Win Trade</p><h2 id="dash-avg-win" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">Average Loss Trade</p><h2 id="dash-avg-loss" class="text-3xl md:text-4xl font-bold sensitive-data w-full truncate text-center">₹0.00</h2></div>
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-center items-center overflow-hidden"><p class="text-sm text-gray-400 uppercase tracking-wider mb-2 text-center">XIRR</p><h2 id="dash-xirr" class="text-3xl md:text-4xl font-bold sensitive-data truncate">0.00%</h2></div>
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 z-10 relative">
+                <div class="glass-card rounded-2xl p-4 md:p-5 min-w-0 flex flex-col justify-center items-center"><p class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wider mb-2 text-center leading-snug">Total Closed</p><h2 id="dash-total-trades" class="text-2xl md:text-3xl font-bold sensitive-data whitespace-nowrap text-center">0</h2></div>
+                <div class="glass-card rounded-2xl p-4 md:p-5 min-w-0 flex flex-col justify-center items-center"><p class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wider mb-2 text-center leading-snug">Win Rate</p><h2 id="dash-win-rate" class="text-2xl md:text-3xl font-bold text-brand-500 sensitive-data whitespace-nowrap text-center">0.0%</h2></div>
+                <div class="glass-card rounded-2xl p-4 md:p-5 min-w-0 flex flex-col justify-center items-center"><p class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wider mb-2 text-center leading-snug">Net P&amp;L</p><h2 id="dash-total-pnl" class="text-2xl md:text-3xl font-bold sensitive-data whitespace-nowrap text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-4 md:p-5 min-w-0 flex flex-col justify-center items-center"><p class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wider mb-2 text-center leading-snug">Average Win Trade</p><h2 id="dash-avg-win" class="text-2xl md:text-3xl font-bold sensitive-data whitespace-nowrap text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-4 md:p-5 min-w-0 flex flex-col justify-center items-center"><p class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wider mb-2 text-center leading-snug">Average Loss Trade</p><h2 id="dash-avg-loss" class="text-2xl md:text-3xl font-bold sensitive-data whitespace-nowrap text-center">₹0.00</h2></div>
+                <div class="glass-card rounded-2xl p-4 md:p-5 min-w-0 flex flex-col justify-center items-center"><p class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wider mb-2 text-center leading-snug">XIRR</p><h2 id="dash-xirr" class="text-2xl md:text-3xl font-bold sensitive-data whitespace-nowrap text-center">0.00%</h2></div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10 relative">
@@ -1186,7 +1186,7 @@
             setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts', customVerdicts, true, closeTradeFlow, true);
             setupCapitalTransfers();
             initBreakevenSelectors();
-            bindKeyboardFlows(); updateViews(); initDashboardFilters(); loadCalcState();
+            bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); loadCalcState();
 
             document.getElementById('removeAttachedSlBtn').addEventListener('click', (e) => {
                 e.preventDefault(); clearAttachedSL(); window.triggerGlobalCalculate();
@@ -1251,6 +1251,19 @@
                     saveGlobalState(); 
                     renderCapitalTable(); 
                 }); 
+            });
+        }
+
+        function bindSelectAllOnFocus() {
+            const excludedTypes = new Set(['time', 'date', 'datetime-local', 'month', 'week', 'checkbox', 'radio', 'file', 'range', 'button', 'submit', 'reset']);
+            const excludedIds = new Set(['tj-symbol', 'tj-strategy', 'tj-verdict', 'ctm-verdict', 'cl-action', 'cl-sub-type', 'dash-filter-input']);
+            document.querySelectorAll('input, textarea').forEach(el => {
+                if (excludedTypes.has((el.type || '').toLowerCase())) return;
+                if (el.readOnly || el.disabled || excludedIds.has(el.id) || el.classList.contains('flatpickr-input')) return;
+                el.addEventListener('focus', function() {
+                    // Select the whole current value so replacement is one-click, like Entry/Stop Loss.
+                    this.select();
+                });
             });
         }
 
@@ -1516,12 +1529,15 @@
             }
             t.session = sess; 
             
-            t.result = net > 0 ? 'WIN' : (net < 0 ? 'LOSS' : 'BREAKEVEN'); 
+            t.result = net > 0 ? 'WIN' : (net < 0 ? 'LOSS' : 'BREAKEVEN');
+            t.status = 'CLOSED';
             t.mode = t.mode || activeJourMode;
             t.brokerName = t.brokerName || currentBroker;
             t.exchange = t.exchange || currentExchange;
             t.selectedBreakeven = t.selectedBreakeven || lastBreakevenSelection;
-            recalculateTimeline(true); 
+            recalculateTimeline(true);
+            renderTradesTable();
+            updateDashboard();
             closeCloseTradeModal();
         }
         
@@ -2193,7 +2209,6 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 entry: document.getElementById('entry'), sl: document.getElementById('stopLoss'), corpus: document.getElementById('corpus'), margin: document.getElementById('margin'), risk: document.getElementById('riskPct'), target: document.getElementById('targetPct'), msg: document.getElementById('validationMsg'), sharesOut: document.getElementById('outSharesInput')
             };
             
-            cInputs.entry.addEventListener('focus', function() { this.select(); }); cInputs.sl.addEventListener('focus', function() { this.select(); });
             
             const calcCharges = (qty, ent, exitPrice, dir, brkProf, exchCode) => calculateTradeCharges(qty, ent, exitPrice, dir, brkProf, exchCode, activeCalcMode);
 
