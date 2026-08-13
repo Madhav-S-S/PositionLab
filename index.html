@@ -66,6 +66,9 @@
         .mode-toggle-btn.active { background-color: #3b82f6; color: white; box-shadow: 0 4px 14px rgba(59,130,246,0.3); }
         .mode-toggle-btn.inactive { background-color: transparent; color: #9ca3af; }
         .mode-toggle-btn.inactive:hover { color: white; }
+        .dash-period-type-btn { color: #9ca3af; background: transparent; }
+        .dash-period-type-btn.active { color: #fff; background: #3b82f6; box-shadow: 0 4px 14px rgba(59,130,246,0.25); }
+        .dash-period-type-btn:hover { color: #fff; }
     </style>
 </head>
 <body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col relative">
@@ -347,8 +350,16 @@
 
             <div class="flex flex-col md:flex-row justify-between items-center px-2 mt-8 mb-2 gap-4 relative z-50">
                 <h3 class="text-lg font-semibold text-gray-100 tracking-wider">PERFORMANCE METRICS <span id="dashPerformanceLabel" class="text-xs bg-brand-500/20 text-brand-400 px-2 py-1 rounded ml-2 uppercase">BOTH</span></h3>
-                <div class="flex items-center gap-2">
-                    <button id="dash-prev-btn" onclick="changePeriod(-1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                <div class="flex items-center gap-3 flex-wrap justify-end">
+                    <div class="bg-black/40 p-1 rounded-lg border border-white/10 flex items-center">
+                        <button id="dash-period-calendar" type="button" class="dash-period-type-btn px-3 py-1.5 rounded-md text-[10px] md:text-xs font-bold uppercase tracking-wider transition active">Calendar</button>
+                        <button id="dash-period-rolling" type="button" class="dash-period-type-btn px-3 py-1.5 rounded-md text-[10px] md:text-xs font-bold uppercase tracking-wider transition">Period</button>
+                    </div>
+
+                    <button id="dash-prev-btn" onclick="changePeriod(-1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+
                     <div class="flex flex-col items-center">
                         <div class="custom-dropdown w-48 text-center">
                             <input type="text" id="dash-filter-input" class="input-field py-1.5 text-sm font-semibold bg-black/40 cursor-pointer text-brand-400 text-center" placeholder="All Time" autocomplete="off" readonly>
@@ -356,7 +367,11 @@
                         </div>
                         <span id="dash-period-label" class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider hidden"></span>
                     </div>
-                    <button id="dash-next-btn" onclick="changePeriod(1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7-7"></path></svg></button>
+
+                    <button id="dash-next-btn" onclick="changePeriod(1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7-7"></path></svg>
+                    </button>
+
                     <div id="dash-custom-range-container" class="hidden relative ml-2">
                         <input type="text" id="dash-custom-range" class="input-field py-1.5 text-sm w-48 bg-black/40 text-brand-400 font-semibold text-center" placeholder="Select Dates">
                     </div>
@@ -634,7 +649,7 @@
                     <span id="tm-open-direction" class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-gray-800 text-gray-300 uppercase shrink-0"></span>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-[180px_1fr_1fr] gap-4 items-stretch">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
                     <div class="glass-card rounded-xl p-4 border border-white/10 bg-black/20">
                         <label class="block text-[10px] text-gray-500 uppercase tracking-[0.16em] font-bold mb-2">Target (R)</label>
                         <input type="number" id="tm-target-x" step="0.1" min="0.1" class="input-field py-3 text-2xl font-bold text-center" placeholder="2.0">
@@ -962,6 +977,7 @@
                     document.querySelectorAll('.dash-mode-toggle-btn').forEach(b => { b.classList.remove('active'); b.classList.add('inactive'); });
                     e.target.classList.remove('inactive'); e.target.classList.add('active');
                     document.getElementById('dashPerformanceLabel').textContent = activeDashMode.toUpperCase();
+                    localStorage.setItem('pt_dash_mode', activeDashMode);
                     updateDashboard();
                 });
             });
@@ -1240,6 +1256,17 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             initGlobalModes(); initCalculator(); initNavigation(); initStocks(); initColToggles();
+            const savedDashMode = localStorage.getItem('pt_dash_mode');
+            if (['intraday','swing','both'].includes(savedDashMode)) {
+                activeDashMode = savedDashMode;
+                document.querySelectorAll('.dash-mode-toggle-btn').forEach(b => {
+                    const isActive = b.getAttribute('data-mode') === activeDashMode;
+                    b.classList.toggle('active', isActive);
+                    b.classList.toggle('inactive', !isActive);
+                });
+                const dashModeLabel = document.getElementById('dashPerformanceLabel');
+                if (dashModeLabel) dashModeLabel.textContent = activeDashMode.toUpperCase();
+            }
             tradesDB.forEach(t => { if(!t.mode) t.mode = 'intraday'; if(!t.status) t.status = 'CLOSED'; if(!t.selectedBreakeven) t.selectedBreakeven = lastBreakevenSelection; if(!t.brokerName) t.brokerName = currentBroker; if(!t.exchange) t.exchange = currentExchange; });
             flatpickr("#tj-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-entry').focus();} } });
             flatpickr("#tj-exit-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('tj-exit-time').focus();} } });
@@ -1938,61 +1965,255 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
         }
 
         let dashFilterMode = 'all', periodOffset = 0, customDateStart = null, customDateEnd = null;
-        const dashOptionsMap = { "All Time": "all", "1 Day": "today", "1 Week": "week", "1 Month": "month", "3 Months": "3months", "6 Months": "6months", "1 Year": "year", "3 Years": "3years", "5 Years": "5years", "Custom Range": "custom" };
-        
-        function initDashboardFilters() {
-            setupCustomDropdown('dash-filter-input', 'dash-filter-list', null, Object.keys(dashOptionsMap), false, []);
-            document.getElementById('dash-filter-input').value = "All Time";
-            const customContainer = document.getElementById('dash-custom-range-container');
-            flatpickr("#dash-custom-range", { mode: "range", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", onClose: (sel) => { if(sel.length === 2) { customDateStart = sel[0]; customDateEnd = sel[1]; updateDashboard(); } } });
-            document.getElementById('dash-filter-input').addEventListener('change', (e) => {
-                const val = e.target.value; dashFilterMode = dashOptionsMap[val] || 'all'; periodOffset = 0; 
-                if(dashFilterMode === 'custom') customContainer.classList.remove('hidden'); else customContainer.classList.add('hidden');
-                updateDashboard(); e.target.blur(); 
-            });
+        let dashPeriodType = localStorage.getItem('pt_dash_period_type') || 'calendar';
+
+        const DASH_CALENDAR_OPTIONS = {
+            "All Time": "all",
+            "Today": "today",
+            "This Week": "week",
+            "This Month": "month",
+            "3 Months": "3months",
+            "6 Months": "6months",
+            "This Year": "year",
+            "3 Years": "3years",
+            "5 Years": "5years",
+            "Custom Range": "custom"
+        };
+
+        const DASH_PERIOD_OPTIONS = {
+            "All Time": "all",
+            "Past 1 Day": "today",
+            "Past 7 Days": "week",
+            "Past 30 Days": "month",
+            "Past 90 Days": "3months",
+            "Past 180 Days": "6months",
+            "Past 1 Year": "year",
+            "Past 3 Years": "3years",
+            "Past 5 Years": "5years"
+        };
+
+        const dashFilterOptionsArray = [];
+        const dashOptionsMap = DASH_CALENDAR_OPTIONS;
+
+        function getDashboardOptionsMap() {
+            return dashPeriodType === 'period' ? DASH_PERIOD_OPTIONS : DASH_CALENDAR_OPTIONS;
         }
 
-        window.changePeriod = function(delta) { periodOffset += delta; updateDashboard(); }
-        
-        function getPeriodRange(mode, offset) {
-            let start = new Date(), end = new Date(), label = "";
-            if (mode === 'today') { 
-                start.setDate(start.getDate() + offset); 
-                end = new Date(start); 
-                label = start.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}); 
-            } else if (mode === 'week') { 
-                let day = start.getDay(), diff = start.getDate() - day + (day === 0 ? -6 : 1); 
-                start.setDate(diff + (offset * 7)); 
-                end = new Date(start); 
-                end.setDate(start.getDate() + 6); 
-                label = `${start.toLocaleDateString(undefined, {month:'short', day:'numeric'})} - ${end.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})}`; 
-            } else if (mode === 'month') { 
-                start.setMonth(start.getMonth() + offset, 1); 
-                end = new Date(start.getFullYear(), start.getMonth() + 1, 0); 
-                label = start.toLocaleDateString(undefined, {month:'long', year:'numeric'}); 
-            } else if (mode === '3months') { 
-                start.setMonth(start.getMonth() + (offset * 3), 1); 
-                end = new Date(start.getFullYear(), start.getMonth() + 3, 0); 
-                label = `${start.toLocaleDateString(undefined, {month:'short', year:'numeric'})} - ${end.toLocaleDateString(undefined, {month:'short', year:'numeric'})}`; 
-            } else if (mode === '6months') { 
-                start.setMonth(start.getMonth() + (offset * 6), 1); 
-                end = new Date(start.getFullYear(), start.getMonth() + 6, 0); 
-                label = `${start.toLocaleDateString(undefined, {month:'short', year:'numeric'})} - ${end.toLocaleDateString(undefined, {month:'short', year:'numeric'})}`; 
-            } else if (mode === 'year') { 
-                start.setFullYear(start.getFullYear() + offset, 0, 1); 
-                end = new Date(start.getFullYear(), 11, 31); 
-                label = start.getFullYear().toString(); 
-            } else if (mode === '3years') { 
-                start.setFullYear(start.getFullYear() + (offset * 3), 0, 1); 
-                end = new Date(start.getFullYear() + 2, 11, 31); 
-                label = `${start.getFullYear()} - ${end.getFullYear()}`; 
-            } else if (mode === '5years') { 
-                start.setFullYear(start.getFullYear() + (offset * 5), 0, 1); 
-                end = new Date(start.getFullYear() + 4, 11, 31); 
-                label = `${start.getFullYear()} - ${end.getFullYear()}`; 
+        function updateDashboardPeriodToggleUI() {
+            const calBtn = document.getElementById('dash-period-calendar');
+            const rollingBtn = document.getElementById('dash-period-rolling');
+            if (!calBtn || !rollingBtn) return;
+            calBtn.classList.toggle('active', dashPeriodType === 'calendar');
+            rollingBtn.classList.toggle('active', dashPeriodType === 'period');
+        }
+
+        function rebuildDashboardFilterOptions() {
+            const input = document.getElementById('dash-filter-input');
+            const list = document.getElementById('dash-filter-list');
+            if (!input || !list) return;
+
+            const map = getDashboardOptionsMap();
+            dashFilterOptionsArray.splice(0, dashFilterOptionsArray.length, ...Object.keys(map));
+
+            if (!Object.values(map).includes(dashFilterMode)) {
+                dashFilterMode = 'all';
+                periodOffset = 0;
             }
-            start.setHours(0,0,0,0); 
-            end.setHours(23,59,59,999); 
+
+            const selectedLabel = Object.keys(map).find(k => map[k] === dashFilterMode) || 'All Time';
+            input.value = selectedLabel;
+
+            const customContainer = document.getElementById('dash-custom-range-container');
+            if (customContainer) customContainer.classList.toggle('hidden', dashFilterMode !== 'custom' || dashPeriodType !== 'calendar');
+
+            // setupCustomDropdown keeps a reference to dashFilterOptionsArray, so
+            // refreshing it is enough for the next focus/click.
+            list.innerHTML = '';
+        }
+
+        function persistDashboardSettings() {
+            localStorage.setItem('pt_dash_period_type', dashPeriodType);
+            localStorage.setItem('pt_dash_filter_mode', dashFilterMode);
+            localStorage.setItem('pt_dash_period_offset', String(periodOffset));
+            if (customDateStart) localStorage.setItem('pt_dash_custom_start', customDateStart.toISOString());
+            else localStorage.removeItem('pt_dash_custom_start');
+            if (customDateEnd) localStorage.setItem('pt_dash_custom_end', customDateEnd.toISOString());
+            else localStorage.removeItem('pt_dash_custom_end');
+        }
+
+        function loadDashboardSettings() {
+            const savedType = localStorage.getItem('pt_dash_period_type');
+            if (savedType === 'calendar' || savedType === 'period') dashPeriodType = savedType;
+
+            dashFilterMode = localStorage.getItem('pt_dash_filter_mode') || 'all';
+            periodOffset = parseInt(localStorage.getItem('pt_dash_period_offset') || '0', 10) || 0;
+
+            const savedStart = localStorage.getItem('pt_dash_custom_start');
+            const savedEnd = localStorage.getItem('pt_dash_custom_end');
+            customDateStart = savedStart ? new Date(savedStart) : null;
+            customDateEnd = savedEnd ? new Date(savedEnd) : null;
+
+            if (dashPeriodType === 'period' && dashFilterMode === 'custom') dashFilterMode = 'all';
+            updateDashboardPeriodToggleUI();
+        }
+
+        function initDashboardFilters() {
+            loadDashboardSettings();
+
+            setupCustomDropdown('dash-filter-input', 'dash-filter-list', null, dashFilterOptionsArray, false, []);
+            rebuildDashboardFilterOptions();
+
+            const customContainer = document.getElementById('dash-custom-range-container');
+
+            flatpickr("#dash-custom-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                onReady: () => {
+                    if (customDateStart && customDateEnd) {
+                        document.querySelector("#dash-custom-range")._flatpickr?.setDate([customDateStart, customDateEnd], false);
+                    }
+                },
+                onClose: (sel) => {
+                    if (sel.length === 2) {
+                        customDateStart = sel[0];
+                        customDateEnd = sel[1];
+                        periodOffset = 0;
+                        persistDashboardSettings();
+                        updateDashboard();
+                    }
+                }
+            });
+
+            const filterInput = document.getElementById('dash-filter-input');
+            filterInput.addEventListener('change', (e) => {
+                const map = getDashboardOptionsMap();
+                dashFilterMode = map[e.target.value] || 'all';
+                periodOffset = 0;
+                if (dashFilterMode !== 'custom') {
+                    customDateStart = null;
+                    customDateEnd = null;
+                }
+                persistDashboardSettings();
+                rebuildDashboardFilterOptions();
+                updateDashboard();
+                e.target.blur();
+            });
+
+            document.getElementById('dash-period-calendar').addEventListener('click', () => {
+                if (dashPeriodType === 'calendar') return;
+                dashPeriodType = 'calendar';
+                periodOffset = 0;
+                // Keep the same timeframe where possible; "custom" is allowed again.
+                persistDashboardSettings();
+                updateDashboardPeriodToggleUI();
+                rebuildDashboardFilterOptions();
+                updateDashboard();
+            });
+
+            document.getElementById('dash-period-rolling').addEventListener('click', () => {
+                if (dashPeriodType === 'period') return;
+                dashPeriodType = 'period';
+                periodOffset = 0;
+                if (dashFilterMode === 'custom') dashFilterMode = 'all';
+                persistDashboardSettings();
+                updateDashboardPeriodToggleUI();
+                rebuildDashboardFilterOptions();
+                updateDashboard();
+            });
+
+            updateDashboardPeriodToggleUI();
+        }
+
+        window.changePeriod = function(delta) {
+            if (dashFilterMode === 'all' || dashFilterMode === 'custom') return;
+            periodOffset += delta;
+            persistDashboardSettings();
+            updateDashboard();
+        }
+
+        function getPeriodRange(mode, offset) {
+            const now = new Date();
+            let start = new Date(now), end = new Date(now), label = "";
+
+            if (dashPeriodType === 'period') {
+                const dayMap = {
+                    today: 1,
+                    week: 7,
+                    month: 30,
+                    '3months': 90,
+                    '6months': 180,
+                    year: 365,
+                    '3years': 1095,
+                    '5years': 1825
+                };
+                const days = dayMap[mode];
+                if (!days) return { start: null, end: null, label: "" };
+
+                // offset 0 = most recent rolling window; each step moves by one
+                // whole window backwards/forwards.
+                const shiftDays = offset * days;
+                end = new Date(now);
+                end.setDate(end.getDate() - shiftDays);
+                end.setHours(23,59,59,999);
+
+                start = new Date(end);
+                start.setDate(start.getDate() - (days - 1));
+                start.setHours(0,0,0,0);
+
+                const names = {
+                    today: 'Past 1 Day',
+                    week: 'Past 7 Days',
+                    month: 'Past 30 Days',
+                    '3months': 'Past 90 Days',
+                    '6months': 'Past 180 Days',
+                    year: 'Past 1 Year',
+                    '3years': 'Past 3 Years',
+                    '5years': 'Past 5 Years'
+                };
+                label = names[mode] || '';
+                return { start, end, label };
+            }
+
+            if (mode === 'today') {
+                start.setDate(start.getDate() + offset);
+                end = new Date(start);
+                label = start.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+            } else if (mode === 'week') {
+                let day = start.getDay(), diff = start.getDate() - day + (day === 0 ? -6 : 1);
+                start.setDate(diff + (offset * 7));
+                end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                label = `${start.toLocaleDateString(undefined, {month:'short', day:'numeric'})} - ${end.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})}`;
+            } else if (mode === 'month') {
+                start.setMonth(start.getMonth() + offset, 1);
+                end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+                label = start.toLocaleDateString(undefined, {month:'long', year:'numeric'});
+            } else if (mode === '3months') {
+                start.setMonth(start.getMonth() + (offset * 3), 1);
+                end = new Date(start.getFullYear(), start.getMonth() + 3, 0);
+                label = `${start.toLocaleDateString(undefined, {month:'short', year:'numeric'})} - ${end.toLocaleDateString(undefined, {month:'short', year:'numeric'})}`;
+            } else if (mode === '6months') {
+                start.setMonth(start.getMonth() + (offset * 6), 1);
+                end = new Date(start.getFullYear(), start.getMonth() + 6, 0);
+                label = `${start.toLocaleDateString(undefined, {month:'short', year:'numeric'})} - ${end.toLocaleDateString(undefined, {month:'short', year:'numeric'})}`;
+            } else if (mode === 'year') {
+                start.setFullYear(start.getFullYear() + offset, 0, 1);
+                end = new Date(start.getFullYear(), 11, 31);
+                label = start.getFullYear().toString();
+            } else if (mode === '3years') {
+                start.setFullYear(start.getFullYear() + (offset * 3), 0, 1);
+                end = new Date(start.getFullYear() + 2, 11, 31);
+                label = `${start.getFullYear()} - ${end.getFullYear()}`;
+            } else if (mode === '5years') {
+                start.setFullYear(start.getFullYear() + (offset * 5), 0, 1);
+                end = new Date(start.getFullYear() + 4, 11, 31);
+                label = `${start.getFullYear()} - ${end.getFullYear()}`;
+            }
+
+            start.setHours(0,0,0,0);
+            end.setHours(23,59,59,999);
             return { start, end, label };
         }
 
@@ -2017,15 +2238,28 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             const btnPrev = document.getElementById('dash-prev-btn'), btnNext = document.getElementById('dash-next-btn'), lbl = document.getElementById('dash-period-label');
                           
             if (dashFilterMode !== 'all' && dashFilterMode !== 'custom') {
-                const range = getPeriodRange(dashFilterMode, periodOffset); 
+                const range = getPeriodRange(dashFilterMode, periodOffset);
                 rangeLabel = range.label; rangeStart = range.start; rangeEnd = range.end;
                 btnPrev.classList.remove('hidden'); btnNext.classList.remove('hidden'); lbl.classList.remove('hidden');
-                filteredTrades = filteredTrades.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= range.start && d <= range.end; });
+                filteredTrades = filteredTrades.filter(t => {
+                    const d = new Date(t.date);
+                    d.setHours(0,0,0,0);
+                    return d >= range.start && d <= range.end;
+                });
             } else {
-                btnPrev.classList.add('hidden'); btnNext.classList.add('hidden'); lbl.classList.add('hidden');
-                if (dashFilterMode === 'custom' && customDateStart && customDateEnd) { 
-                    rangeStart = customDateStart; rangeEnd = customDateEnd; 
-                    filteredTrades = filteredTrades.filter(t => { const d = new Date(t.date); d.setHours(0,0,0,0); return d >= customDateStart && d <= customDateEnd; }); 
+                btnPrev.classList.add('hidden'); btnNext.classList.add('hidden');
+                if (dashFilterMode === 'custom' && customDateStart && customDateEnd && dashPeriodType === 'calendar') {
+                    rangeStart = new Date(customDateStart); rangeStart.setHours(0,0,0,0);
+                    rangeEnd = new Date(customDateEnd); rangeEnd.setHours(23,59,59,999);
+                    lbl.classList.remove('hidden');
+                    rangeLabel = `${rangeStart.toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'})} - ${rangeEnd.toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'})}`;
+                    filteredTrades = filteredTrades.filter(t => {
+                        const d = new Date(t.date);
+                        d.setHours(0,0,0,0);
+                        return d >= rangeStart && d <= rangeEnd;
+                    });
+                } else {
+                    lbl.classList.add('hidden');
                 }
             }
             
