@@ -2675,21 +2675,32 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
 
             ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => { cInputs[k].addEventListener('input', () => { manualSharesOverride = null; clearAttachedSL(); calculate(); }); });
             cInputs.sharesOut.addEventListener('input', (e) => { const val = parseFloat(e.target.value); manualSharesOverride = !isNaN(val) && val >= 0 ? val : 0; clearAttachedSL(); calculate(); });
-            cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
+            const scrollToRecommendedShares = () => {
+                const target = document.getElementById('resultCard');
+                if (!target) return;
+                const targetTop = target.getBoundingClientRect().top + window.scrollY;
+                const header = document.querySelector('nav');
+                const headerHeight = header ? header.getBoundingClientRect().height : 0;
+                const topGap = 8;
+                window.scrollTo({ top: Math.max(0, targetTop - headerHeight - topGap), behavior: 'smooth' });
+            };
+
+            cInputs.entry.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') {
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                        setTimeout(scrollToRecommendedShares, 80);
+                    } else {
+                        cInputs.sl.focus();
+                    }
+                }
+            });
             cInputs.sl.addEventListener('keydown', (e) => {
                 if(e.key === 'Enter' && window.innerWidth <= 768) {
                     e.preventDefault();
-                    const target = document.getElementById('resultCard');
-                    const scrollToResult = () => {
-                        if (!target) return;
-                        const targetTop = target.getBoundingClientRect().top + window.scrollY;
-                        const header = document.querySelector('nav');
-                        const headerHeight = header ? header.getBoundingClientRect().height : 0;
-                        const topGap = 8;
-                        window.scrollTo({ top: Math.max(0, targetTop - headerHeight - topGap), behavior: 'smooth' });
-                    };
                     e.currentTarget.blur();
-                    setTimeout(scrollToResult, 80);
+                    setTimeout(scrollToRecommendedShares, 80);
                 }
             });
 
