@@ -2685,22 +2685,36 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 window.scrollTo({ top: Math.max(0, targetTop - headerHeight - topGap), behavior: 'auto' });
             };
 
+            const isMobileCalculator = () => window.matchMedia('(max-width: 768px)').matches;
+            const focusCalculatorInput = (input) => {
+                if (!input) return;
+                input.focus({ preventScroll: true });
+                try { input.select(); } catch (_) {}
+            };
+
             cInputs.entry.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter') {
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        e.currentTarget.blur();
-                        setTimeout(scrollToRecommendedShares, 80);
-                    } else {
-                        cInputs.sl.focus();
-                    }
+                if (e.key !== 'Enter' && e.key !== 'NumpadEnter') return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (isMobileCalculator()) {
+                    e.currentTarget.blur();
+                    scrollToRecommendedShares();
+                } else {
+                    focusCalculatorInput(cInputs.sl);
                 }
             });
+
             cInputs.sl.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter' && window.innerWidth <= 768) {
-                    e.preventDefault();
+                if (e.key !== 'Enter' && e.key !== 'NumpadEnter') return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (isMobileCalculator()) {
                     e.currentTarget.blur();
-                    setTimeout(scrollToRecommendedShares, 80);
+                    scrollToRecommendedShares();
+                } else {
+                    focusCalculatorInput(cInputs.entry);
                 }
             });
 
