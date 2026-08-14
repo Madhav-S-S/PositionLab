@@ -2682,7 +2682,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 const header = document.querySelector('nav');
                 const headerHeight = header ? header.getBoundingClientRect().height : 0;
                 const topGap = 8;
-                window.scrollTo({ top: Math.max(0, targetTop - headerHeight - topGap), behavior: 'smooth' });
+                window.scrollTo({ top: Math.max(0, targetTop - headerHeight - topGap), behavior: 'auto' });
             };
 
             cInputs.entry.addEventListener('keydown', (e) => {
