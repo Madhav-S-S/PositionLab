@@ -248,7 +248,7 @@
                                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="You can edit this value to override calculations"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <input type="number" id="outSharesInput" class="text-5xl lg:text-6xl font-bold tracking-tight bg-transparent border-b-2 border-dashed border-gray-600 hover:border-brand-500 focus:border-brand-500 focus:outline-none transition-colors w-40 text-white" value="0">
+                                        <input type="number" id="outSharesInput" class="text-5xl lg:text-6xl font-bold tracking-tight bg-transparent border-b-2 border-dashed border-gray-600 hover:border-brand-500 focus:border-brand-500 focus:outline-none transition-colors w-56 sm:w-64 lg:w-72 max-w-full text-white" value="0">
                                         <span id="outDirection" class="text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase">WAITING</span>
                                     </div>
                                     <p class="text-[10px] text-gray-500 mt-1 italic hidden" id="overrideNotice">Manual override active</p>
@@ -777,9 +777,9 @@
                 </div>
                 <div class="col-span-2"><label class="block text-xs text-gray-400 mb-1">Exit Remarks</label><input type="text" id="ctm-remarks" class="input-field py-2" placeholder="Why did you exit?"></div>
             </div>
-            <div class="bg-black/40 p-4 rounded-xl border border-white/5 mb-6 flex justify-between items-center">
-                <span class="text-sm text-gray-400 font-semibold">Net P&L (Calc)</span>
-                <span id="ctm-calc-pnl" class="text-xl font-bold text-gray-200">-</span>
+            <div class="bg-black/40 p-4 rounded-xl border border-white/5 mb-6 flex items-center gap-4">
+                <label for="ctm-pnl" class="text-sm text-gray-400 font-semibold whitespace-nowrap">Net P&amp;L (₹)</label>
+                <input type="number" id="ctm-pnl" step="0.01" class="input-field py-2 text-xl font-bold text-right" placeholder="0.00">
             </div>
             <button id="ctm-save-btn" onclick="saveCloseTradeModal()" class="w-full py-3 rounded-lg bg-long hover:bg-long/80 text-white font-medium transition shadow-lg">Complete Trade</button>
         </div>
@@ -1601,27 +1601,35 @@
         window.openCloseTradeModal = function(id, event) {
             if(event) event.stopPropagation(); const t = tradesDB.find(x => x.id === id); if(!t) return; closingTradeId = id;
             const modal = document.getElementById('closeTradeModal'); const card = document.getElementById('closeTradeModalCard');
+            const exitPriceInput = document.getElementById('ctm-exit-price');
+            const chargesInput = document.getElementById('ctm-charges');
+            const pnlInput = document.getElementById('ctm-pnl');
             document.getElementById('ctm-symbol').textContent = `${t.symbol} (${t.mode.toUpperCase()})`;
-            
-            document.getElementById('ctm-exit-price').value = ''; document.getElementById('ctm-charges').value = ''; document.getElementById('ctm-verdict').value = ''; document.getElementById('ctm-remarks').value = ''; document.getElementById('ctm-calc-pnl').textContent = '-';
-            
+            exitPriceInput.value = ''; chargesInput.value = ''; pnlInput.value = '';
+            document.getElementById('ctm-verdict').value = ''; document.getElementById('ctm-remarks').value = '';
             const exitDateContainer = document.getElementById('ctm-exit-date').parentElement;
-            if (t.mode === 'intraday') {
-                document.getElementById('ctm-exit-date').value = t.date;
-                exitDateContainer.classList.add('hidden');
-            } else {
-                document.getElementById('ctm-exit-date').value = '';
-                exitDateContainer.classList.remove('hidden');
-            }
+            if (t.mode === 'intraday') { document.getElementById('ctm-exit-date').value = t.date; exitDateContainer.classList.add('hidden'); }
+            else { document.getElementById('ctm-exit-date').value = ''; exitDateContainer.classList.remove('hidden'); }
 
-            const calcNet = () => {
-                const ep = parseFloat(document.getElementById('ctm-exit-price').value) || 0; const chg = parseFloat(document.getElementById('ctm-charges').value) || 0;
-                if(ep > 0 && t.entry && t.shares) { const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares; const net = gross - chg; const pnlSpan = document.getElementById('ctm-calc-pnl'); pnlSpan.textContent = formatMoney(net); pnlSpan.className = `text-xl font-bold ${net > 0 ? 'text-long' : (net < 0 ? 'text-short' : 'text-gray-200')}`; }
+            const brokerCfg = getBrokerProfileForTrade(t);
+            const refreshCloseValues = () => {
+                const ep = parseFloat(exitPriceInput.value) || 0;
+                if (!(ep > 0) || !(t.entry > 0) || !(t.shares > 0) || !brokerCfg.profile) { chargesInput.value = ''; pnlInput.value = ''; return; }
+                const charges = calculateTradeCharges(t.shares, t.entry, ep, t.direction, brokerCfg.profile, brokerCfg.exchange, brokerCfg.mode);
+                chargesInput.value = charges.total.toFixed(2);
+                const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares;
+                pnlInput.value = (gross - charges.total).toFixed(2);
             };
-            document.getElementById('ctm-exit-price').addEventListener('input', calcNet); document.getElementById('ctm-charges').addEventListener('input', calcNet);
+            exitPriceInput.oninput = refreshCloseValues;
+            chargesInput.oninput = () => {
+                const ep = parseFloat(exitPriceInput.value) || 0; const chg = parseFloat(chargesInput.value) || 0;
+                if(ep > 0 && t.entry && t.shares && !pnlInput.matches(':focus')) {
+                    const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares;
+                    pnlInput.value = (gross - chg).toFixed(2);
+                }
+            };
             modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); document.getElementById('ctm-exit-time').focus(); }, 10);
         }
-
         window.closeCloseTradeModal = function() {
             closingTradeId = null; const modal = document.getElementById('closeTradeModal'); const card = document.getElementById('closeTradeModalCard');
             modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
@@ -1632,11 +1640,13 @@
             const exDate = document.getElementById('ctm-exit-date').value || t.date;
             const exTimeRaw = document.getElementById('ctm-exit-time').value;
             const exTime = format12Hour(exTimeRaw);
-            const ep = parseFloat(document.getElementById('ctm-exit-price').value) || 0, chg = parseFloat(document.getElementById('ctm-charges').value) || 0;
+            const ep = parseFloat(document.getElementById('ctm-exit-price').value) || 0;
+            const chg = parseFloat(document.getElementById('ctm-charges').value) || 0;
+            const net = parseFloat(document.getElementById('ctm-pnl').value);
             const verdict = document.getElementById('ctm-verdict').value, remarks = document.getElementById('ctm-remarks').value;
             
             if(ep <= 0) return alert("Exit price required to close trade.");
-            let net = 0; if(t.entry && t.shares) { const gross = t.direction === 'SHORT' ? (t.entry - ep) * t.shares : (ep - t.entry) * t.shares; net = gross - chg; }
+            if(!Number.isFinite(net)) return alert("Enter a valid Net P&L.");
             
             t.exitPrice = ep; t.charges = chg; t.netPnl = net; t.verdict = verdict; 
             if (remarks) t.remarks = (t.remarks ? t.remarks + " | Exit: " + remarks : "Exit: " + remarks);
@@ -1783,9 +1793,9 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             const remarks = document.getElementById('tj-remarks').value;
             if(!symbol) return alert('Symbol is required.');
 
-            let tradeData = { mode: activeJourMode, date, symbol, strategy, entry, sl, margin, risk, target, shares, targetPrice, rps, posValue, maxLoss, actualRisk, b0, b3, b10, b20, selectedBreakeven, brokerName: currentBroker, exchange: currentExchange, direction: entry > sl ? 'LONG' : 'SHORT' };
-
             const existingTrade = editingTradeId ? tradesDB.find(t => t.id === editingTradeId) : null;
+            let tradeData = { mode: activeJourMode, date, symbol, strategy, entry, sl, margin, risk, target, shares, targetPrice, rps, posValue, maxLoss, actualRisk, b0, b3, b10, b20, selectedBreakeven, brokerName: existingTrade?.brokerName || currentBroker, exchange: existingTrade?.exchange || currentExchange, direction: entry > sl ? 'LONG' : 'SHORT' };
+
             const exitPriceStr = document.getElementById('tj-exit-price').value;
 
             if ((!editingTradeId || (existingTrade && existingTrade.status === 'OPEN')) && !exitPriceStr) {
@@ -2666,7 +2676,19 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             ['entry', 'sl', 'corpus', 'margin', 'risk', 'target'].forEach(k => { cInputs[k].addEventListener('input', () => { manualSharesOverride = null; clearAttachedSL(); calculate(); }); });
             cInputs.sharesOut.addEventListener('input', (e) => { const val = parseFloat(e.target.value); manualSharesOverride = !isNaN(val) && val >= 0 ? val : 0; clearAttachedSL(); calculate(); });
             cInputs.entry.addEventListener('keydown', (e) => { if(e.key === 'Enter') cInputs.sl.focus(); });
-            cInputs.sl.addEventListener('keydown', (e) => { if(e.key === 'Enter') { if (window.innerWidth <= 768) { setTimeout(() => { const target = document.getElementById('resultCard'); window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }, 100); } } });
+            cInputs.sl.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' && window.innerWidth <= 768) {
+                    e.preventDefault();
+                    const target = document.getElementById('resultCard');
+                    const scrollToResult = () => {
+                        if (!target) return;
+                        const targetTop = target.getBoundingClientRect().top + window.scrollY;
+                        window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+                    };
+                    e.currentTarget.blur();
+                    setTimeout(scrollToResult, 80);
+                }
+            });
 
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); cInputs.entry.focus(); calculate(); });
             document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); });
