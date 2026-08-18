@@ -394,6 +394,14 @@
                         <span id="dash-period-label" class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider hidden"></span>
                     </div>
 
+                    <div class="flex flex-col items-center">
+                        <div class="custom-dropdown w-48 text-center">
+                            <input type="text" id="dash-strategy-input" class="input-field py-1.5 text-sm font-semibold bg-black/40 cursor-pointer text-brand-400 text-center" placeholder="All Strategies" autocomplete="off" readonly>
+                            <ul id="dash-strategy-list" class="custom-dropdown-list text-left"></ul>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">Strategy</span>
+                    </div>
+
                     <button id="dash-next-btn" onclick="changePeriod(1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7-7"></path></svg>
                     </button>
@@ -503,10 +511,10 @@
                         <div class="col-span-1 exit-fields-group hidden"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
                         
                         <div class="col-span-1 exit-fields-group hidden"><label class="block text-sm text-gray-400 mb-1">Charges (₹)</label><input type="number" id="tj-charges" step="0.01" class="input-field py-2" placeholder="0.00"></div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 swing-hide">
-                            <label class="block text-sm text-gray-400 mb-1">Strategy</label>
+                        <div class="col-span-2 md:col-span-1 lg:col-span-2">
+                            <label class="block text-sm text-gray-400 mb-1">Strategy(s)</label>
                             <div class="custom-dropdown">
-                                <input type="text" id="tj-strategy" class="input-field py-2" placeholder="Select Strategy..." autocomplete="off">
+                                <input type="text" id="tj-strategy" class="input-field py-2" placeholder="Select Strategies..." autocomplete="off">
                                 <ul id="tj-strategy-list" class="custom-dropdown-list"></ul>
                             </div>
                         </div>
@@ -971,7 +979,15 @@
                     document.getElementById('setupModeLabel').textContent = activeCalcMode.toUpperCase();
                     document.getElementById('broker-mode-badge').textContent = activeCalcMode.toUpperCase();
                     document.getElementById('alloc-title').textContent = activeCalcMode.toUpperCase() + ' ALLOC';
-                    loadCalcState(); updateBrokerInputs();
+                    loadCalcState();
+                    updateBrokerInputs();
+                    setTimeout(() => {
+                const slInput = document.getElementById('stopLoss');
+                if (slInput) {
+                    slInput.focus({ preventScroll: true });
+                    try { slInput.select(); } catch (_) {}
+                }
+            }, 0);
                 });
             });
 
@@ -986,7 +1002,6 @@
                     if (editingTradeId) cancelEdit();
                     
                     const isSwing = activeJourMode === 'swing';
-                    document.querySelectorAll('.swing-hide').forEach(el => el.classList.toggle('hidden', isSwing));
                     document.querySelectorAll('.swing-only').forEach(el => el.classList.toggle('hidden', !isSwing));
                     
                     document.querySelectorAll('.exit-fields-group').forEach(f => {
@@ -1021,7 +1036,6 @@
             document.getElementById('tj-result').value = 'BREAKEVEN'; document.getElementById('tj-result').className = "input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold text-gray-400 transition-colors";
             
             const isSwing = activeJourMode === 'swing';
-            document.querySelectorAll('.swing-hide').forEach(el => el.classList.toggle('hidden', isSwing));
             document.querySelectorAll('.swing-only').forEach(el => el.classList.toggle('hidden', !isSwing));
             
             document.querySelectorAll('.exit-fields-group').forEach(f => {
@@ -1079,6 +1093,7 @@
                         if (cloudData.brokerProfiles) brokerProfiles = cloudData.brokerProfiles;
                         if (cloudData.globalAllocSettings) globalAllocSettings = cloudData.globalAllocSettings;
                         if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
+                        rebuildDashboardStrategyOptions();
                         if (Array.isArray(cloudData.customVerdicts)) {
                             customVerdicts.splice(0, customVerdicts.length, ...cloudData.customVerdicts);
                         }
@@ -1160,12 +1175,12 @@
             if (syncCloud && accessToken) uploadToDrive();
         }
 
-        function calculateTimeframeXIRR(rangeStart, rangeEnd, modeFilter = 'both') {
+        function calculateTimeframeXIRR(rangeStart, rangeEnd, modeFilter = 'both', strategyFilter = 'all') {
             let today = new Date(); today.setHours(23,59,59,999); 
             let actualEnd = rangeEnd ? (rangeEnd > today ? today : rangeEnd) : today;
             let cfs = [], tempLiquid = 0, tempTrade = 0, tempReserve = 0; const timeline = [];
             
-            tradesDB.filter(t => t.status === 'CLOSED' && (modeFilter === 'both' || t.mode === modeFilter)).forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
+            tradesDB.filter(t => t.status === 'CLOSED' && (modeFilter === 'both' || t.mode === modeFilter) && strategiesMatchFilter(t, strategyFilter)).forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
             capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
             timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
             
@@ -1299,12 +1314,19 @@
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-action').focus();} } });
             flatpickr("#ctm-exit-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('ctm-exit-time').focus();} } });
 
-            setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, baseJournalFlow, false);
+            setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, baseJournalFlow, true);
             setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, baseJournalFlow, true);
             setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts', customVerdicts, true, closeTradeFlow, true);
             setupCapitalTransfers();
             initBreakevenSelectors();
             bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); loadCalcState();
+            setTimeout(() => {
+                const slInput = document.getElementById('stopLoss');
+                if (slInput) {
+                    slInput.focus({ preventScroll: true });
+                    try { slInput.select(); } catch (_) {}
+                }
+            }, 0);
 
             document.getElementById('removeAttachedSlBtn').addEventListener('click', (e) => {
                 e.preventDefault(); clearAttachedSL(); window.triggerGlobalCalculate();
@@ -1428,11 +1450,19 @@
                                     const vals = el.value.split(',').map(s => s.trim()).filter(Boolean).filter(v => v !== valToDelete);
                                     el.value = vals.join(', ');
                                 });
+                            } else if (storageKey === 'pt_strategies') {
+                                const strategyInput = document.getElementById('tj-strategy');
+                                if (strategyInput) {
+                                    strategyInput.value = normalizeStrategyList(strategyInput.value)
+                                        .filter(v => v !== valToDelete)
+                                        .join(', ');
+                                }
                             }
                             saveGlobalState(false);
                             if (storageKey === 'pt_verdicts' && accessToken) uploadToDrive();
                             else if (accessToken) uploadToDrive();
                             window.refreshCustomDropdowns?.(storageKey);
+                            if (storageKey === 'pt_strategies') rebuildDashboardStrategyOptions();
                             renderList("");
                         }
                     } return; 
@@ -1448,6 +1478,7 @@
                             saveGlobalState(false);
                             if (accessToken) uploadToDrive();
                             window.refreshCustomDropdowns?.(storageKey);
+                            if (storageKey === 'pt_strategies') rebuildDashboardStrategyOptions();
                             if (isMulti) { let currentVals = input.value.split(',').map(s => s.trim()).filter(s => optionsArray.includes(s)); currentVals.push(cleanNewVal); input.value = [...new Set(currentVals)].join(', '); } 
                             else { input.value = newVal.trim(); }
                             input.dispatchEvent(new Event('change'));
@@ -1562,7 +1593,7 @@
                 document.getElementById('tj-exit-time').value = outTime;
                 if (outDate && document.getElementById('tj-exit-date')._flatpickr) document.getElementById('tj-exit-date')._flatpickr.setDate(outDate); else document.getElementById('tj-exit-date').value = '';
 
-                document.getElementById('tj-symbol').value = t.symbol; document.getElementById('tj-strategy').value = t.strategy || '';
+                document.getElementById('tj-symbol').value = t.symbol; document.getElementById('tj-strategy').value = normalizeStrategyList(t.strategy).join(', ');
                 document.getElementById('tj-entry').value = t.entry || ''; document.getElementById('tj-sl').value = t.sl || '';
                 document.getElementById('tj-margin').value = t.margin || ''; document.getElementById('tj-risk').value = t.risk || ''; document.getElementById('tj-target').value = t.target || '';
                 document.getElementById('tj-shares').value = t.shares || ''; document.getElementById('tj-target-price').value = t.targetPrice || ''; document.getElementById('tj-rps').value = t.rps || '';
@@ -1680,7 +1711,7 @@
             const badge=document.getElementById('tm-result-badge'); if(t.status==='OPEN'){badge.textContent='OPEN';badge.className='px-3 py-1 rounded text-xs font-bold text-white shadow bg-brand-500 shadow-brand-500/20';}else{badge.textContent=t.result;badge.className=`px-3 py-1 rounded text-xs font-bold text-white shadow ${t.result==='WIN'?'bg-long shadow-long/20':(t.result==='LOSS'?'bg-short shadow-short/20':'bg-gray-600 shadow-gray-500/20')}`;}
             const addField=(label,val,color='text-gray-200')=>`<div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">${label}</p><p class="font-semibold ${color} text-sm md:text-base">${val}</p></div>`;
             let html=''; if(t.status==='CLOSED'){html+=addField('Net P&L',formatMoney(t.netPnl),t.netPnl>0?'text-long':(t.netPnl<0?'text-short':'text-gray-400'));html+=addField('Charges',formatMoney(t.charges||0));html+=addField('Exit Price',t.exitPrice?formatMoney(t.exitPrice):'-');html+=addField('% Change',`${t.pctChange>0?'+':''}${(t.pctChange||0).toFixed(2)}%`,t.pctChange>0?'text-long':(t.pctChange<0?'text-short':'text-gray-400'));html+=addField('End Corpus',formatMoney(t.endCorpus));}else{html+=`<div class="col-span-full mb-2"><p class="text-xs text-brand-400 italic">This trade is currently OPEN. Capital is reserved but P&amp;L is unrealized.</p></div>`;}
-            const dispSession=t.session?t.session.replace(/Entered:\s*/g,'').replace(/Exited:\s*/g,''):'-'; html+=addField('Session Time',dispSession); if(t.mode==='intraday')html+=addField('Strategy',t.strategy||'-');
+            const dispSession=t.session?t.session.replace(/Entered:\s*/g,'').replace(/Exited:\s*/g,''):'-'; html+=addField('Session Time',dispSession); html+=addField('Strategy',normalizeStrategyList(t.strategy).join(', ')||'-');
             if(t.entry||t.sl){html+=`<div class="col-span-full border-t border-white/5 mt-1 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">`;html+=addField('Direction',t.direction||(t.entry>t.sl?'LONG':'SHORT'),(t.direction==='SHORT'||t.entry<t.sl)?'text-short':'text-long');html+=addField('Entry Price',t.entry?formatMoney(t.entry):'-');html+=addField('Stop Loss',t.sl?formatMoney(t.sl):'-');html+=addField('Risk / Target',`${t.risk?t.risk+'%':'-'} / ${t.target?t.target+'R':'-'}`);html+=addField('Margin',`${t.margin?t.margin+'x':'-'}`);html+=addField('Shares',t.shares||'-');html+=addField('Target Price',t.targetPrice?formatMoney(t.targetPrice):'-');html+=addField('Risk / Share',t.rps?formatMoney(t.rps):'-');html+=addField('Position Value',t.posValue?formatMoney(t.posValue):'-');html+=addField('Max Loss',t.maxLoss?formatMoney(t.maxLoss):'-','text-red-400');html+=addField('Actual Risk',t.actualRisk?t.actualRisk+'%':'-');html+=`</div>`;}
             document.getElementById('tradeModalContent').innerHTML=html;
             const openTools=document.getElementById('openTradeTools');
@@ -1783,7 +1814,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
 
         window.processTrade = function() {
             const date = document.getElementById('tj-date').value; const entryTime = format12Hour(document.getElementById('tj-entry-time').value);
-            const symbol = document.getElementById('tj-symbol').value.toUpperCase(); const strategy = document.getElementById('tj-strategy').value;
+            const symbol = document.getElementById('tj-symbol').value.toUpperCase(); const strategy = [...new Set(normalizeStrategyList(document.getElementById('tj-strategy').value))].join(', ');
             const entry = parseFloat(document.getElementById('tj-entry').value) || ''; const sl = parseFloat(document.getElementById('tj-sl').value) || '';
             const margin = parseFloat(document.getElementById('tj-margin').value) || ''; const risk = parseFloat(document.getElementById('tj-risk').value) || ''; const target = parseFloat(document.getElementById('tj-target').value) || '';
             const shares = parseFloat(document.getElementById('tj-shares').value) || ''; const targetPrice = parseFloat(document.getElementById('tj-target-price').value) || ''; const rps = parseFloat(document.getElementById('tj-rps').value) || '';
@@ -1906,7 +1937,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             let cols = tradeTableColumns; 
             const visibleTrades = tradesDB.filter(t => t.mode === activeJourMode);
             let thHTML = `<th class="w-6 md:w-8 px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><input type="checkbox" class="custom-checkbox w-3 h-3 md:w-4 md:h-4" id="chk-all-trades" onclick="toggleAll('trades')"></th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Date</th><th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Symbol</th>`;
-            if (cols.strategy && activeJourMode === 'intraday') thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Strategy</th>`;
+            if (cols.strategy) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Strategy</th>`;
             if (cols.entryExit) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Entry / Exit</th>`;
             if (cols.sl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Stop Loss</th>`;
             if (cols.pnl) thHTML += `<th class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap">Net P&L</th>`;
@@ -1933,7 +1964,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                         ${t.symbol}
                         ${t.status === 'OPEN' ? `<span class="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-brand-500 text-white shadow shadow-brand-500/20">${t.status}</span>` : ''}
                     </td>`;
-                if (cols.strategy && activeJourMode === 'intraday') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${t.strategy || '-'}</td>`;
+                if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${normalizeStrategyList(t.strategy).join(', ') || '-'}</td>`;
                 if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
                 if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${t.sl || '-'}</td>`;
                 if (cols.pnl) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`; }
@@ -2002,6 +2033,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
 
         let dashFilterMode = 'all', periodOffset = 0, customDateStart = null, customDateEnd = null;
         let dashPeriodType = localStorage.getItem('pt_dash_period_type') || 'calendar';
+        let dashStrategyFilter = 'all';
+        const dashStrategyOptionsArray = ['All Strategies'];
 
         const DASH_CALENDAR_OPTIONS = {
             "All Time": "all",
@@ -2033,6 +2066,30 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
 
         function getDashboardOptionsMap() {
             return dashPeriodType === 'period' ? DASH_PERIOD_OPTIONS : DASH_CALENDAR_OPTIONS;
+        }
+
+        function normalizeStrategyList(value) {
+            if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+            if (value === undefined || value === null) return [];
+            return String(value).split(',').map(v => v.trim()).filter(Boolean);
+        }
+
+        function strategiesMatchFilter(trade, selectedStrategy = dashStrategyFilter) {
+            if (!selectedStrategy || selectedStrategy === 'all') return true;
+            return normalizeStrategyList(trade.strategy).includes(selectedStrategy);
+        }
+
+        function rebuildDashboardStrategyOptions() {
+            const input = document.getElementById('dash-strategy-input');
+            const list = document.getElementById('dash-strategy-list');
+            if (!input || !list) return;
+
+            const unique = [...new Set(customStrategies.map(s => String(s).trim()).filter(Boolean))];
+            dashStrategyOptionsArray.splice(0, dashStrategyOptionsArray.length, 'All Strategies', ...unique);
+            if (dashStrategyFilter !== 'all' && !unique.includes(dashStrategyFilter)) dashStrategyFilter = 'all';
+
+            input.value = dashStrategyFilter === 'all' ? 'All Strategies' : dashStrategyFilter;
+            list.innerHTML = '';
         }
 
         function updateDashboardPeriodToggleUI() {
@@ -2097,7 +2154,9 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             loadDashboardSettings();
 
             setupCustomDropdown('dash-filter-input', 'dash-filter-list', null, dashFilterOptionsArray, false, []);
+            setupCustomDropdown('dash-strategy-input', 'dash-strategy-list', null, dashStrategyOptionsArray, false, []);
             rebuildDashboardFilterOptions();
+            rebuildDashboardStrategyOptions();
 
             const customContainer = document.getElementById('dash-custom-range-container');
 
@@ -2133,6 +2192,14 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 }
                 persistDashboardSettings();
                 rebuildDashboardFilterOptions();
+                updateDashboard();
+                e.target.blur();
+            });
+
+            document.getElementById('dash-strategy-input').addEventListener('change', (e) => {
+                const selected = e.target.value.trim();
+                dashStrategyFilter = (!selected || selected === 'All Strategies') ? 'all' : selected;
+                rebuildDashboardStrategyOptions();
                 updateDashboard();
                 e.target.blur();
             });
@@ -2269,6 +2336,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             
             let filteredTrades = tradesDB.filter(t => t.status === 'CLOSED');
             if (activeDashMode !== 'both') filteredTrades = filteredTrades.filter(t => t.mode === activeDashMode);
+            filteredTrades = filteredTrades.filter(t => strategiesMatchFilter(t, dashStrategyFilter));
 
             let rangeLabel = "", rangeStart = null, rangeEnd = null;
             const btnPrev = document.getElementById('dash-prev-btn'), btnNext = document.getElementById('dash-next-btn'), lbl = document.getElementById('dash-period-label');
@@ -2299,7 +2367,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 }
             }
             
-            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd, activeDashMode);
+            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd, activeDashMode, dashStrategyFilter);
             const xirrEl = document.getElementById('dash-xirr'); 
             xirrEl.textContent = (xirrValue.toFixed(2) + '%');
             xirrEl.title = '';
@@ -2718,7 +2786,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 }
             });
 
-            document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); cInputs.entry.focus(); calculate(); });
+            document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); focusCalculatorInput(cInputs.sl); calculate(); });
             document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); });
             
             document.getElementById('logJournalBtn').addEventListener('click', () => {
