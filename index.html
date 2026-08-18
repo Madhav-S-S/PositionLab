@@ -401,6 +401,13 @@
                         </div>
                         <span class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">Strategy</span>
                     </div>
+                    <div class="flex flex-col items-center">
+                        <div class="custom-dropdown w-48 text-center">
+                            <input type="text" id="dash-verdict-input" class="input-field py-1.5 text-sm font-semibold bg-black/40 cursor-pointer text-brand-400 text-center" placeholder="All Verdicts" autocomplete="off" readonly>
+                            <ul id="dash-verdict-list" class="custom-dropdown-list text-left"></ul>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">Verdict</span>
+                    </div>
 
                     <button id="dash-next-btn" onclick="changePeriod(1)" class="p-2 glass-card hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition disabled:opacity-50">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7-7"></path></svg>
@@ -850,8 +857,37 @@
         tradesDB = migrateBreakevenFields(tradesDB);
         localStorage.setItem('pt_trades', JSON.stringify(tradesDB));
         let capitalLedger = JSON.parse(localStorage.getItem('pt_capital')) || [];
-        let customStrategies = JSON.parse(localStorage.getItem('pt_strategies')) || ["Trend Reversal", "Breakout", "Pullback"];
-        let customVerdicts = JSON.parse(localStorage.getItem('pt_verdicts')) || ["Followed Rules", "FOMO", "Early Exit"];
+
+        const DEFAULT_STRATEGIES = ["Trend Reversal", "Breakout", "Pullback"];
+        const DEFAULT_VERDICTS = ["Followed Rules", "FOMO", "Early Exit"];
+
+        function normalizeOptionSet(value, fallback) {
+            const arr = Array.isArray(value) ? value : fallback;
+            return [...new Set(arr.map(v => String(v).trim()).filter(Boolean))];
+        }
+        function loadModeOptionSets(baseKey, fallback) {
+            const oldShared = JSON.parse(localStorage.getItem(baseKey));
+            const oldIntraday = JSON.parse(localStorage.getItem(`${baseKey}_intraday`));
+            const oldSwing = JSON.parse(localStorage.getItem(`${baseKey}_swing`));
+            const hadModeSpecific = Array.isArray(oldIntraday) || Array.isArray(oldSwing);
+            const seed = normalizeOptionSet(oldShared, fallback);
+            const sets = {
+                intraday: normalizeOptionSet(oldIntraday, hadModeSpecific ? [] : seed),
+                swing: normalizeOptionSet(oldSwing, hadModeSpecific ? [] : seed)
+            };
+            if (!hadModeSpecific) {
+                sets.intraday = seed.length ? [...seed] : [...fallback];
+                sets.swing = seed.length ? [...seed] : [...fallback];
+            }
+            localStorage.setItem(`${baseKey}_intraday`, JSON.stringify(sets.intraday));
+            localStorage.setItem(`${baseKey}_swing`, JSON.stringify(sets.swing));
+            localStorage.removeItem(baseKey);
+            return sets;
+        }
+        let customStrategiesByMode = loadModeOptionSets('pt_strategies', DEFAULT_STRATEGIES);
+        let customVerdictsByMode = loadModeOptionSets('pt_verdicts', DEFAULT_VERDICTS);
+        let customStrategies = [...customStrategiesByMode.intraday];
+        let customVerdicts = [...customVerdictsByMode.intraday];
         let globalAllocSettings = JSON.parse(localStorage.getItem('pt_alloc_settings')) || { intraday: 100, swing: 100 };
         
         let savedCols = JSON.parse(localStorage.getItem('pt_visible_cols'));
@@ -866,6 +902,25 @@
 
         let activeCalcMode = 'intraday', activeJourMode = 'intraday', activeDashMode = 'both';
         let currentExchange = localStorage.getItem('pt_exchange') || 'NSE';
+        function getModeOptions(kind, mode = activeJourMode) {
+            const source = kind === 'strategy' ? customStrategiesByMode : customVerdictsByMode;
+            return source[mode] || [];
+        }
+        function getCombinedOptions(kind) {
+            const source = kind === 'strategy' ? customStrategiesByMode : customVerdictsByMode;
+            return [...new Set([...(source.intraday || []), ...(source.swing || [])])];
+        }
+        function refreshLegacyOptionAliases() {
+            customStrategies = [...customStrategiesByMode.intraday];
+            customVerdicts = [...customVerdictsByMode.intraday];
+        }
+        function persistModeOptionSets() {
+            localStorage.setItem('pt_strategies_intraday', JSON.stringify(customStrategiesByMode.intraday));
+            localStorage.setItem('pt_strategies_swing', JSON.stringify(customStrategiesByMode.swing));
+            localStorage.setItem('pt_verdicts_intraday', JSON.stringify(customVerdictsByMode.intraday));
+            localStorage.setItem('pt_verdicts_swing', JSON.stringify(customVerdictsByMode.swing));
+            refreshLegacyOptionAliases();
+        }
         
         const defaultBrokerConfig = {
             "Dhan": {
@@ -1004,6 +1059,8 @@
                     const isSwing = activeJourMode === 'swing';
                     document.querySelectorAll('.swing-only').forEach(el => el.classList.toggle('hidden', !isSwing));
                     
+                    refreshJournalModeOptionArrays(activeJourMode);
+                    window.refreshCustomDropdowns?.('journal_mode_options');
                     document.querySelectorAll('.exit-fields-group').forEach(f => {
                         f.classList.add('hidden'); 
                     });
@@ -1019,6 +1076,9 @@
                     e.target.classList.remove('inactive'); e.target.classList.add('active');
                     document.getElementById('dashPerformanceLabel').textContent = activeDashMode.toUpperCase();
                     localStorage.setItem('pt_dash_mode', activeDashMode);
+                    persistDashboardSettings();
+                    rebuildDashboardStrategyOptions();
+                    rebuildDashboardVerdictOptions();
                     updateDashboard();
                 });
             });
@@ -1092,12 +1152,29 @@
                         if (cloudData.capitalLedger) capitalLedger = cloudData.capitalLedger; 
                         if (cloudData.brokerProfiles) brokerProfiles = cloudData.brokerProfiles;
                         if (cloudData.globalAllocSettings) globalAllocSettings = cloudData.globalAllocSettings;
-                        if (cloudData.customStrategies) { customStrategies.length = 0; cloudData.customStrategies.forEach(x => customStrategies.push(x)); }
-                        rebuildDashboardStrategyOptions();
-                        if (Array.isArray(cloudData.customVerdicts)) {
-                            customVerdicts.splice(0, customVerdicts.length, ...cloudData.customVerdicts);
+                        if (cloudData.customStrategiesByMode && typeof cloudData.customStrategiesByMode === 'object') {
+                            customStrategiesByMode = {
+                                intraday: normalizeOptionSet(cloudData.customStrategiesByMode.intraday, DEFAULT_STRATEGIES),
+                                swing: normalizeOptionSet(cloudData.customStrategiesByMode.swing, DEFAULT_STRATEGIES)
+                            };
+                        } else if (Array.isArray(cloudData.customStrategies)) {
+                            const legacy = normalizeOptionSet(cloudData.customStrategies, DEFAULT_STRATEGIES);
+                            customStrategiesByMode = { intraday: [...legacy], swing: [...legacy] };
                         }
-                        if (cloudData.customVerdicts) window.refreshCustomDropdowns?.('pt_verdicts');
+                        if (cloudData.customVerdictsByMode && typeof cloudData.customVerdictsByMode === 'object') {
+                            customVerdictsByMode = {
+                                intraday: normalizeOptionSet(cloudData.customVerdictsByMode.intraday, DEFAULT_VERDICTS),
+                                swing: normalizeOptionSet(cloudData.customVerdictsByMode.swing, DEFAULT_VERDICTS)
+                            };
+                        } else if (Array.isArray(cloudData.customVerdicts)) {
+                            const legacy = normalizeOptionSet(cloudData.customVerdicts, DEFAULT_VERDICTS);
+                            customVerdictsByMode = { intraday: [...legacy], swing: [...legacy] };
+                        }
+                        persistModeOptionSets();
+                        refreshJournalModeOptionArrays?.(activeJourMode);
+                        window.refreshCustomDropdowns?.('journal_mode_options');
+                        rebuildDashboardStrategyOptions?.();
+                        rebuildDashboardVerdictOptions?.();
                         tradesDB.forEach(t => { if(!t.mode) t.mode = 'intraday'; if(!t.status) t.status = 'CLOSED'; if(!t.selectedBreakeven) t.selectedBreakeven = lastBreakevenSelection; if(!t.brokerName) t.brokerName = currentBroker; if(!t.exchange) t.exchange = currentExchange; });
 
                         if (cloudData.uiSettings) {
@@ -1152,7 +1229,8 @@
                     calcIntraday: JSON.parse(localStorage.getItem('riskCalcSettings_intraday') || '{}'),
                     calcSwing: JSON.parse(localStorage.getItem('riskCalcSettings_swing') || '{}')
                 };
-                const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategies, customVerdicts, brokerProfiles, globalAllocSettings, uiSettings });
+                persistModeOptionSets();
+                const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategiesByMode, customVerdictsByMode, customStrategies, customVerdicts, brokerProfiles, globalAllocSettings, uiSettings });
                 const blob = new Blob([content], { type: 'application/json' });
                 if (driveFileId) { await apiFetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: blob }); } 
                 else {
@@ -1168,19 +1246,18 @@
             localStorage.setItem('pt_balances', JSON.stringify(balances)); 
             localStorage.setItem('pt_trades', JSON.stringify(tradesDB)); 
             localStorage.setItem('pt_capital', JSON.stringify(capitalLedger));
-            localStorage.setItem('pt_strategies', JSON.stringify(customStrategies)); 
-            localStorage.setItem('pt_verdicts', JSON.stringify(customVerdicts)); 
+            persistModeOptionSets();
             localStorage.setItem('pt_broker_profiles', JSON.stringify(brokerProfiles));
             localStorage.setItem('pt_alloc_settings', JSON.stringify(globalAllocSettings));
             if (syncCloud && accessToken) uploadToDrive();
         }
 
-        function calculateTimeframeXIRR(rangeStart, rangeEnd, modeFilter = 'both', strategyFilter = 'all') {
+        function calculateTimeframeXIRR(rangeStart, rangeEnd, modeFilter = 'both', strategyFilter = 'all', verdictFilter = 'all') {
             let today = new Date(); today.setHours(23,59,59,999); 
             let actualEnd = rangeEnd ? (rangeEnd > today ? today : rangeEnd) : today;
             let cfs = [], tempLiquid = 0, tempTrade = 0, tempReserve = 0; const timeline = [];
             
-            tradesDB.filter(t => t.status === 'CLOSED' && (modeFilter === 'both' || t.mode === modeFilter) && strategiesMatchFilter(t, strategyFilter)).forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
+            tradesDB.filter(t => t.status === 'CLOSED' && (modeFilter === 'both' || t.mode === modeFilter) && strategiesMatchFilter(t, strategyFilter) && verdictsMatchFilter(t, verdictFilter)).forEach(t => timeline.push({ ...t, evType: 'TRADE' })); 
             capitalLedger.forEach(c => timeline.push({ ...c, evType: 'CAPITAL' }));
             timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
             
@@ -1314,9 +1391,10 @@
             flatpickr("#cl-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('cl-action').focus();} } });
             flatpickr("#ctm-exit-date", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", defaultDate: "today", onKeyDown: (s,d,i,e) => { if(e.key==='Enter'){i.close(); document.getElementById('ctm-exit-time').focus();} } });
 
-            setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies', customStrategies, true, baseJournalFlow, true);
-            setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts', customVerdicts, true, baseJournalFlow, true);
-            setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts', customVerdicts, true, closeTradeFlow, true);
+            refreshJournalModeOptionArrays(activeJourMode);
+            setupCustomDropdown('tj-strategy', 'tj-strategy-list', 'pt_strategies_mode', journalStrategyOptions, true, baseJournalFlow, true);
+            setupCustomDropdown('tj-verdict', 'tj-verdict-list', 'pt_verdicts_mode', journalVerdictOptions, true, baseJournalFlow, true);
+            setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts_mode', journalVerdictOptions, true, closeTradeFlow, true);
             setupCapitalTransfers();
             initBreakevenSelectors();
             bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); loadCalcState();
@@ -1407,6 +1485,18 @@
             });
         }
 
+        const journalStrategyOptions = [];
+        const journalVerdictOptions = [];
+        function refreshJournalModeOptionArrays(mode = activeJourMode) {
+            journalStrategyOptions.splice(0, journalStrategyOptions.length, ...getModeOptions('strategy', mode));
+            journalVerdictOptions.splice(0, journalVerdictOptions.length, ...getModeOptions('verdict', mode));
+        }
+        function syncJournalOptionArrayToStore(storageKey, optionsArray, mode = activeJourMode) {
+            if (storageKey === 'pt_strategies_mode') customStrategiesByMode[mode] = [...new Set(optionsArray.map(v => String(v).trim()).filter(Boolean))];
+            if (storageKey === 'pt_verdicts_mode') customVerdictsByMode[mode] = [...new Set(optionsArray.map(v => String(v).trim()).filter(Boolean))];
+            persistModeOptionSets();
+        }
+
         function bindKeyboardFlows() {
             [...baseJournalFlow, ...capitalFlow, ...closeTradeFlow].forEach(id => {
                 const el = document.getElementById(id);
@@ -1458,9 +1548,9 @@
                                         .join(', ');
                                 }
                             }
-                            saveGlobalState(false);
-                            if (storageKey === 'pt_verdicts' && accessToken) uploadToDrive();
-                            else if (accessToken) uploadToDrive();
+                            if (storageKey === 'pt_strategies_mode' || storageKey === 'pt_verdicts_mode') syncJournalOptionArrayToStore(storageKey, optionsArray);
+                            else saveGlobalState(false);
+                            if (accessToken) uploadToDrive();
                             window.refreshCustomDropdowns?.(storageKey);
                             if (storageKey === 'pt_strategies') rebuildDashboardStrategyOptions();
                             renderList("");
@@ -1475,7 +1565,8 @@
                         if (newVal && newVal.trim() !== '') { 
                             const cleanNewVal = newVal.trim();
                             if (!optionsArray.includes(cleanNewVal)) optionsArray.unshift(cleanNewVal);
-                            saveGlobalState(false);
+                            if (storageKey === 'pt_strategies_mode' || storageKey === 'pt_verdicts_mode') syncJournalOptionArrayToStore(storageKey, optionsArray);
+                            else saveGlobalState(false);
                             if (accessToken) uploadToDrive();
                             window.refreshCustomDropdowns?.(storageKey);
                             if (storageKey === 'pt_strategies') rebuildDashboardStrategyOptions();
@@ -1637,7 +1728,9 @@
             const pnlInput = document.getElementById('ctm-pnl');
             document.getElementById('ctm-symbol').textContent = `${t.symbol} (${t.mode.toUpperCase()})`;
             exitPriceInput.value = ''; chargesInput.value = ''; pnlInput.value = '';
+            refreshJournalModeOptionArrays(t.mode);
             document.getElementById('ctm-verdict').value = ''; document.getElementById('ctm-remarks').value = '';
+            window.refreshCustomDropdowns?.('journal_mode_options');
             const exitDateContainer = document.getElementById('ctm-exit-date').parentElement;
             if (t.mode === 'intraday') { document.getElementById('ctm-exit-date').value = t.date; exitDateContainer.classList.add('hidden'); }
             else { document.getElementById('ctm-exit-date').value = ''; exitDateContainer.classList.remove('hidden'); }
@@ -1699,6 +1792,8 @@
             t.selectedBreakeven = t.selectedBreakeven || lastBreakevenSelection;
             recalculateTimeline(false);
             saveGlobalState(true);
+            refreshJournalModeOptionArrays(activeJourMode);
+            window.refreshCustomDropdowns?.('journal_mode_options');
             renderTradesTable();
             updateDashboard();
             closeCloseTradeModal();
@@ -2034,7 +2129,9 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
         let dashFilterMode = 'all', periodOffset = 0, customDateStart = null, customDateEnd = null;
         let dashPeriodType = localStorage.getItem('pt_dash_period_type') || 'calendar';
         let dashStrategyFilter = 'all';
+        let dashVerdictFilter = 'all';
         const dashStrategyOptionsArray = ['All Strategies'];
+        const dashVerdictOptionsArray = ['All Verdicts'];
 
         const DASH_CALENDAR_OPTIONS = {
             "All Time": "all",
@@ -2078,17 +2175,36 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             if (!selectedStrategy || selectedStrategy === 'all') return true;
             return normalizeStrategyList(trade.strategy).includes(selectedStrategy);
         }
-
+        function normalizeVerdictList(value) {
+            if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+            if (value === undefined || value === null) return [];
+            return String(value).split(',').map(v => v.trim()).filter(Boolean);
+        }
+        function verdictsMatchFilter(trade, selectedVerdict = dashVerdictFilter) {
+            if (!selectedVerdict || selectedVerdict === 'all') return true;
+            return normalizeVerdictList(trade.verdict).includes(selectedVerdict);
+        }
+        function getDashboardModeOptions(kind) {
+            return activeDashMode === 'both' ? getCombinedOptions(kind) : getModeOptions(kind, activeDashMode);
+        }
         function rebuildDashboardStrategyOptions() {
             const input = document.getElementById('dash-strategy-input');
             const list = document.getElementById('dash-strategy-list');
             if (!input || !list) return;
-
-            const unique = [...new Set(customStrategies.map(s => String(s).trim()).filter(Boolean))];
+            const unique = [...new Set(getDashboardModeOptions('strategy').map(s => String(s).trim()).filter(Boolean))];
             dashStrategyOptionsArray.splice(0, dashStrategyOptionsArray.length, 'All Strategies', ...unique);
             if (dashStrategyFilter !== 'all' && !unique.includes(dashStrategyFilter)) dashStrategyFilter = 'all';
-
             input.value = dashStrategyFilter === 'all' ? 'All Strategies' : dashStrategyFilter;
+            list.innerHTML = '';
+        }
+        function rebuildDashboardVerdictOptions() {
+            const input = document.getElementById('dash-verdict-input');
+            const list = document.getElementById('dash-verdict-list');
+            if (!input || !list) return;
+            const unique = [...new Set(getDashboardModeOptions('verdict').map(v => String(v).trim()).filter(Boolean))];
+            dashVerdictOptionsArray.splice(0, dashVerdictOptionsArray.length, 'All Verdicts', ...unique);
+            if (dashVerdictFilter !== 'all' && !unique.includes(dashVerdictFilter)) dashVerdictFilter = 'all';
+            input.value = dashVerdictFilter === 'all' ? 'All Verdicts' : dashVerdictFilter;
             list.innerHTML = '';
         }
 
@@ -2128,6 +2244,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             localStorage.setItem('pt_dash_period_type', dashPeriodType);
             localStorage.setItem('pt_dash_filter_mode', dashFilterMode);
             localStorage.setItem('pt_dash_period_offset', String(periodOffset));
+            localStorage.setItem('pt_dash_strategy_filter', dashStrategyFilter);
+            localStorage.setItem('pt_dash_verdict_filter', dashVerdictFilter);
             if (customDateStart) localStorage.setItem('pt_dash_custom_start', customDateStart.toISOString());
             else localStorage.removeItem('pt_dash_custom_start');
             if (customDateEnd) localStorage.setItem('pt_dash_custom_end', customDateEnd.toISOString());
@@ -2140,6 +2258,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
 
             dashFilterMode = localStorage.getItem('pt_dash_filter_mode') || 'all';
             periodOffset = parseInt(localStorage.getItem('pt_dash_period_offset') || '0', 10) || 0;
+            dashStrategyFilter = localStorage.getItem('pt_dash_strategy_filter') || 'all';
+            dashVerdictFilter = localStorage.getItem('pt_dash_verdict_filter') || 'all';
 
             const savedStart = localStorage.getItem('pt_dash_custom_start');
             const savedEnd = localStorage.getItem('pt_dash_custom_end');
@@ -2155,8 +2275,10 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
 
             setupCustomDropdown('dash-filter-input', 'dash-filter-list', null, dashFilterOptionsArray, false, []);
             setupCustomDropdown('dash-strategy-input', 'dash-strategy-list', null, dashStrategyOptionsArray, false, []);
+            setupCustomDropdown('dash-verdict-input', 'dash-verdict-list', null, dashVerdictOptionsArray, false, []);
             rebuildDashboardFilterOptions();
             rebuildDashboardStrategyOptions();
+            rebuildDashboardVerdictOptions();
 
             const customContainer = document.getElementById('dash-custom-range-container');
 
@@ -2199,7 +2321,16 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             document.getElementById('dash-strategy-input').addEventListener('change', (e) => {
                 const selected = e.target.value.trim();
                 dashStrategyFilter = (!selected || selected === 'All Strategies') ? 'all' : selected;
+                persistDashboardSettings();
                 rebuildDashboardStrategyOptions();
+                updateDashboard();
+                e.target.blur();
+            });
+            document.getElementById('dash-verdict-input').addEventListener('change', (e) => {
+                const selected = e.target.value.trim();
+                dashVerdictFilter = (!selected || selected === 'All Verdicts') ? 'all' : selected;
+                persistDashboardSettings();
+                rebuildDashboardVerdictOptions();
                 updateDashboard();
                 e.target.blur();
             });
@@ -2336,7 +2467,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             
             let filteredTrades = tradesDB.filter(t => t.status === 'CLOSED');
             if (activeDashMode !== 'both') filteredTrades = filteredTrades.filter(t => t.mode === activeDashMode);
-            filteredTrades = filteredTrades.filter(t => strategiesMatchFilter(t, dashStrategyFilter));
+            filteredTrades = filteredTrades.filter(t => strategiesMatchFilter(t, dashStrategyFilter) && verdictsMatchFilter(t, dashVerdictFilter));
 
             let rangeLabel = "", rangeStart = null, rangeEnd = null;
             const btnPrev = document.getElementById('dash-prev-btn'), btnNext = document.getElementById('dash-next-btn'), lbl = document.getElementById('dash-period-label');
@@ -2367,7 +2498,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 }
             }
             
-            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd, activeDashMode, dashStrategyFilter);
+            const xirrValue = calculateTimeframeXIRR(rangeStart, rangeEnd, activeDashMode, dashStrategyFilter, dashVerdictFilter);
             const xirrEl = document.getElementById('dash-xirr'); 
             xirrEl.textContent = (xirrValue.toFixed(2) + '%');
             xirrEl.title = '';
