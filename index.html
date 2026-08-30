@@ -513,7 +513,7 @@
                         <div class="col-span-1"><label class="block text-sm text-gray-400 mb-1">Entry Time</label><input type="time" id="tj-entry-time" class="input-field py-2"></div>
                         <div class="col-span-1 exit-fields-group swing-only hidden"><label class="block text-sm text-gray-400 mb-1">Exit Date</label><input type="text" id="tj-exit-date" class="input-field py-2" placeholder="Exit Date"></div>
                         <div class="col-span-1 exit-fields-group hidden"><label class="block text-sm text-gray-400 mb-1">Exit Time</label><input type="time" id="tj-exit-time" class="input-field py-2"></div>
-                        <div class="col-span-1"><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field py-2 font-bold" placeholder="RELIANCE" list="nse-stocks" autocomplete="off"></div>
+                        <div class="col-span-1"><label class="block text-sm text-gray-400 mb-1">Symbol (NSE)</label><input type="text" id="tj-symbol" class="input-field py-2 font-bold uppercase" placeholder="RELIANCE" list="nse-stocks" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false"></div>
                         <div class="col-span-1 exit-fields-group hidden"><label class="block text-sm text-gray-400 mb-1">Exit Price</label><input type="number" id="tj-exit-price" step="0.01" class="input-field py-2" placeholder="0.00"></div>
                         <div class="col-span-1 exit-fields-group hidden"><label class="block text-sm text-gray-400 mb-1">Net P&L (₹)</label><input type="number" id="tj-pnl" step="0.01" class="input-field py-2" placeholder="0.00"></div>
                         
@@ -1025,10 +1025,28 @@
             }
         });
 
+        function saveCalculatorModeState(mode = activeCalcMode) {
+            const state = {
+                corpus: document.getElementById('corpus')?.value ?? '',
+                margin: document.getElementById('margin')?.value ?? '',
+                riskPct: document.getElementById('riskPct')?.value ?? '',
+                targetPct: document.getElementById('targetPct')?.value ?? '',
+                entry: document.getElementById('entry')?.value ?? '',
+                sl: document.getElementById('stopLoss')?.value ?? ''
+            };
+            localStorage.setItem('riskCalcSettings_' + mode, JSON.stringify(state));
+        }
+
         function initGlobalModes() {
             document.querySelectorAll('.calc-mode-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    activeCalcMode = e.target.getAttribute('data-mode');
+                    const nextMode = e.target.getAttribute('data-mode');
+                    if (nextMode === activeCalcMode) return;
+
+                    // Persist the mode we are leaving before loading the other mode.
+                    // This prevents the two calculator modes from sharing the last-edited values.
+                    saveCalculatorModeState(activeCalcMode);
+                    activeCalcMode = nextMode;
                     document.querySelectorAll('.calc-mode-btn').forEach(b => { b.classList.remove('active'); b.classList.add('inactive'); });
                     e.target.classList.remove('inactive'); e.target.classList.add('active');
                     document.getElementById('setupModeLabel').textContent = activeCalcMode.toUpperCase();
@@ -1422,7 +1440,12 @@
         });
         
         function loadCalcState() {
-            const savedState = JSON.parse(localStorage.getItem('riskCalcSettings_' + activeCalcMode) || '{}');
+            let savedState = {};
+            try {
+                savedState = JSON.parse(localStorage.getItem('riskCalcSettings_' + activeCalcMode) || '{}') || {};
+            } catch (_) {
+                savedState = {};
+            }
             document.getElementById('entry').value = savedState.entry || '';
             document.getElementById('stopLoss').value = savedState.sl || '';
             document.getElementById('margin').value = savedState.margin || '1';
@@ -1504,7 +1527,21 @@
                 if (['tj-symbol', 'tj-strategy', 'tj-verdict', 'ctm-verdict', 'cl-action', 'cl-sub-type', 'dash-filter-input', 'tj-date', 'cl-date', 'tj-exit-date', 'ctm-exit-date'].includes(id)) return;
                 el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); focusNextElement(id); } });
             });
-            document.getElementById('tj-symbol').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); const val = e.target.value.toUpperCase(); const match = nseStocks.find(s => s.startsWith(val)); if (match) e.target.value = match; focusNextElement('tj-symbol'); } });
+            const symbolInput = document.getElementById('tj-symbol');
+            symbolInput.addEventListener('focus', () => {
+                // Ask supported mobile keyboards to use their uppercase character layout.
+                symbolInput.setAttribute('autocapitalize', 'characters');
+            });
+            symbolInput.addEventListener('input', (e) => {
+                const start = e.target.selectionStart;
+                e.target.value = e.target.value.toUpperCase();
+                try { e.target.setSelectionRange(start, start); } catch (_) {}
+            });
+            symbolInput.addEventListener('blur', () => {
+                // Reset the hint after leaving the symbol field so other fields are unaffected.
+                symbolInput.setAttribute('autocapitalize', 'none');
+            });
+            symbolInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); const val = e.target.value.toUpperCase(); const match = nseStocks.find(s => s.startsWith(val)); if (match) e.target.value = match; focusNextElement('tj-symbol'); } });
             const pnlInput = document.getElementById('tj-pnl'); const resSelect = document.getElementById('tj-result');
             pnlInput.addEventListener('input', (e) => { const val = parseFloat(e.target.value); resSelect.value = val > 0 ? 'WIN' : (val < 0 ? 'LOSS' : 'BREAKEVEN'); resSelect.className = `input-field py-1.5 md:py-2 px-2 md:px-3 text-sm font-bold transition-colors ${val > 0 ? 'text-long' : (val < 0 ? 'text-short' : 'text-gray-400')}`; });
         }
@@ -2760,7 +2797,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 const entry = parseFloat(cInputs.entry.value), sl = parseFloat(cInputs.sl.value), corpus = parseFloat(cInputs.corpus.value), marginRaw = parseFloat(cInputs.margin.value), riskPct = parseFloat(cInputs.risk.value), targetPct = parseFloat(cInputs.target.value);
                 const activeBrokerConfig = brokerProfiles[currentBroker][activeCalcMode];
                 
-                localStorage.setItem('riskCalcSettings_' + activeCalcMode, JSON.stringify({ corpus: cInputs.corpus.value, margin: cInputs.margin.value, riskPct: cInputs.risk.value, targetPct: cInputs.target.value, entry: cInputs.entry.value, sl: cInputs.sl.value }));
+                saveCalculatorModeState(activeCalcMode);
                 
                 const clear = () => {
                     cInputs.sharesOut.value = '0'; document.getElementById('outDirection').textContent = 'WAITING'; document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase"; document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-40";
