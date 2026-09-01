@@ -172,12 +172,19 @@
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
         }
-        /* Chart maximize: true in-page maximize. Hide the site's global header/footer
-           and let the chart occupy the full browser viewport (not browser fullscreen). */
+        /* Chart maximize: in-page TradingView-style chart mode. The global header/footer
+           and dashboard performance controls are removed from view; the chart takes the
+           entire browser viewport without using the browser Fullscreen API. */
+        body.pnl-chart-modal-open > nav,
+        body.pnl-chart-modal-open > footer { display: none !important; }
+        body.pnl-chart-modal-open { padding-bottom: 0 !important; overflow: hidden !important; }
+        html.pnl-chart-modal-open, body.pnl-chart-modal-open { overflow: hidden !important; }
+        body.pnl-chart-modal-open #view-dashboard > * { visibility: hidden !important; }
+        body.pnl-chart-modal-open #view-dashboard #pnlChartCard { visibility: visible !important; }
         #pnlChartCard.pnl-maximized {
             position: fixed !important;
             inset: 0 !important;
-            z-index: 1001 !important;
+            z-index: 10000 !important;
             display: flex !important;
             flex-direction: column !important;
             overflow: hidden !important;
@@ -187,28 +194,39 @@
             margin: 0 !important;
             padding: 0 !important;
             border-radius: 0 !important;
-            border-left: 0 !important;
-            border-right: 0 !important;
+            border: 0 !important;
             background: #0b0b0b !important;
             box-shadow: none !important;
         }
-        body.pnl-chart-modal-open > nav,
-        body.pnl-chart-modal-open > footer { display: none !important; }
-        body.pnl-chart-modal-open { padding-bottom: 0 !important; overflow: hidden !important; }
+        #pnlChartCard.pnl-maximized > div:first-child {
+            flex: 0 0 auto !important;
+            padding: 12px 14px 10px !important;
+            margin: 0 !important;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            background: #0b0b0b !important;
+        }
         #pnlChartCard.pnl-maximized #pnlChartPanel {
             flex: 1 1 auto !important;
             min-height: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             overflow: hidden !important;
+            padding: 0 14px 10px !important;
+        }
+        #pnlChartCard.pnl-maximized #pnlChartPanel > div:first-child {
+            flex: 0 0 auto !important;
+        }
+        #pnlChartCard.pnl-maximized #pnlChartOhlc {
+            flex: 0 0 auto !important;
         }
         #pnlChartCard.pnl-maximized #pnlChartHost {
             flex: 1 1 auto !important;
             min-height: 0 !important;
             height: auto !important;
+            width: 100% !important;
         }
         #pnlChartCard.pnl-maximized .pnl-chart-footer { display: none !important; }
-        html.pnl-chart-modal-open, body.pnl-chart-modal-open { overflow: hidden !important; }
+        #pnlIndicatorsMenu { max-height: 220px; overflow-y: auto; }
         .pnl-chart-range.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.25); }
         #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
         @media (max-width: 640px) {
@@ -600,6 +618,21 @@
                                 <button type="button" data-pnl-range="all" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">All</button>
                             </div>
                             <div class="flex items-center gap-2">
+                                <div class="relative">
+                                    <button id="pnlIndicatorsBtn" type="button" class="px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-[10px] font-bold text-gray-300 hover:text-white hover:bg-white/5 transition" aria-expanded="false" aria-haspopup="true">
+                                        Indicators
+                                    </button>
+                                    <div id="pnlIndicatorsMenu" class="hidden absolute right-0 top-full mt-2 z-[120] w-44 rounded-xl border border-white/10 bg-[#141414] shadow-2xl p-2">
+                                        <label class="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-200 hover:bg-white/5 cursor-pointer">
+                                            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span>5 EMA</span>
+                                            <input id="pnlEma5Toggle" type="checkbox" class="custom-checkbox" />
+                                        </label>
+                                        <label class="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-200 hover:bg-white/5 cursor-pointer">
+                                            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>20 EMA</span>
+                                            <input id="pnlEma20Toggle" type="checkbox" class="custom-checkbox" />
+                                        </label>
+                                    </div>
+                                </div>
                                 <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Interval</span>
                                 <select id="pnlChartInterval" class="input-field py-1.5 px-2 text-[10px] font-semibold bg-black/30 w-auto">
                                     <option value="day">1D</option>
@@ -3139,6 +3172,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 indicatorsMenu?.classList.toggle('hidden');
                 indicatorsBtn.setAttribute('aria-expanded', String(!indicatorsMenu?.classList.contains('hidden')));
             });
+            if (ema5Toggle) ema5Toggle.checked = pnlEma5Enabled;
+            if (ema20Toggle) ema20Toggle.checked = pnlEma20Enabled;
             ema5Toggle?.addEventListener('change', e => { pnlEma5Enabled = e.target.checked; setPnlIndicatorVisibility(); });
             ema20Toggle?.addEventListener('change', e => { pnlEma20Enabled = e.target.checked; setPnlIndicatorVisibility(); });
             document.addEventListener('click', e => {
