@@ -78,9 +78,13 @@
             box-shadow: 0 12px 30px rgba(225,48,108,.18);
         }
         .social-instagram::before {
-            content: ""; position: absolute; inset: 0; pointer-events: none;
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
             background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,.13) 50%, transparent 75%);
-            transform: translateX(-120%); transition: transform .55s ease;
+            transform: translateX(-120%);
+            transition: transform .55s ease;
         }
         .social-instagram:hover::before { transform: translateX(120%); }
         .social-instagram:hover { box-shadow: 0 16px 36px rgba(225,48,108,.28); }
@@ -88,43 +92,47 @@
         .social-icon svg { width: 100%; height: 100%; display: block; }
         .social-github { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.1); }
         .social-github:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
-        @media (max-width: 480px) {
-            .social-instagram { max-width: none; padding-left: 1rem; padding-right: 1rem; }
-            .social-github { padding-left: .75rem; padding-right: .75rem; }
+        /* Social placement only — the original card styling above remains untouched. */
+        .footer-main {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: start;
+            gap: 1.5rem;
         }
-        .footer-social { z-index: 2; }
-        @media (max-width: 900px) {
-            .footer-inner { padding-top: 0.25rem; }
-            .footer-social { position: static; order: 2; }
-            .footer-description { order: 3; }
-            .footer-inner > nav { order: 4; }
-            .footer-inner > p:last-child { order: 5; }
+        .footer-identity { grid-column: 2; margin-top: 0 !important; }
+        .footer-social-wrap {
+            grid-column: 3;
+            justify-self: end;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: .5rem;
+            padding-top: .15rem;
         }
-        @media (max-width: 560px) {
-            .footer-social { width: 100%; justify-content: center; gap: .5rem; }
-            .footer-social .social-instagram { max-width: 205px; padding-left: 1rem; padding-right: 1rem; }
-            .footer-social .social-github { padding-left: .85rem; padding-right: .85rem; }
-        }
+        .footer-social-label { color: #6b7280; margin: 0 !important; }
         .footer-social {
-            width: 28px;
-            height: 28px;
-            display: inline-grid;
-            place-items: center;
-            border-radius: 9999px;
-            color: #9ca3af;
-            background: rgba(255,255,255,.035);
-            border: 1px solid rgba(255,255,255,.08);
-            transition: all .2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .75rem;
+            width: auto;
         }
-        .footer-social svg { width: 14px; height: 14px; display: block; }
-        .footer-social:hover { color: #fff; background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); transform: translateY(-1px); }
-        .footer-social-instagram:hover { color: #f472b6; border-color: rgba(244,114,182,.35); }
-        @media (max-width: 480px) {
-            .footer-social { width: 26px; height: 26px; }
-            .footer-social svg { width: 13px; height: 13px; }
+        .footer-social .social-instagram { width: 205px; flex: 0 0 205px; padding-left: 1rem; padding-right: 1rem; padding-top: .7rem; padding-bottom: .7rem; gap: .6rem; }
+        .footer-social .social-github { flex: 0 0 auto; padding-left: .8rem; padding-right: .8rem; padding-top: .7rem; padding-bottom: .7rem; }
+        .footer-social .social-icon { width: 24px; height: 24px; }
+        @media (max-width: 767px) {
+            .footer-main { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+            .footer-identity { order: 1; width: 100%; }
+            .footer-social-wrap { order: 2; align-items: center; width: 100%; padding-top: 0; }
+            .footer-social { width: 100%; max-width: 340px; justify-content: center; }
+            .footer-social .social-instagram { width: 205px; flex: 0 1 205px; }
         }
-
-
+        @media (max-width: 420px) {
+            .footer-social { gap: .5rem; }
+            .footer-social .social-instagram { width: 190px; flex-basis: 190px; }
+            .footer-social .social-icon { width: 22px; height: 22px; }
+            .footer-social .social-github { padding-left: .8rem; padding-right: .8rem; }
+        }
         .privacy-btn { cursor: pointer; padding: 0.4rem; border-radius: 0.375rem; color: #9ca3af; transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
         .privacy-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
         tr.clickable-row { cursor: pointer; transition: background 0.2s; }
@@ -903,46 +911,52 @@
         </div>
     </div>
 
-    <footer class="mt-auto py-8 border-t border-white/10 text-center relative z-10 w-full">
-        <div class="footer-inner max-w-7xl mx-auto px-4 relative flex flex-col items-center gap-5">
-            <div class="flex items-center gap-2 opacity-80">
-                <img src="icon.svg" class="w-5 h-5 grayscale" alt="PositionLab logo">
-                <span class="text-sm font-bold tracking-widest text-gray-300">POSITIONLAB</span>
-            </div>
+    <footer class="mt-auto py-7 border-t border-white/10 text-center relative z-10 w-full">
+        <div class="footer-inner max-w-7xl mx-auto px-4">
+            <div class="footer-main">
+                <div class="footer-identity flex flex-col items-center gap-3">
+                    <div class="flex items-center gap-2 opacity-80">
+                        <img src="icon.svg" class="w-5 h-5 grayscale" alt="PositionLab logo">
+                        <span class="text-sm font-bold tracking-widest text-gray-300">POSITIONLAB</span>
+                    </div>
+                    <p class="footer-description text-xs text-gray-500 max-w-xl mx-auto leading-relaxed px-2">PositionLab - Platform for Indian stock market traders featuring position value calculation based on risk profile, trade journaling, and powerful growth analytics.</p>
+                </div>
 
-            <p class="footer-description text-xs text-gray-500 max-w-xl mx-auto leading-relaxed px-2">PositionLab - Platform for Indian stock market traders featuring position value calculation based on risk profile, trade journaling, and powerful growth analytics.</p>
-
-            <!-- Creator / Social Links -->
-            <div class="footer-social absolute right-4 top-0 flex items-center gap-3" aria-label="Connect with Madhav">
-                <a href="https://www.instagram.com/madhavology_/" target="_blank" rel="noopener noreferrer"
-                   class="social-instagram group inline-flex items-center justify-center gap-3 rounded-xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-400/60"
-                   aria-label="Follow Madhav on Instagram @madhavology_">
-                    <span class="social-icon instagram-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/>
-                            <circle cx="12" cy="12" r="4.25" stroke="currentColor" stroke-width="2"/>
-                            <circle cx="17.35" cy="6.65" r="1.15" fill="currentColor"/>
+                <!-- Creator / Social Links -->
+                <div class="footer-social-wrap" aria-label="Connect with Madhav">
+                    <p class="footer-social-label text-[10px] font-bold uppercase tracking-[0.2em]">Connect with Madhav</p>
+                    <div class="footer-social">
+                    <a href="https://www.instagram.com/madhavology_/" target="_blank" rel="noopener noreferrer"
+                       class="social-instagram group inline-flex items-center justify-center gap-3 rounded-xl px-5 py-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-400/60"
+                       aria-label="Follow Madhav on Instagram @madhavology_">
+                        <span class="social-icon instagram-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="4.25" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="17.35" cy="6.65" r="1.15" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        <span class="flex flex-col items-start leading-tight">
+                            <span class="text-[9px] uppercase tracking-[0.16em] opacity-75">Follow on Instagram</span>
+                            <span>@madhavology_</span>
+                        </span>
+                        <svg class="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                    </span>
-                    <span class="flex flex-col items-start leading-tight">
-                        <span class="text-[9px] uppercase tracking-[0.16em] opacity-75">Follow on Instagram</span>
-                        <span>@madhavology_</span>
-                    </span>
-                    <svg class="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </a>
-                <a href="https://github.com/Madhav-S-S" target="_blank" rel="noopener noreferrer"
-                   class="social-github group inline-flex items-center justify-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-gray-200 transition-all duration-200 hover:-translate-y-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400/50"
-                   aria-label="View Madhav's GitHub">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M12 .6a11.4 11.4 0 0 0-3.61 22.21c.57.1.78-.25.78-.55v-2.02c-3.17.69-3.84-1.34-3.84-1.34-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.67 1.25 3.32.96.1-.74.4-1.25.73-1.54-2.53-.29-5.19-1.27-5.19-5.65 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.15 1.17a10.93 10.93 0 0 1 5.73 0c2.19-1.48 3.15-1.17 3.15-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.39-2.67 5.35-5.21 5.64.41.35.78 1.05.78 2.12v3.14c0 .3.21.65.79.54A11.4 11.4 0 0 0 12 .6Z"/>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
+                    </a>
+                    <a href="https://github.com/Madhav-S-S" target="_blank" rel="noopener noreferrer"
+                       class="social-github group inline-flex items-center justify-center gap-2.5 rounded-xl px-4 py-3.5 text-sm font-semibold text-gray-200 transition-all duration-200 hover:-translate-y-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400/50"
+                       aria-label="View Madhav's GitHub">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 .6a11.4 11.4 0 0 0-3.61 22.21c.57.1.78-.25.78-.55v-2.02c-3.17.69-3.84-1.34-3.84-1.34-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.67 1.25 3.32.96.1-.74.4-1.25.73-1.54-2.53-.29-5.19-1.27-5.19-5.65 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.15 1.17a10.93 10.93 0 0 1 5.73 0c2.19-1.48 3.15-1.17 3.15-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.39-2.67 5.35-5.21 5.64.41.35.78 1.05.78 2.12v3.14c0 .3.21.65.79.54A11.4 11.4 0 0 0 12 .6Z"/>
+                        </svg>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+                </div>
             </div>
 
-            <nav class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[11px] text-gray-500 pt-1" aria-label="Legal and site links">
+            <nav class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[11px] text-gray-500 pt-5" aria-label="Legal and site links">
                 <a href="privacy.html" class="hover:text-white transition">Privacy Policy</a>
                 <span class="text-gray-800" aria-hidden="true">•</span>
                 <a href="terms.html" class="hover:text-white transition">Terms of Use</a>
@@ -951,7 +965,7 @@
                 <span class="text-gray-800" aria-hidden="true">•</span>
                 <a href="about.html" class="hover:text-white transition">About</a>
             </nav>
-            <p class="text-[10px] text-gray-700 tracking-wide">&copy; 2026 PositionLab. All rights reserved.</p>
+            <p class="text-[10px] text-gray-700 tracking-wide mt-3">&copy; 2026 PositionLab. All rights reserved.</p>
         </div>
     </footer>
 
