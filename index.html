@@ -1369,6 +1369,33 @@
             }
             return false;
         }
+
+        // Restore an already-authorized Google session after a page refresh.
+        // The bearer token remains memory-only; Google re-issues a fresh token silently
+        // when the user has previously granted this app access.
+        let silentAuthAttempted = false;
+        function restoreDriveSessionSilently(retries = 20) {
+            if (accessToken || silentAuthAttempted) return;
+            if (window.google?.accounts?.oauth2) {
+                silentAuthAttempted = true;
+                try {
+                    if (!tokenClient) initGoogleDrive();
+                    const waitForClient = () => {
+                        if (!tokenClient) {
+                            if (retries > 0) return setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
+                            return;
+                        }
+                        try { tokenClient.requestAccessToken({ prompt: '' }); }
+                        catch (err) { console.error('Silent Drive session restore failed:', err); }
+                    };
+                    waitForClient();
+                } catch (err) {
+                    console.error('Drive auth initialization failed:', err);
+                }
+            } else if (retries > 0) {
+                setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
+            }
+        }
         
         function updateSyncUI(isConnected) {
             const btn = document.getElementById('driveSyncBtn'), status = document.getElementById('syncStatus'), statusMobile = document.getElementById('syncStatusMobile'), profileDiv = document.getElementById('userProfile'), logoutBtn = document.getElementById('logoutBtn');
@@ -1707,6 +1734,7 @@
                 if(!e.target.closest('#closeTradeModalCard') && e.target.id === 'closeTradeModal') closeCloseTradeModal();
             });
             checkToken();
+            restoreDriveSessionSilently();
         });
         
         function loadCalcState() {
@@ -2770,11 +2798,19 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             if (pnlChartLibraryPromise) return pnlChartLibraryPromise;
             pnlChartLibraryPromise = new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = 'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js';
+                const sources = [
+                    'https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js',
+                    'https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js'
+                ];
+                let sourceIndex = 0;
+                const tryNext = () => {
+                    script.src = sources[sourceIndex++];
+                    script.onload = () => window.LightweightCharts ? resolve(window.LightweightCharts) : (sourceIndex < sources.length ? tryNext() : reject(new Error('Lightweight Charts failed to initialize')));
+                    script.onerror = () => sourceIndex < sources.length ? tryNext() : reject(new Error('Could not load Lightweight Charts'));
+                    if (!script.parentNode) document.head.appendChild(script);
+                };
                 script.async = true;
-                script.onload = () => window.LightweightCharts ? resolve(window.LightweightCharts) : reject(new Error('Lightweight Charts failed to initialize'));
-                script.onerror = () => reject(new Error('Could not load Lightweight Charts'));
-                document.head.appendChild(script);
+                tryNext();
             });
             return pnlChartLibraryPromise;
         }
@@ -2846,7 +2882,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 host.innerHTML = '';
                 pnlChartInstance = LW.createChart(host, {
                     width: host.clientWidth, height: Math.max(260, host.clientHeight || 320),
-                    layout: { background: { type: LW.ColorType.Solid, color: '#0b0b0b' }, textColor: '#9ca3af' },
+                    layout: { background: { type: 'solid', color: '#0b0b0b' }, textColor: '#9ca3af' },
                     grid: { vertLines: { color: 'rgba(255,255,255,0.045)' }, horzLines: { color: 'rgba(255,255,255,0.045)' } },
                     crosshair: { mode: LW.CrosshairMode.Normal },
                     rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
@@ -2854,7 +2890,10 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                     handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
                     handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: true }
                 });
-                pnlCandleSeries = pnlChartInstance.addSeries(LW.CandlestickSeries, { upColor:'#10b981', downColor:'#ef4444', borderVisible:false, wickUpColor:'#10b981', wickDownColor:'#ef4444' });
+                const candleOptions = { upColor:'#10b981', downColor:'#ef4444', borderVisible:false, wickUpColor:'#10b981', wickDownColor:'#ef4444' };
+                pnlCandleSeries = typeof pnlChartInstance.addSeries === 'function' && LW.CandlestickSeries
+                    ? pnlChartInstance.addSeries(LW.CandlestickSeries, candleOptions)
+                    : pnlChartInstance.addCandlestickSeries(candleOptions);
                 pnlCandleSeries.setData(pnlChartDataCache);
                 pnlChartInstance.subscribeCrosshairMove(param => {
                     if (!param || !param.seriesData || !pnlCandleSeries) return;
