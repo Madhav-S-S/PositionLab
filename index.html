@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PositionLab - by Madhav</title>
+    <title>PositionLab</title>
     
     <meta name="description" content="PositionLab by Madhav — risk-based position sizing, trade journaling, portfolio analytics and capital tracking for Indian stock market traders.">
     <meta name="application-name" content="PositionLab">
@@ -1357,68 +1357,108 @@
             });
         }
 
-        // OAuth access tokens stay in memory only. Never persist bearer tokens in localStorage.
+        // Keep the short-lived bearer token in sessionStorage so a normal page refresh
+        // does not force a fresh Google login. sessionStorage survives reloads in the same
+        // tab but is cleared when the tab/session is closed.
         let tokenRefreshTimer = null;
         let silentAuthAttempted = false;
+        let silentAuthInFlight = false;
 
-        function setToken(token, expiresIn) {
+        function saveSessionToken() {
+            try {
+                if (accessToken && tokenExpiresAt) {
+                    sessionStorage.setItem('pt_google_access_token', accessToken);
+                    sessionStorage.setItem('pt_google_token_expires_at', String(tokenExpiresAt));
+                }
+            } catch (err) {
+                console.warn('Could not persist Google session token:', err);
+            }
+        }
+
+        function clearSessionToken() {
+            try {
+                sessionStorage.removeItem('pt_google_access_token');
+                sessionStorage.removeItem('pt_google_token_expires_at');
+            } catch (_) {}
+        }
+
+        function setToken(token, expiresIn, shouldLoadDrive = false) {
+            if (!token) return;
             accessToken = token;
             const lifetimeMs = Math.max(300000, (Number(expiresIn) || 3600) * 1000);
             tokenExpiresAt = Date.now() + lifetimeMs;
+            saveSessionToken();
+            silentAuthAttempted = false;
+            silentAuthInFlight = false;
             updateSyncUI(true);
             fetchUserProfile();
             if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
-            // Refresh before expiry while the page stays open. This keeps the session alive
-            // for as long as Google's authorization session remains valid.
+            // Renew before expiry while the page remains open. Google may still reject
+            // silent renewal when its own authorization/session has expired, but we do
+            // not force an interactive Google page during automatic renewal.
             tokenRefreshTimer = setTimeout(() => {
-                silentAuthAttempted = false;
                 restoreDriveSessionSilently();
             }, Math.max(60000, lifetimeMs - 300000));
+            if (shouldLoadDrive) loadFromDrive();
+        }
+
+        function restoreSessionTokenFromTab() {
+            try {
+                const token = sessionStorage.getItem('pt_google_access_token');
+                const expiresAt = Number(sessionStorage.getItem('pt_google_token_expires_at') || 0);
+                if (!token || !expiresAt) return false;
+                if (Date.now() >= expiresAt - 15000) {
+                    clearSessionToken();
+                    return false;
+                }
+                accessToken = token;
+                tokenExpiresAt = expiresAt;
+                updateSyncUI(true);
+                fetchUserProfile();
+                if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
+                tokenRefreshTimer = setTimeout(() => restoreDriveSessionSilently(), Math.max(60000, expiresAt - Date.now() - 300000));
+                loadFromDrive();
+                return true;
+            } catch (err) {
+                console.warn('Could not restore Google session from this tab:', err);
+                clearSessionToken();
+                return false;
+            }
         }
 
         function checkToken() {
             if (accessToken && tokenExpiresAt && Date.now() < tokenExpiresAt - 300000) {
                 updateSyncUI(true);
-                fetchUserProfile();
                 return true;
             }
             return false;
         }
 
-        // Restore the previously-authorized Google session after a page refresh without
-        // showing the account chooser/consent screen. A stored email is only a login hint;
-        // no bearer token is stored. If Google can no longer silently authorize the session,
-        // the normal Connect Drive button remains available for an explicit login.
-        function restoreDriveSessionSilently(retries = 30) {
-            if (accessToken || silentAuthAttempted) return;
+        // Automatic renewal is strictly non-interactive. No account chooser or consent
+        // dialog is requested here. If the Google session cannot be renewed silently, the
+        // user can explicitly reconnect using the normal Connect Drive button.
+        function restoreDriveSessionSilently(retries = 20) {
+            if (accessToken && tokenExpiresAt && Date.now() < tokenExpiresAt - 15000) return;
+            if (silentAuthInFlight) return;
             const googleOAuth = window.google?.accounts?.oauth2;
             if (!googleOAuth) {
-                if (retries > 0) setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
+                if (retries > 0) setTimeout(() => restoreDriveSessionSilently(retries - 1), 300);
                 return;
             }
-            silentAuthAttempted = true;
+            if (!tokenClient) {
+                initGoogleDrive();
+                if (!tokenClient) {
+                    if (retries > 0) setTimeout(() => restoreDriveSessionSilently(retries - 1), 300);
+                    return;
+                }
+            }
+            silentAuthInFlight = true;
+            const loginHint = localStorage.getItem('pt_google_email') || undefined;
             try {
-                if (!tokenClient) initGoogleDrive();
-                const loginHint = localStorage.getItem('pt_google_email') || undefined;
-                const waitForClient = () => {
-                    if (!tokenClient) {
-                        if (retries > 0) {
-                            silentAuthAttempted = false;
-                            setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
-                        }
-                        return;
-                    }
-                    try {
-                        tokenClient.requestAccessToken({ prompt: 'none', ...(loginHint ? { login_hint: loginHint } : {}) });
-                    } catch (err) {
-                        console.error('Silent Drive session restore failed:', err);
-                        silentAuthAttempted = false;
-                    }
-                };
-                waitForClient();
+                tokenClient.requestAccessToken({ prompt: 'none', ...(loginHint ? { login_hint: loginHint } : {}) });
             } catch (err) {
-                console.error('Drive auth initialization failed:', err);
-                silentAuthAttempted = false;
+                silentAuthInFlight = false;
+                console.warn('Silent Drive session renewal failed:', err);
             }
         }
         
@@ -1439,7 +1479,7 @@
         async function apiFetch(url, options = {}) {
             if(!options.headers) options.headers = {}; options.headers['Authorization'] = `Bearer ${accessToken}`;
             const res = await fetch(url, options);
-            if(res.status === 401) { accessToken = null; tokenExpiresAt = 0; updateSyncUI(false); document.getElementById('syncStatus').textContent = "Session Expired"; document.getElementById('syncStatusMobile').textContent = "Expired"; throw new Error("Unauthorized"); }
+            if(res.status === 401) { clearSessionToken(); accessToken = null; tokenExpiresAt = 0; updateSyncUI(false); document.getElementById('syncStatus').textContent = "Session Expired"; document.getElementById('syncStatusMobile').textContent = "Expired"; throw new Error("Unauthorized"); }
             return res;
         }
 
@@ -1459,7 +1499,9 @@
         function logoutDrive() {
             if (tokenRefreshTimer) { clearTimeout(tokenRefreshTimer); tokenRefreshTimer = null; }
             if (accessToken && window.google?.accounts?.oauth2) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Google session revoked'); }); }
-            accessToken = null; tokenExpiresAt = 0; driveFileId = null; silentAuthAttempted = true;
+            clearSessionToken();
+            localStorage.removeItem('pt_google_email');
+            accessToken = null; tokenExpiresAt = 0; driveFileId = null; silentAuthAttempted = false; silentAuthInFlight = false;
             updateSyncUI(false);
         }
 
@@ -1468,13 +1510,12 @@
                 client_id: CLIENT_ID,
                 scope: SCOPES,
                 callback: async (resp) => {
+                    silentAuthInFlight = false;
                     if (resp.error) {
                         console.warn('Google token request did not complete silently:', resp.error);
                         return;
                     }
-                    silentAuthAttempted = true;
-                    setToken(resp.access_token, resp.expires_in);
-                    await loadFromDrive();
+                    setToken(resp.access_token, resp.expires_in, true);
                 },
             });
         }
@@ -1789,8 +1830,12 @@
                 if(!e.target.closest('#brokerModalCard') && e.target.id === 'brokerModal') closeBrokerModal();
                 if(!e.target.closest('#closeTradeModalCard') && e.target.id === 'closeTradeModal') closeCloseTradeModal();
             });
-            checkToken();
-            restoreDriveSessionSilently();
+            const restored = restoreSessionTokenFromTab();
+            if (!restored) {
+                // No usable token remains in this tab. Do not automatically open a Google
+                // authorization window on every refresh; the user can connect explicitly.
+                updateSyncUI(false);
+            }
         });
         
         function loadCalcState() {
@@ -2987,10 +3032,10 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
         async function togglePnlChartMaximize() {
             const card = document.getElementById('pnlChartCard'); if (!card) return;
             try {
-                if (document.fullscreenElement === card) {
+                if (document.fullscreenElement) {
                     await document.exitFullscreen?.();
-                } else if (card.requestFullscreen) {
-                    await card.requestFullscreen();
+                } else if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
                 } else {
                     pnlChartMaximized = !pnlChartMaximized;
                     card.classList.toggle('pnl-maximized', pnlChartMaximized);
@@ -3002,19 +3047,24 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 card.classList.toggle('pnl-maximized', pnlChartMaximized);
                 document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
             }
-            setTimeout(resizePnlChart, 80);
+            setTimeout(resizePnlChart, 120);
         }
 
         function syncPnlFullscreenState() {
             const card = document.getElementById('pnlChartCard');
             if (!card) return;
-            const active = document.fullscreenElement === card || card.classList.contains('pnl-maximized');
+            const active = !!document.fullscreenElement || card.classList.contains('pnl-maximized');
             pnlChartMaximized = active;
-            card.classList.toggle('pnl-maximized', document.fullscreenElement !== card && active);
+            // When browser fullscreen is active on <html>, force the chart card to occupy
+            // the complete fullscreen viewport.
+            card.classList.toggle('pnl-maximized', active);
             document.body.classList.toggle('pnl-chart-modal-open', active);
             const btn = document.getElementById('pnlChartMaxBtn');
-            if (btn) { btn.title = active ? 'Exit full screen' : 'Maximize chart'; btn.setAttribute('aria-label', active ? 'Exit full screen' : 'Maximize chart'); }
-            setTimeout(resizePnlChart, 80);
+            if (btn) {
+                btn.title = active ? 'Exit full screen' : 'Maximize chart';
+                btn.setAttribute('aria-label', active ? 'Exit full screen' : 'Maximize chart');
+            }
+            setTimeout(resizePnlChart, 120);
         }
 
         function refreshPnlChart() { if (pnlChartVisible) renderPnlChart(); }
