@@ -226,7 +226,15 @@
             width: 100% !important;
         }
         #pnlChartCard.pnl-maximized .pnl-chart-footer { display: none !important; }
-        #pnlIndicatorsMenu { max-height: 220px; overflow-y: auto; }
+        #pnlIndicatorsMenu { max-height: 420px; overflow-y: auto; }
+        .pnl-indicator-row { display:flex; align-items:center; gap:.5rem; padding:.5rem .45rem; border-radius:.5rem; }
+        .pnl-indicator-row:hover { background:rgba(255,255,255,.04); }
+        .pnl-indicator-dot { width:7px; height:7px; border-radius:999px; flex:0 0 auto; }
+        .pnl-indicator-length { width:56px !important; padding:.35rem .45rem !important; text-align:center; font-size:11px !important; }
+        .pnl-indicator-settings { display:none; grid-template-columns:90px 1fr; gap:.45rem .7rem; padding:.65rem .45rem .75rem; border-top:1px solid rgba(255,255,255,.06); margin-top:.15rem; }
+        .pnl-indicator-settings.open { display:grid; }
+        .pnl-indicator-settings label { align-self:center; color:#9ca3af; font-size:10px; font-weight:600; }
+        .pnl-indicator-settings select, .pnl-indicator-settings input { min-width:0; }
         .pnl-chart-range.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.25); }
         #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
         @media (max-width: 640px) {
@@ -619,18 +627,35 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="relative">
-                                    <button id="pnlIndicatorsBtn" type="button" class="px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-[10px] font-bold text-gray-300 hover:text-white hover:bg-white/5 transition" aria-expanded="false" aria-haspopup="true">
-                                        Indicators
-                                    </button>
-                                    <div id="pnlIndicatorsMenu" class="hidden absolute right-0 top-full mt-2 z-[120] w-44 rounded-xl border border-white/10 bg-[#141414] shadow-2xl p-2">
-                                        <label class="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-200 hover:bg-white/5 cursor-pointer">
-                                            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span>5 EMA</span>
+                                    <button id="pnlIndicatorsBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-black/30 border border-white/10 text-[11px] font-bold text-gray-300 hover:text-white hover:bg-white/5 transition" aria-expanded="false" aria-haspopup="true" title="Indicators">ƒx</button>
+                                    <div id="pnlIndicatorsMenu" class="hidden absolute right-0 top-full mt-2 z-[120] w-72 rounded-xl border border-white/10 bg-[#141414] shadow-2xl p-2">
+                                        <div class="px-2 py-1 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Indicators</div>
+                                        <div class="pnl-indicator-row">
                                             <input id="pnlEma5Toggle" type="checkbox" class="custom-checkbox" />
-                                        </label>
-                                        <label class="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-200 hover:bg-white/5 cursor-pointer">
-                                            <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>20 EMA</span>
+                                            <span class="pnl-indicator-dot bg-blue-500"></span>
+                                            <button id="pnlEma5Name" type="button" class="text-xs text-gray-200 font-semibold flex-1 text-left">5 EMA</button>
+                                            <input id="pnlEma5Length" type="number" min="1" step="1" value="5" class="input-field pnl-indicator-length" aria-label="5 EMA length" />
+                                            <button id="pnlEma5SettingsBtn" type="button" class="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-white/5" title="5 EMA settings">⚙</button>
+                                        </div>
+                                        <div id="pnlEma5Settings" class="pnl-indicator-settings">
+                                            <label for="pnlEma5Source">Source</label><select id="pnlEma5Source" class="input-field py-1.5 text-[10px] bg-black/30"><option value="close">Close</option><option value="open">Open</option><option value="high">High</option><option value="low">Low</option></select>
+                                            <label for="pnlEma5Offset">Offset</label><input id="pnlEma5Offset" type="number" value="0" step="1" class="input-field py-1.5 text-[10px] bg-black/30" />
+                                            <label for="pnlEma5SmoothType">Smoothing Line</label><select id="pnlEma5SmoothType" class="input-field py-1.5 text-[10px] bg-black/30"><option>SMA</option><option>EMA</option><option>RMA</option><option>WMA</option><option>VWMA</option></select>
+                                            <label for="pnlEma5SmoothLen">Smoothing Length</label><input id="pnlEma5SmoothLen" type="number" min="1" step="1" value="9" class="input-field py-1.5 text-[10px] bg-black/30" />
+                                        </div>
+                                        <div class="pnl-indicator-row mt-1">
                                             <input id="pnlEma20Toggle" type="checkbox" class="custom-checkbox" />
-                                        </label>
+                                            <span class="pnl-indicator-dot bg-yellow-400"></span>
+                                            <button id="pnlEma20Name" type="button" class="text-xs text-gray-200 font-semibold flex-1 text-left">20 EMA</button>
+                                            <input id="pnlEma20Length" type="number" min="1" step="1" value="20" class="input-field pnl-indicator-length" aria-label="20 EMA length" />
+                                            <button id="pnlEma20SettingsBtn" type="button" class="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-white/5" title="20 EMA settings">⚙</button>
+                                        </div>
+                                        <div id="pnlEma20Settings" class="pnl-indicator-settings">
+                                            <label for="pnlEma20Source">Source</label><select id="pnlEma20Source" class="input-field py-1.5 text-[10px] bg-black/30"><option value="close">Close</option><option value="open">Open</option><option value="high">High</option><option value="low">Low</option></select>
+                                            <label for="pnlEma20Offset">Offset</label><input id="pnlEma20Offset" type="number" value="0" step="1" class="input-field py-1.5 text-[10px] bg-black/30" />
+                                            <label for="pnlEma20SmoothType">Smoothing Line</label><select id="pnlEma20SmoothType" class="input-field py-1.5 text-[10px] bg-black/30"><option>SMA</option><option>EMA</option><option>RMA</option><option>WMA</option><option>VWMA</option></select>
+                                            <label for="pnlEma20SmoothLen">Smoothing Length</label><input id="pnlEma20SmoothLen" type="number" min="1" step="1" value="9" class="input-field py-1.5 text-[10px] bg-black/30" />
+                                        </div>
                                     </div>
                                 </div>
                                 <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Interval</span>
@@ -3016,18 +3041,61 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             return [...buckets.values()].sort((a,b) => a.time.localeCompare(b.time));
         }
 
-        function buildEmaData(candles, period) {
+        const pnlEmaConfig = {
+            ema5: { length: 5, source: 'close', offset: 0, smoothType: 'SMA', smoothLength: 9 },
+            ema20: { length: 20, source: 'close', offset: 0, smoothType: 'SMA', smoothLength: 9 }
+        };
+
+        function getPnlSourceValue(candle, source) {
+            const v = Number(candle?.[source || 'close']);
+            return Number.isFinite(v) ? v : Number(candle?.close) || 0;
+        }
+
+        function buildRawEmaData(candles, period, source='close') {
             if (!Array.isArray(candles) || candles.length === 0 || period < 1) return [];
             const alpha = 2 / (period + 1);
             let ema = null;
             const out = [];
             for (const c of candles) {
-                const close = Number(c.close);
-                if (!Number.isFinite(close)) continue;
-                ema = ema === null ? close : (close * alpha) + (ema * (1 - alpha));
+                const src = getPnlSourceValue(c, source);
+                ema = ema === null ? src : (src * alpha) + (ema * (1 - alpha));
                 out.push({ time: c.time, value: ema });
             }
             return out;
+        }
+
+        function buildSmoothingData(points, type, length) {
+            const n = Math.max(1, Number(length) || 1);
+            if (!Array.isArray(points) || !points.length || n === 1) return points || [];
+            const out = [];
+            if (type === 'EMA' || type === 'RMA') {
+                const alpha = type === 'EMA' ? 2 / (n + 1) : 1 / n;
+                let avg = null;
+                for (const p of points) { avg = avg === null ? p.value : p.value * alpha + avg * (1 - alpha); out.push({ time:p.time, value:avg }); }
+                return out;
+            }
+            if (type === 'WMA') {
+                const den = n * (n + 1) / 2;
+                for (let i=0;i<points.length;i++) { let sum=0; let wsum=0; const start=Math.max(0,i-n+1); let w=1; for(let j=start;j<=i;j++,w++) { sum += points[j].value*w; wsum += w; } out.push({ time:points[i].time, value:sum/(wsum||den) }); }
+                return out;
+            }
+            if (type === 'VWMA') { return buildSmaLikeData(points, n); }
+            return buildSmaLikeData(points, n);
+        }
+
+        function buildSmaLikeData(points, n) {
+            const out = []; let sum=0;
+            for (let i=0;i<points.length;i++) { sum += points[i].value; if(i>=n) sum -= points[i-n].value; out.push({ time:points[i].time, value:sum/Math.min(i+1,n) }); }
+            return out;
+        }
+
+        function applyPnlEmaConfig(candles, key) {
+            const cfg = pnlEmaConfig[key];
+            const raw = buildRawEmaData(candles, Math.max(1, Number(cfg.length)||1), cfg.source);
+            const smoothed = buildSmoothingData(raw, cfg.smoothType, Math.max(1, Number(cfg.smoothLength)||1));
+            const offset = Number(cfg.offset)||0;
+            if (!offset) return smoothed;
+            return smoothed.map((p,i)=>({ ...p, _i:i+offset })).filter(p=>p._i>=0 && p._i<candles.length).map(p=>({ time:candles[p._i].time, value:p.value }));
         }
 
         function setPnlIndicatorVisibility() {
@@ -3088,8 +3156,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                     pnlEma5Series = pnlChartInstance.addLineSeries(line5Options);
                     pnlEma20Series = pnlChartInstance.addLineSeries(line20Options);
                 }
-                if (pnlEma5Series) pnlEma5Series.setData(buildEmaData(pnlChartDataCache, 5));
-                if (pnlEma20Series) pnlEma20Series.setData(buildEmaData(pnlChartDataCache, 20));
+                if (pnlEma5Series) pnlEma5Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema5'));
+                if (pnlEma20Series) pnlEma20Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema20'));
                 setPnlIndicatorVisibility();
                 pnlChartInstance.subscribeCrosshairMove(param => {
                     if (!param || !param.seriesData || !pnlCandleSeries) return;
@@ -3103,8 +3171,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                         pnlChartLoadedStart -= loadCount;
                         pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
                         pnlCandleSeries.setData(pnlChartDataCache);
-                        if (pnlEma5Series) pnlEma5Series.setData(buildEmaData(pnlChartDataCache, 5));
-                        if (pnlEma20Series) pnlEma20Series.setData(buildEmaData(pnlChartDataCache, 20));
+                        if (pnlEma5Series) pnlEma5Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema5'));
+                        if (pnlEma20Series) pnlEma20Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema20'));
                         requestAnimationFrame(() => {
                             const nextRange = { from: range.from + loadCount, to: range.to + loadCount };
                             try { pnlChartInstance.timeScale().setVisibleLogicalRange(nextRange); } catch (_) {}
@@ -3176,6 +3244,29 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             if (ema20Toggle) ema20Toggle.checked = pnlEma20Enabled;
             ema5Toggle?.addEventListener('change', e => { pnlEma5Enabled = e.target.checked; setPnlIndicatorVisibility(); });
             ema20Toggle?.addEventListener('change', e => { pnlEma20Enabled = e.target.checked; setPnlIndicatorVisibility(); });
+
+            const bindEmaControl = (key, prefix, seriesGetter) => {
+                const lengthEl = document.getElementById(prefix + 'Length');
+                const nameEl = document.getElementById(prefix + 'Name');
+                const settingsBtn = document.getElementById(prefix + 'SettingsBtn');
+                const settings = document.getElementById(prefix + 'Settings');
+                const cfg = pnlEmaConfig[key];
+                const refresh = () => {
+                    cfg.length = Math.max(1, parseInt(lengthEl?.value || cfg.length, 10) || 1);
+                    cfg.source = document.getElementById(prefix + 'Source')?.value || 'close';
+                    cfg.offset = parseInt(document.getElementById(prefix + 'Offset')?.value || 0, 10) || 0;
+                    cfg.smoothType = document.getElementById(prefix + 'SmoothType')?.value || 'SMA';
+                    cfg.smoothLength = Math.max(1, parseInt(document.getElementById(prefix + 'SmoothLen')?.value || 9, 10) || 9);
+                    if (nameEl) nameEl.textContent = `${cfg.length} EMA`;
+                    const series = seriesGetter();
+                    if (series && pnlChartDataCache.length) series.setData(applyPnlEmaConfig(pnlChartDataCache, key));
+                };
+                [lengthEl, document.getElementById(prefix + 'Source'), document.getElementById(prefix + 'Offset'), document.getElementById(prefix + 'SmoothType'), document.getElementById(prefix + 'SmoothLen')].forEach(el => el?.addEventListener('change', refresh));
+                [lengthEl, document.getElementById(prefix + 'Offset'), document.getElementById(prefix + 'SmoothLen')].forEach(el => el?.addEventListener('input', refresh));
+                settingsBtn?.addEventListener('click', e => { e.stopPropagation(); settings?.classList.toggle('open'); });
+            };
+            bindEmaControl('ema5','pnlEma5',() => pnlEma5Series);
+            bindEmaControl('ema20','pnlEma20',() => pnlEma20Series);
             document.addEventListener('click', e => {
                 if (!e.target.closest('#pnlIndicatorsBtn') && !e.target.closest('#pnlIndicatorsMenu')) {
                     indicatorsMenu?.classList.add('hidden');
