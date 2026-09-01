@@ -172,6 +172,11 @@
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
         }
+        #pnlChartCard.pnl-maximized { position: fixed; inset: 1rem; z-index: 200; display: flex; flex-direction: column; overflow: hidden; background: #0d0d0d; }
+        #pnlChartCard.pnl-maximized #pnlChartPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        #pnlChartCard.pnl-maximized #pnlChartHost { flex: 1 1 auto; min-height: 0; height: auto; }
+        body.pnl-chart-modal-open::before { content: ""; position: fixed; inset: 0; z-index: 190; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
+        .pnl-chart-range.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.25); }
         #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
         @media (max-width: 640px) {
             #resultCard .grid { gap: 1rem 1.25rem; }
@@ -535,9 +540,53 @@
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10 relative">
-                <div class="glass-card rounded-2xl p-6 lg:col-span-2">
-                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Net P&L Over Time</h3>
-                    <div class="h-64 relative sensitive-data"><canvas id="equityChart"></canvas></div>
+                <div id="pnlChartCard" class="glass-card rounded-2xl p-5 lg:col-span-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-semibold text-gray-200 uppercase tracking-wider">P&amp;L Candlestick</h3>
+                                <span class="text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Realized P&amp;L</span>
+                            </div>
+                            <p id="pnlChartSubtitle" class="text-[10px] text-gray-500 mt-1">Realized cumulative P&amp;L. Drag, zoom and inspect each candle's OHLC.</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button id="pnlChartToggleBtn" type="button" class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/30 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold transition">Show Chart</button>
+                            <button id="pnlChartMaxBtn" type="button" class="hidden p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition" title="Maximize chart" aria-label="Maximize chart">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pnlChartPanel" class="hidden">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div class="flex items-center gap-1.5 bg-black/30 p-1 rounded-lg border border-white/10" id="pnlChartRangeBtns">
+                                <button type="button" data-pnl-range="1m" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">1M</button>
+                                <button type="button" data-pnl-range="3m" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">3M</button>
+                                <button type="button" data-pnl-range="6m" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">6M</button>
+                                <button type="button" data-pnl-range="1y" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">1Y</button>
+                                <button type="button" data-pnl-range="3y" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">3Y</button>
+                                <button type="button" data-pnl-range="all" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">All</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Interval</span>
+                                <select id="pnlChartInterval" class="input-field py-1.5 px-2 text-[10px] font-semibold bg-black/30 w-auto">
+                                    <option value="day">1D</option>
+                                    <option value="week">1W</option>
+                                    <option value="month">1M</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="pnlChartOhlc" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2 text-[10px]">
+                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">O</span><strong id="pnlO">—</strong></div>
+                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">H</span><strong id="pnlH">—</strong></div>
+                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">L</span><strong id="pnlL">—</strong></div>
+                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">C</span><strong id="pnlC">—</strong></div>
+                        </div>
+                        <div id="pnlChartHost" class="h-80 w-full relative rounded-xl overflow-hidden bg-black/20"></div>
+                        <div class="mt-2 flex items-center justify-between gap-3 text-[9px] text-gray-600">
+                            <span>Drag to pan • Mouse wheel to zoom • Crosshair shows OHLC</span>
+                            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-400 transition">Charts by TradingView</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="glass-card rounded-2xl p-6 lg:col-span-1">
                     <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Win / Loss Ratio</h3>
@@ -1636,7 +1685,7 @@
             setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts_mode', journalVerdictOptions, true, closeTradeFlow, true);
             setupCapitalTransfers();
             initBreakevenSelectors();
-            bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); loadCalcState();
+            bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); initPnlChartControls(); loadCalcState();
             setTimeout(() => {
                 const slInput = document.getElementById('stopLoss');
                 if (slInput) {
@@ -2710,7 +2759,159 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
         }
 
         let equityChartInstance, winChartInstance;
+        let pnlChartInstance = null, pnlCandleSeries = null;
+        let pnlChartLibraryPromise = null, pnlChartVisible = false, pnlChartMaximized = false;
+        let pnlChartRange = 'all', pnlChartInterval = 'day';
+        let pnlChartDataCache = [];
+        let pnlChartAllCandles = [], pnlChartLoadedStart = 0;
+
+        function loadPnlChartLibrary() {
+            if (window.LightweightCharts) return Promise.resolve(window.LightweightCharts);
+            if (pnlChartLibraryPromise) return pnlChartLibraryPromise;
+            pnlChartLibraryPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js';
+                script.async = true;
+                script.onload = () => window.LightweightCharts ? resolve(window.LightweightCharts) : reject(new Error('Lightweight Charts failed to initialize'));
+                script.onerror = () => reject(new Error('Could not load Lightweight Charts'));
+                document.head.appendChild(script);
+            });
+            return pnlChartLibraryPromise;
+        }
+
+        function formatPnlChartMoney(v) {
+            const n = Number(v) || 0;
+            return `${n >= 0 ? '+' : '-'}₹${Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function pnlBucketKey(date, interval) {
+            const d = new Date(date); d.setHours(0,0,0,0);
+            if (interval === 'month') return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+            if (interval === 'week') { const day = d.getDay() || 7; d.setDate(d.getDate() - day + 1); }
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function getPnlChartRangeStart(trades) {
+            if (!trades.length || pnlChartRange === 'all') return null;
+            const lastDate = new Date(trades[trades.length - 1].date);
+            const months = ({'1m':1,'3m':3,'6m':6,'1y':12,'3y':36})[pnlChartRange];
+            if (!months) return null;
+            const start = new Date(lastDate); start.setHours(0,0,0,0); start.setMonth(start.getMonth() - months); return start;
+        }
+
+        function buildPnlCandles(trades) {
+            const sorted = [...trades].filter(t => t && t.status === 'CLOSED').sort((a,b) => new Date(a.date) - new Date(b.date) || Number(a.id || 0) - Number(b.id || 0));
+            if (!sorted.length) return [];
+            const rangeStart = getPnlChartRangeStart(sorted);
+            let running = 0; const buckets = new Map();
+            for (const t of sorted) {
+                const d = new Date(t.date), pnl = Number(t.netPnl) || 0;
+                if (rangeStart && d < rangeStart) { running += pnl; continue; }
+                const key = pnlBucketKey(d, pnlChartInterval);
+                let b = buckets.get(key);
+                if (!b) { b = { time:key, open:running, high:running, low:running, close:running }; buckets.set(key,b); }
+                running += pnl; b.high = Math.max(b.high, running); b.low = Math.min(b.low, running); b.close = running;
+            }
+            return [...buckets.values()].sort((a,b) => a.time.localeCompare(b.time));
+        }
+
+        function updatePnlOhlc(candle) {
+            if (!candle) return;
+            document.getElementById('pnlO').textContent = formatPnlChartMoney(candle.open);
+            document.getElementById('pnlH').textContent = formatPnlChartMoney(candle.high);
+            document.getElementById('pnlL').textContent = formatPnlChartMoney(candle.low);
+            document.getElementById('pnlC').textContent = formatPnlChartMoney(candle.close);
+        }
+
+        function resizePnlChart() {
+            if (!pnlChartInstance) return;
+            const host = document.getElementById('pnlChartHost'); if (!host) return;
+            pnlChartInstance.applyOptions({ width: host.clientWidth, height: Math.max(260, host.clientHeight || 320) });
+        }
+
+        async function renderPnlChart(forceFit = true) {
+            const host = document.getElementById('pnlChartHost'); if (!host || !pnlChartVisible) return;
+            try {
+                const LW = await loadPnlChartLibrary();
+                const currentTrades = window.__pnlFilteredTrades || [];
+                pnlChartAllCandles = buildPnlCandles(currentTrades);
+                pnlChartLoadedStart = Math.max(0, pnlChartAllCandles.length - Math.min(pnlChartAllCandles.length, 220));
+                pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
+                if (!pnlChartDataCache.length) {
+                    if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; }
+                    host.innerHTML = '<div class="h-full flex items-center justify-center text-sm text-gray-500">No closed trades match the current dashboard filters.</div>';
+                    return;
+                }
+                if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; }
+                host.innerHTML = '';
+                pnlChartInstance = LW.createChart(host, {
+                    width: host.clientWidth, height: Math.max(260, host.clientHeight || 320),
+                    layout: { background: { type: LW.ColorType.Solid, color: '#0b0b0b' }, textColor: '#9ca3af' },
+                    grid: { vertLines: { color: 'rgba(255,255,255,0.045)' }, horzLines: { color: 'rgba(255,255,255,0.045)' } },
+                    crosshair: { mode: LW.CrosshairMode.Normal },
+                    rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
+                    timeScale: { borderColor: 'rgba(255,255,255,0.08)', timeVisible: false, secondsVisible: false, rightOffset: 5, barSpacing: 9, minBarSpacing: 3 },
+                    handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
+                    handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: true }
+                });
+                pnlCandleSeries = pnlChartInstance.addSeries(LW.CandlestickSeries, { upColor:'#10b981', downColor:'#ef4444', borderVisible:false, wickUpColor:'#10b981', wickDownColor:'#ef4444' });
+                pnlCandleSeries.setData(pnlChartDataCache);
+                pnlChartInstance.subscribeCrosshairMove(param => {
+                    if (!param || !param.seriesData || !pnlCandleSeries) return;
+                    const c = param.seriesData.get(pnlCandleSeries); if (c) updatePnlOhlc(c);
+                });
+                pnlChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
+                    if (!range || pnlChartLoadedStart <= 0 || pnlChartAllCandles.length <= 220) return;
+                    if (range.from < 12) {
+                        const loadCount = Math.min(180, pnlChartLoadedStart);
+                        const previousStart = pnlChartLoadedStart;
+                        pnlChartLoadedStart -= loadCount;
+                        pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
+                        pnlCandleSeries.setData(pnlChartDataCache);
+                        requestAnimationFrame(() => {
+                            const nextRange = { from: range.from + loadCount, to: range.to + loadCount };
+                            try { pnlChartInstance.timeScale().setVisibleLogicalRange(nextRange); } catch (_) {}
+                        });
+                    }
+                });
+                updatePnlOhlc(pnlChartDataCache[pnlChartDataCache.length - 1]);
+                if (forceFit) pnlChartInstance.timeScale().fitContent();
+            } catch (err) {
+                console.error('P&L chart error:', err);
+                host.innerHTML = '<div class="h-full flex items-center justify-center text-sm text-red-400">Unable to load the P&amp;L chart.</div>';
+            }
+        }
+
+        function togglePnlChart() {
+            pnlChartVisible = !pnlChartVisible;
+            const panel = document.getElementById('pnlChartPanel'), btn = document.getElementById('pnlChartToggleBtn'), max = document.getElementById('pnlChartMaxBtn');
+            panel.classList.toggle('hidden', !pnlChartVisible); btn.textContent = pnlChartVisible ? 'Hide Chart' : 'Show Chart'; max.classList.toggle('hidden', !pnlChartVisible);
+            if (pnlChartVisible) renderPnlChart();
+        }
+
+        function togglePnlChartMaximize() {
+            const card = document.getElementById('pnlChartCard'); if (!card) return;
+            pnlChartMaximized = !pnlChartMaximized; card.classList.toggle('pnl-maximized', pnlChartMaximized); document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
+            const btn = document.getElementById('pnlChartMaxBtn'); btn.title = pnlChartMaximized ? 'Restore chart' : 'Maximize chart';
+            setTimeout(resizePnlChart, 30);
+        }
+
+        function refreshPnlChart() { if (pnlChartVisible) renderPnlChart(); }
+
         
+        function initPnlChartControls() {
+            document.getElementById('pnlChartToggleBtn')?.addEventListener('click', togglePnlChart);
+            document.getElementById('pnlChartMaxBtn')?.addEventListener('click', togglePnlChartMaximize);
+            document.querySelectorAll('.pnl-chart-range').forEach(btn => btn.addEventListener('click', () => {
+                pnlChartRange = btn.getAttribute('data-pnl-range') || 'all';
+                document.querySelectorAll('.pnl-chart-range').forEach(b => b.classList.toggle('active', b === btn)); refreshPnlChart();
+            }));
+            document.getElementById('pnlChartInterval')?.addEventListener('change', e => { pnlChartInterval = e.target.value || 'day'; refreshPnlChart(); });
+            document.querySelector('.pnl-chart-range[data-pnl-range="all"]')?.classList.add('active');
+            window.addEventListener('resize', resizePnlChart);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && pnlChartMaximized) togglePnlChartMaximize(); });
+        }
+
         function updateDashboard() {
             const netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
             const calcPct = (val) => netCorpus > 0 ? ((val / netCorpus) * 100).toFixed(1) + '%' : '0.0%';
@@ -2726,6 +2927,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             let filteredTrades = tradesDB.filter(t => t.status === 'CLOSED');
             if (activeDashMode !== 'both') filteredTrades = filteredTrades.filter(t => t.mode === activeDashMode);
             filteredTrades = filteredTrades.filter(t => strategiesMatchFilter(t, dashStrategyFilter) && verdictsMatchFilter(t, dashVerdictFilter));
+            window.__pnlFilteredTrades = filteredTrades;
 
             let rangeLabel = "", rangeStart = null, rangeEnd = null;
             const btnPrev = document.getElementById('dash-prev-btn'), btnNext = document.getElementById('dash-next-btn'), lbl = document.getElementById('dash-period-label');
@@ -2785,40 +2987,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             avgLossEl.textContent = formatMoney(avgLoss);
             avgLossEl.className = `text-4xl md:text-5xl font-bold tracking-tight sensitive-data leading-none break-words ${avgLoss < 0 ? 'text-short' : 'text-gray-500'}`;
             
-            let formatStr;
-            if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-            else if (['3months', '6months', 'year', '3years'].includes(dashFilterMode)) formatStr = d => `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-            else formatStr = d => d.getFullYear().toString();
-            
-            let grouped = {}; 
-            [...filteredTrades].sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => { 
-                let key = formatStr(new Date(t.date)); 
-                if(!grouped[key]) grouped[key] = 0; 
-                grouped[key] += t.netPnl; 
-            });
-            const tColor = '#9ca3af', gColor = 'rgba(255,255,255,0.05)';
-            if (equityChartInstance) equityChartInstance.destroy();
-            equityChartInstance = new Chart(document.getElementById('equityChart'), { 
-                type: 'bar', 
-                data: { 
-                    labels: Object.keys(grouped), 
-                    datasets: [{ 
-                        label: 'Net P&L', 
-                        data: Object.values(grouped), 
-                        backgroundColor: Object.values(grouped).map(v => v >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'), 
-                        borderRadius: 4 
-                    }] 
-                }, 
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        y: { grid: { color: gColor }, ticks: { color: tColor } }, 
-                        x: { grid: { display: false }, ticks: { color: tColor } } 
-                    }, 
-                    plugins: { legend: { display: false } } 
-                } 
-            });
+            refreshPnlChart();
+            const tColor = '#9ca3af';
             if (winChartInstance) winChartInstance.destroy();
             winChartInstance = new Chart(document.getElementById('winChart'), { 
                 type: 'doughnut', 
