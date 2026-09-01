@@ -172,10 +172,13 @@
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
         }
-        #pnlChartCard.pnl-maximized { position: fixed; inset: 1rem; z-index: 200; display: flex; flex-direction: column; overflow: hidden; background: #0d0d0d; }
+        #pnlChartCard.pnl-maximized { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; overflow: hidden; background: #0d0d0d; border-radius: 0; width: 100vw; height: 100vh; }
         #pnlChartCard.pnl-maximized #pnlChartPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
         #pnlChartCard.pnl-maximized #pnlChartHost { flex: 1 1 auto; min-height: 0; height: auto; }
-        body.pnl-chart-modal-open::before { content: ""; position: fixed; inset: 0; z-index: 190; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
+        #pnlChartCard:fullscreen { display: flex; flex-direction: column; width: 100vw; height: 100vh; margin: 0; border-radius: 0; background: #0d0d0d; }
+        #pnlChartCard:fullscreen #pnlChartPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        #pnlChartCard:fullscreen #pnlChartHost { flex: 1 1 auto; min-height: 0; height: auto; }
+        body.pnl-chart-modal-open { overflow: hidden; }
         .pnl-chart-range.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.25); }
         #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
         @media (max-width: 640px) {
@@ -584,7 +587,7 @@
                         <div id="pnlChartHost" class="h-80 w-full relative rounded-xl overflow-hidden bg-black/20"></div>
                         <div class="mt-2 flex items-center justify-between gap-3 text-[9px] text-gray-600">
                             <span>Drag to pan • Mouse wheel to zoom • Crosshair shows OHLC</span>
-                            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-400 transition">Charts by TradingView</a>
+                            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-400 transition">Lightweight Charts by TradingView</a>
                         </div>
                     </div>
                 </div>
@@ -1355,12 +1358,24 @@
         }
 
         // OAuth access tokens stay in memory only. Never persist bearer tokens in localStorage.
+        let tokenRefreshTimer = null;
+        let silentAuthAttempted = false;
+
         function setToken(token, expiresIn) {
             accessToken = token;
-            tokenExpiresAt = Date.now() + ((Number(expiresIn) || 3600) * 1000);
+            const lifetimeMs = Math.max(300000, (Number(expiresIn) || 3600) * 1000);
+            tokenExpiresAt = Date.now() + lifetimeMs;
             updateSyncUI(true);
             fetchUserProfile();
+            if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
+            // Refresh before expiry while the page stays open. This keeps the session alive
+            // for as long as Google's authorization session remains valid.
+            tokenRefreshTimer = setTimeout(() => {
+                silentAuthAttempted = false;
+                restoreDriveSessionSilently();
+            }, Math.max(60000, lifetimeMs - 300000));
         }
+
         function checkToken() {
             if (accessToken && tokenExpiresAt && Date.now() < tokenExpiresAt - 300000) {
                 updateSyncUI(true);
@@ -1370,30 +1385,40 @@
             return false;
         }
 
-        // Restore an already-authorized Google session after a page refresh.
-        // The bearer token remains memory-only; Google re-issues a fresh token silently
-        // when the user has previously granted this app access.
-        let silentAuthAttempted = false;
-        function restoreDriveSessionSilently(retries = 20) {
+        // Restore the previously-authorized Google session after a page refresh without
+        // showing the account chooser/consent screen. A stored email is only a login hint;
+        // no bearer token is stored. If Google can no longer silently authorize the session,
+        // the normal Connect Drive button remains available for an explicit login.
+        function restoreDriveSessionSilently(retries = 30) {
             if (accessToken || silentAuthAttempted) return;
-            if (window.google?.accounts?.oauth2) {
-                silentAuthAttempted = true;
-                try {
-                    if (!tokenClient) initGoogleDrive();
-                    const waitForClient = () => {
-                        if (!tokenClient) {
-                            if (retries > 0) return setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
-                            return;
+            const googleOAuth = window.google?.accounts?.oauth2;
+            if (!googleOAuth) {
+                if (retries > 0) setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
+                return;
+            }
+            silentAuthAttempted = true;
+            try {
+                if (!tokenClient) initGoogleDrive();
+                const loginHint = localStorage.getItem('pt_google_email') || undefined;
+                const waitForClient = () => {
+                    if (!tokenClient) {
+                        if (retries > 0) {
+                            silentAuthAttempted = false;
+                            setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
                         }
-                        try { tokenClient.requestAccessToken({ prompt: '' }); }
-                        catch (err) { console.error('Silent Drive session restore failed:', err); }
-                    };
-                    waitForClient();
-                } catch (err) {
-                    console.error('Drive auth initialization failed:', err);
-                }
-            } else if (retries > 0) {
-                setTimeout(() => restoreDriveSessionSilently(retries - 1), 250);
+                        return;
+                    }
+                    try {
+                        tokenClient.requestAccessToken({ prompt: 'none', ...(loginHint ? { login_hint: loginHint } : {}) });
+                    } catch (err) {
+                        console.error('Silent Drive session restore failed:', err);
+                        silentAuthAttempted = false;
+                    }
+                };
+                waitForClient();
+            } catch (err) {
+                console.error('Drive auth initialization failed:', err);
+                silentAuthAttempted = false;
             }
         }
         
@@ -1420,13 +1445,44 @@
 
         async function fetchUserProfile() {
             if (!accessToken) return;
-            try { let res = await apiFetch('https://www.googleapis.com/oauth2/v3/userinfo'); let user = await res.json(); document.getElementById('profileName').textContent = user.name; document.getElementById('profileImg').src = user.picture; document.getElementById('userProfile').classList.remove('hidden'); document.getElementById('userProfile').classList.add('flex'); } catch(e) { console.error("Profile fetch error", e); }
+            try {
+                let res = await apiFetch('https://www.googleapis.com/oauth2/v3/userinfo');
+                let user = await res.json();
+                if (user.email) localStorage.setItem('pt_google_email', user.email);
+                document.getElementById('profileName').textContent = user.name;
+                document.getElementById('profileImg').src = user.picture;
+                document.getElementById('userProfile').classList.remove('hidden');
+                document.getElementById('userProfile').classList.add('flex');
+            } catch(e) { console.error('Profile fetch error', e); }
         }
 
-        function logoutDrive() { if (accessToken && window.google?.accounts?.oauth2) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Google session revoked'); }); } accessToken = null; tokenExpiresAt = 0; driveFileId = null; updateSyncUI(false); }
+        function logoutDrive() {
+            if (tokenRefreshTimer) { clearTimeout(tokenRefreshTimer); tokenRefreshTimer = null; }
+            if (accessToken && window.google?.accounts?.oauth2) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Google session revoked'); }); }
+            accessToken = null; tokenExpiresAt = 0; driveFileId = null; silentAuthAttempted = true;
+            updateSyncUI(false);
+        }
 
-        function initGoogleDrive() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error) { console.error(resp); return; } setToken(resp.access_token, resp.expires_in); await loadFromDrive(); }, }); }
-        function handleAuthClick() { if (!tokenClient) initGoogleDrive(); if(accessToken) { loadFromDrive(); return; } tokenClient.requestAccessToken({ prompt: 'consent' }); }
+        function initGoogleDrive() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (resp) => {
+                    if (resp.error) {
+                        console.warn('Google token request did not complete silently:', resp.error);
+                        return;
+                    }
+                    silentAuthAttempted = true;
+                    setToken(resp.access_token, resp.expires_in);
+                    await loadFromDrive();
+                },
+            });
+        }
+        function handleAuthClick() {
+            if (!tokenClient) initGoogleDrive();
+            if(accessToken) { loadFromDrive(); return; }
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        }
 
         async function loadFromDrive() {
             if (!accessToken) return;
@@ -2882,7 +2938,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 host.innerHTML = '';
                 pnlChartInstance = LW.createChart(host, {
                     width: host.clientWidth, height: Math.max(260, host.clientHeight || 320),
-                    layout: { background: { type: 'solid', color: '#0b0b0b' }, textColor: '#9ca3af' },
+                    layout: { background: { type: 'solid', color: '#0b0b0b' }, textColor: '#9ca3af', attributionLogo: false },
                     grid: { vertLines: { color: 'rgba(255,255,255,0.045)' }, horzLines: { color: 'rgba(255,255,255,0.045)' } },
                     crosshair: { mode: LW.CrosshairMode.Normal },
                     rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
@@ -2928,11 +2984,37 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             if (pnlChartVisible) renderPnlChart();
         }
 
-        function togglePnlChartMaximize() {
+        async function togglePnlChartMaximize() {
             const card = document.getElementById('pnlChartCard'); if (!card) return;
-            pnlChartMaximized = !pnlChartMaximized; card.classList.toggle('pnl-maximized', pnlChartMaximized); document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
-            const btn = document.getElementById('pnlChartMaxBtn'); btn.title = pnlChartMaximized ? 'Restore chart' : 'Maximize chart';
-            setTimeout(resizePnlChart, 30);
+            try {
+                if (document.fullscreenElement === card) {
+                    await document.exitFullscreen?.();
+                } else if (card.requestFullscreen) {
+                    await card.requestFullscreen();
+                } else {
+                    pnlChartMaximized = !pnlChartMaximized;
+                    card.classList.toggle('pnl-maximized', pnlChartMaximized);
+                    document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
+                }
+            } catch (err) {
+                console.warn('Fullscreen request failed; using fallback.', err);
+                pnlChartMaximized = !pnlChartMaximized;
+                card.classList.toggle('pnl-maximized', pnlChartMaximized);
+                document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
+            }
+            setTimeout(resizePnlChart, 80);
+        }
+
+        function syncPnlFullscreenState() {
+            const card = document.getElementById('pnlChartCard');
+            if (!card) return;
+            const active = document.fullscreenElement === card || card.classList.contains('pnl-maximized');
+            pnlChartMaximized = active;
+            card.classList.toggle('pnl-maximized', document.fullscreenElement !== card && active);
+            document.body.classList.toggle('pnl-chart-modal-open', active);
+            const btn = document.getElementById('pnlChartMaxBtn');
+            if (btn) { btn.title = active ? 'Exit full screen' : 'Maximize chart'; btn.setAttribute('aria-label', active ? 'Exit full screen' : 'Maximize chart'); }
+            setTimeout(resizePnlChart, 80);
         }
 
         function refreshPnlChart() { if (pnlChartVisible) renderPnlChart(); }
@@ -2948,7 +3030,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             document.getElementById('pnlChartInterval')?.addEventListener('change', e => { pnlChartInterval = e.target.value || 'day'; refreshPnlChart(); });
             document.querySelector('.pnl-chart-range[data-pnl-range="all"]')?.classList.add('active');
             window.addEventListener('resize', resizePnlChart);
-            document.addEventListener('keydown', e => { if (e.key === 'Escape' && pnlChartMaximized) togglePnlChartMaximize(); });
+            document.addEventListener('fullscreenchange', syncPnlFullscreenState);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && pnlChartMaximized && !document.fullscreenElement) { const card = document.getElementById('pnlChartCard'); card?.classList.remove('pnl-maximized'); document.body.classList.remove('pnl-chart-modal-open'); pnlChartMaximized = false; resizePnlChart(); } });
         }
 
         function updateDashboard() {
