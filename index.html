@@ -172,26 +172,29 @@
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
         }
-        /* Chart maximize: expand the card, not browser fullscreen. The oversized shadow
-           masks the rest of the page (including the footer) while keeping the chart modal-like. */
+        /* Chart maximize: true in-page maximize. Hide the site's global header/footer
+           and let the chart occupy the full browser viewport (not browser fullscreen). */
         #pnlChartCard.pnl-maximized {
             position: fixed !important;
-            top: 12px !important;
-            right: 12px !important;
-            bottom: 12px !important;
-            left: 12px !important;
-            z-index: 9999 !important;
+            inset: 0 !important;
+            z-index: 1001 !important;
             display: flex !important;
             flex-direction: column !important;
             overflow: hidden !important;
-            width: auto !important;
-            height: auto !important;
+            width: 100vw !important;
+            height: 100dvh !important;
             max-width: none !important;
             margin: 0 !important;
-            border-radius: 16px !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            border-left: 0 !important;
+            border-right: 0 !important;
             background: #0b0b0b !important;
-            box-shadow: 0 0 0 100vmax rgba(0,0,0,.96), 0 22px 70px rgba(0,0,0,.55) !important;
+            box-shadow: none !important;
         }
+        body.pnl-chart-modal-open > nav,
+        body.pnl-chart-modal-open > footer { display: none !important; }
+        body.pnl-chart-modal-open { padding-bottom: 0 !important; overflow: hidden !important; }
         #pnlChartCard.pnl-maximized #pnlChartPanel {
             flex: 1 1 auto !important;
             min-height: 0 !important;
@@ -2915,11 +2918,12 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
         }
 
         let equityChartInstance, winChartInstance;
-        let pnlChartInstance = null, pnlCandleSeries = null;
+        let pnlChartInstance = null, pnlCandleSeries = null, pnlEma5Series = null, pnlEma20Series = null;
         let pnlChartLibraryPromise = null, pnlChartVisible = false, pnlChartMaximized = false;
         let pnlChartRange = 'all', pnlChartInterval = 'day';
         let pnlChartDataCache = [];
         let pnlChartAllCandles = [], pnlChartLoadedStart = 0;
+        let pnlEma5Enabled = false, pnlEma20Enabled = false;
 
         function loadPnlChartLibrary() {
             if (window.LightweightCharts) return Promise.resolve(window.LightweightCharts);
@@ -2979,6 +2983,25 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             return [...buckets.values()].sort((a,b) => a.time.localeCompare(b.time));
         }
 
+        function buildEmaData(candles, period) {
+            if (!Array.isArray(candles) || candles.length === 0 || period < 1) return [];
+            const alpha = 2 / (period + 1);
+            let ema = null;
+            const out = [];
+            for (const c of candles) {
+                const close = Number(c.close);
+                if (!Number.isFinite(close)) continue;
+                ema = ema === null ? close : (close * alpha) + (ema * (1 - alpha));
+                out.push({ time: c.time, value: ema });
+            }
+            return out;
+        }
+
+        function setPnlIndicatorVisibility() {
+            if (pnlEma5Series) pnlEma5Series.applyOptions({ visible: pnlEma5Enabled });
+            if (pnlEma20Series) pnlEma20Series.applyOptions({ visible: pnlEma20Enabled });
+        }
+
         function updatePnlOhlc(candle) {
             if (!candle) return;
             document.getElementById('pnlO').textContent = formatPnlChartMoney(candle.open);
@@ -3002,11 +3025,11 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 pnlChartLoadedStart = Math.max(0, pnlChartAllCandles.length - Math.min(pnlChartAllCandles.length, 220));
                 pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
                 if (!pnlChartDataCache.length) {
-                    if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; }
+                    if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; pnlEma5Series = null; pnlEma20Series = null; }
                     host.innerHTML = '<div class="h-full flex items-center justify-center text-sm text-gray-500">No closed trades match the current dashboard filters.</div>';
                     return;
                 }
-                if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; }
+                if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; pnlEma5Series = null; pnlEma20Series = null; }
                 host.innerHTML = '';
                 pnlChartInstance = LW.createChart(host, {
                     width: host.clientWidth, height: Math.max(260, host.clientHeight || 320),
@@ -3023,6 +3046,18 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                     ? pnlChartInstance.addSeries(LW.CandlestickSeries, candleOptions)
                     : pnlChartInstance.addCandlestickSeries(candleOptions);
                 pnlCandleSeries.setData(pnlChartDataCache);
+                const line5Options = { color: '#3b82f6', lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: true, visible: pnlEma5Enabled };
+                const line20Options = { color: '#facc15', lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: true, visible: pnlEma20Enabled };
+                if (typeof pnlChartInstance.addSeries === 'function' && LW.LineSeries) {
+                    pnlEma5Series = pnlChartInstance.addSeries(LW.LineSeries, line5Options);
+                    pnlEma20Series = pnlChartInstance.addSeries(LW.LineSeries, line20Options);
+                } else if (typeof pnlChartInstance.addLineSeries === 'function') {
+                    pnlEma5Series = pnlChartInstance.addLineSeries(line5Options);
+                    pnlEma20Series = pnlChartInstance.addLineSeries(line20Options);
+                }
+                if (pnlEma5Series) pnlEma5Series.setData(buildEmaData(pnlChartDataCache, 5));
+                if (pnlEma20Series) pnlEma20Series.setData(buildEmaData(pnlChartDataCache, 20));
+                setPnlIndicatorVisibility();
                 pnlChartInstance.subscribeCrosshairMove(param => {
                     if (!param || !param.seriesData || !pnlCandleSeries) return;
                     const c = param.seriesData.get(pnlCandleSeries); if (c) updatePnlOhlc(c);
@@ -3035,6 +3070,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                         pnlChartLoadedStart -= loadCount;
                         pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
                         pnlCandleSeries.setData(pnlChartDataCache);
+                        if (pnlEma5Series) pnlEma5Series.setData(buildEmaData(pnlChartDataCache, 5));
+                        if (pnlEma20Series) pnlEma20Series.setData(buildEmaData(pnlChartDataCache, 20));
                         requestAnimationFrame(() => {
                             const nextRange = { from: range.from + loadCount, to: range.to + loadCount };
                             try { pnlChartInstance.timeScale().setVisibleLogicalRange(nextRange); } catch (_) {}
@@ -3093,8 +3130,25 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 document.querySelectorAll('.pnl-chart-range').forEach(b => b.classList.toggle('active', b === btn)); refreshPnlChart();
             }));
             document.getElementById('pnlChartInterval')?.addEventListener('change', e => { pnlChartInterval = e.target.value || 'day'; refreshPnlChart(); });
+            const indicatorsBtn = document.getElementById('pnlIndicatorsBtn');
+            const indicatorsMenu = document.getElementById('pnlIndicatorsMenu');
+            const ema5Toggle = document.getElementById('pnlEma5Toggle');
+            const ema20Toggle = document.getElementById('pnlEma20Toggle');
+            indicatorsBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                indicatorsMenu?.classList.toggle('hidden');
+                indicatorsBtn.setAttribute('aria-expanded', String(!indicatorsMenu?.classList.contains('hidden')));
+            });
+            ema5Toggle?.addEventListener('change', e => { pnlEma5Enabled = e.target.checked; setPnlIndicatorVisibility(); });
+            ema20Toggle?.addEventListener('change', e => { pnlEma20Enabled = e.target.checked; setPnlIndicatorVisibility(); });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('#pnlIndicatorsBtn') && !e.target.closest('#pnlIndicatorsMenu')) {
+                    indicatorsMenu?.classList.add('hidden');
+                    indicatorsBtn?.setAttribute('aria-expanded', 'false');
+                }
+            });
             document.querySelector('.pnl-chart-range[data-pnl-range="all"]')?.classList.add('active');
-            window.addEventListener('resize', resizePnlChart);
+            window.addEventListener('resize', () => { resizePnlChart(); });
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape' && pnlChartMaximized) togglePnlChartMaximize();
             });
