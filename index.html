@@ -1201,6 +1201,15 @@
             if (syncCloud) queueCalculatorCloudSync();
         }
 
+        function getCalculatorCloudState(mode) {
+            const state = safeStorageParse('riskCalcSettings_' + mode, {}) || {};
+            return {
+                margin: state.margin ?? '',
+                riskPct: state.riskPct ?? '',
+                targetPct: state.targetPct ?? ''
+            };
+        }
+
         function queueCalculatorCloudSync() {
             calculatorCloudSyncPending = true;
             if (calculatorCloudSyncTimer) clearTimeout(calculatorCloudSyncTimer);
@@ -1388,8 +1397,19 @@
                             if (cloudData.uiSettings.capTableColumns) capTableColumns = cloudData.uiSettings.capTableColumns;
                             if (cloudData.uiSettings.currentExchange) currentExchange = cloudData.uiSettings.currentExchange;
                             if (cloudData.uiSettings.currentBroker && brokerProfiles[cloudData.uiSettings.currentBroker]) currentBroker = cloudData.uiSettings.currentBroker;
-                            if (cloudData.uiSettings.calcIntraday) localStorage.setItem('riskCalcSettings_intraday', JSON.stringify(cloudData.uiSettings.calcIntraday));
-                            if (cloudData.uiSettings.calcSwing) localStorage.setItem('riskCalcSettings_swing', JSON.stringify(cloudData.uiSettings.calcSwing));
+                            // Merge only Drive-backed calculator settings. Keep Entry, Stop Loss, and
+                            // Calculator Total Corpus from this browser untouched.
+                            ['intraday', 'swing'].forEach(mode => {
+                                const cloudCalc = cloudData.uiSettings[mode === 'intraday' ? 'calcIntraday' : 'calcSwing'];
+                                if (!cloudCalc || typeof cloudCalc !== 'object') return;
+                                const localCalc = safeStorageParse('riskCalcSettings_' + mode, {}) || {};
+                                localStorage.setItem('riskCalcSettings_' + mode, JSON.stringify({
+                                    ...localCalc,
+                                    margin: cloudCalc.margin ?? localCalc.margin ?? '',
+                                    riskPct: cloudCalc.riskPct ?? localCalc.riskPct ?? '',
+                                    targetPct: cloudCalc.targetPct ?? localCalc.targetPct ?? ''
+                                }));
+                            });
                             
                             localStorage.setItem('pt_visible_cols', JSON.stringify(tradeTableColumns));
                             localStorage.setItem('pt_visible_cap_cols', JSON.stringify(capTableColumns));
@@ -1437,8 +1457,9 @@
                 }
                 const uiSettings = {
                     tradeTableColumns, capTableColumns, currentExchange, currentBroker,
-                    calcIntraday: safeStorageParse('riskCalcSettings_intraday', {}),
-                    calcSwing: safeStorageParse('riskCalcSettings_swing', {})
+                    // Only Margin, Risk %, and Target (R) are backed up to Drive.
+                    calcIntraday: getCalculatorCloudState('intraday'),
+                    calcSwing: getCalculatorCloudState('swing')
                 };
                 persistModeOptionSets();
                 const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategiesByMode, customVerdictsByMode, customStrategies, customVerdicts, brokerProfiles, globalAllocSettings, uiSettings });
@@ -3154,12 +3175,15 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); focusCalculatorInput(cInputs.sl); calculate(); });
-            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); saveCalculatorModeState(activeCalcMode, true); });
+            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); saveCalculatorModeState(activeCalcMode, false); });
 
-            // Keep Intraday and Swing calculator settings separate in Drive.
-            // Debouncing means editing several fields generates one Drive write instead of one request per field change.
+            // All calculator fields are stored in browser localStorage. Only Margin, Risk %,
+            // and Target (R) changes additionally trigger a Drive backup.
             [cInputs.corpus, cInputs.margin, cInputs.risk, cInputs.target, cInputs.entry, cInputs.sl].forEach(input => {
-                input.addEventListener('change', () => saveCalculatorModeState(activeCalcMode, true));
+                input.addEventListener('change', () => {
+                    const cloudBacked = [cInputs.margin, cInputs.risk, cInputs.target].includes(input);
+                    saveCalculatorModeState(activeCalcMode, cloudBacked);
+                });
             });
             
             document.getElementById('logJournalBtn').addEventListener('click', () => {
