@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PositionLab</title>
+    <title></title>
     
-    <meta name="description" content="PositionLab by Madhav — risk-based position sizing, trade journaling, portfolio analytics and capital tracking for Indian stock market traders.">
+    <meta name="description" content="PositionLab — risk-based position sizing, trade journaling, portfolio analytics and capital tracking for Indian stock market traders.">
     <meta name="application-name" content="PositionLab">
     <meta name="author" content="Madhav">
     <meta name="robots" content="index,follow">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="theme-color" content="#0a0a0a">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="PositionLab — by Madhav">
+    <meta property="og:title" content="PositionLab">
     <meta property="og:description" content="Risk-based position sizing, trade journaling and growth analytics for Indian stock market traders.">
     <meta property="og:image" content="icon-192.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="PositionLab — by Madhav">
+    <meta name="twitter:title" content="PositionLab">
     <meta name="twitter:description" content="Risk-based position sizing, trade journaling and growth analytics for Indian stock market traders.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -172,13 +172,40 @@
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
         }
-        #pnlChartCard.pnl-maximized { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; overflow: hidden; background: #0d0d0d; border-radius: 0; width: 100vw; height: 100vh; }
-        #pnlChartCard.pnl-maximized #pnlChartPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-        #pnlChartCard.pnl-maximized #pnlChartHost { flex: 1 1 auto; min-height: 0; height: auto; }
-        #pnlChartCard:fullscreen { display: flex; flex-direction: column; width: 100vw; height: 100vh; margin: 0; border-radius: 0; background: #0d0d0d; }
-        #pnlChartCard:fullscreen #pnlChartPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-        #pnlChartCard:fullscreen #pnlChartHost { flex: 1 1 auto; min-height: 0; height: auto; }
-        body.pnl-chart-modal-open { overflow: hidden; }
+        /* Chart maximize: expand the card, not browser fullscreen. The oversized shadow
+           masks the rest of the page (including the footer) while keeping the chart modal-like. */
+        #pnlChartCard.pnl-maximized {
+            position: fixed !important;
+            top: 12px !important;
+            right: 12px !important;
+            bottom: 12px !important;
+            left: 12px !important;
+            z-index: 9999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            width: auto !important;
+            height: auto !important;
+            max-width: none !important;
+            margin: 0 !important;
+            border-radius: 16px !important;
+            background: #0b0b0b !important;
+            box-shadow: 0 0 0 100vmax rgba(0,0,0,.96), 0 22px 70px rgba(0,0,0,.55) !important;
+        }
+        #pnlChartCard.pnl-maximized #pnlChartPanel {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        #pnlChartCard.pnl-maximized #pnlChartHost {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: auto !important;
+        }
+        #pnlChartCard.pnl-maximized .pnl-chart-footer { display: none !important; }
+        html.pnl-chart-modal-open, body.pnl-chart-modal-open { overflow: hidden !important; }
         .pnl-chart-range.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.25); }
         #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
         @media (max-width: 640px) {
@@ -555,7 +582,7 @@
                         <div class="flex items-center gap-2 shrink-0">
                             <button id="pnlChartToggleBtn" type="button" class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/30 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold transition">Show Chart</button>
                             <button id="pnlChartMaxBtn" type="button" class="hidden p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition" title="Maximize chart" aria-label="Maximize chart">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                <svg id="pnlChartMaxIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                             </button>
                         </div>
                     </div>
@@ -585,7 +612,7 @@
                             <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">C</span><strong id="pnlC">—</strong></div>
                         </div>
                         <div id="pnlChartHost" class="h-80 w-full relative rounded-xl overflow-hidden bg-black/20"></div>
-                        <div class="mt-2 flex items-center justify-between gap-3 text-[9px] text-gray-600">
+                        <div class="pnl-chart-footer mt-2 flex items-center justify-between gap-3 text-[9px] text-gray-600">
                             <span>Drag to pan • Mouse wheel to zoom • Crosshair shows OHLC</span>
                             <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-400 transition">Lightweight Charts by TradingView</a>
                         </div>
@@ -3029,42 +3056,30 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             if (pnlChartVisible) renderPnlChart();
         }
 
-        async function togglePnlChartMaximize() {
-            const card = document.getElementById('pnlChartCard'); if (!card) return;
-            try {
-                if (document.fullscreenElement) {
-                    await document.exitFullscreen?.();
-                } else if (document.documentElement.requestFullscreen) {
-                    await document.documentElement.requestFullscreen();
-                } else {
-                    pnlChartMaximized = !pnlChartMaximized;
-                    card.classList.toggle('pnl-maximized', pnlChartMaximized);
-                    document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
-                }
-            } catch (err) {
-                console.warn('Fullscreen request failed; using fallback.', err);
-                pnlChartMaximized = !pnlChartMaximized;
-                card.classList.toggle('pnl-maximized', pnlChartMaximized);
-                document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
+        function updatePnlMaximizeButton() {
+            const btn = document.getElementById('pnlChartMaxBtn');
+            const icon = document.getElementById('pnlChartMaxIcon');
+            if (!btn) return;
+            const path = icon?.querySelector('path');
+            if (pnlChartMaximized) {
+                btn.title = 'Minimize chart';
+                btn.setAttribute('aria-label', 'Minimize chart');
+                if (path) path.setAttribute('d', 'M8 3v5H3M3 3l6 6M16 3v5h5M21 3l-6 6M8 21v-5H3M3 21l6-6M16 21v-5h5M21 21l-6-6');
+            } else {
+                btn.title = 'Maximize chart';
+                btn.setAttribute('aria-label', 'Maximize chart');
+                if (path) path.setAttribute('d', 'M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6');
             }
-            setTimeout(resizePnlChart, 120);
         }
 
-        function syncPnlFullscreenState() {
+        function togglePnlChartMaximize() {
             const card = document.getElementById('pnlChartCard');
             if (!card) return;
-            const active = !!document.fullscreenElement || card.classList.contains('pnl-maximized');
-            pnlChartMaximized = active;
-            // When browser fullscreen is active on <html>, force the chart card to occupy
-            // the complete fullscreen viewport.
-            card.classList.toggle('pnl-maximized', active);
-            document.body.classList.toggle('pnl-chart-modal-open', active);
-            const btn = document.getElementById('pnlChartMaxBtn');
-            if (btn) {
-                btn.title = active ? 'Exit full screen' : 'Maximize chart';
-                btn.setAttribute('aria-label', active ? 'Exit full screen' : 'Maximize chart');
-            }
-            setTimeout(resizePnlChart, 120);
+            pnlChartMaximized = !pnlChartMaximized;
+            card.classList.toggle('pnl-maximized', pnlChartMaximized);
+            document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
+            updatePnlMaximizeButton();
+            requestAnimationFrame(() => requestAnimationFrame(resizePnlChart));
         }
 
         function refreshPnlChart() { if (pnlChartVisible) renderPnlChart(); }
@@ -3080,8 +3095,10 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             document.getElementById('pnlChartInterval')?.addEventListener('change', e => { pnlChartInterval = e.target.value || 'day'; refreshPnlChart(); });
             document.querySelector('.pnl-chart-range[data-pnl-range="all"]')?.classList.add('active');
             window.addEventListener('resize', resizePnlChart);
-            document.addEventListener('fullscreenchange', syncPnlFullscreenState);
-            document.addEventListener('keydown', e => { if (e.key === 'Escape' && pnlChartMaximized && !document.fullscreenElement) { const card = document.getElementById('pnlChartCard'); card?.classList.remove('pnl-maximized'); document.body.classList.remove('pnl-chart-modal-open'); pnlChartMaximized = false; resizePnlChart(); } });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && pnlChartMaximized) togglePnlChartMaximize();
+            });
+            updatePnlMaximizeButton();
         }
 
         function updateDashboard() {
