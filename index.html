@@ -5,8 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PositionLab - by Madhav</title>
     
-    <meta name="description" content="PositionLab - A platform for Indian stock market traders. Features position value calculation based on risk profile, trade journaling, and powerful growth analytics.">
+    <meta name="description" content="PositionLab by Madhav — risk-based position sizing, trade journaling, portfolio analytics and capital tracking for Indian stock market traders.">
+    <meta name="application-name" content="PositionLab">
+    <meta name="author" content="Madhav">
+    <meta name="robots" content="index,follow">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="theme-color" content="#0a0a0a">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PositionLab — by Madhav">
+    <meta property="og:description" content="Risk-based position sizing, trade journaling and growth analytics for Indian stock market traders.">
+    <meta property="og:image" content="icon-192.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PositionLab — by Madhav">
+    <meta name="twitter:description" content="Risk-based position sizing, trade journaling and growth analytics for Indian stock market traders.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -20,12 +34,12 @@
         }
     </script>
          
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script src="https://s.google.com/js/api.js" async defer></script>
 
     <style>
         :root { color-scheme: dark; }
@@ -94,6 +108,12 @@
         }
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
+        }
+        #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+        @media (max-width: 640px) {
+            #resultCard .grid { gap: 1rem 1.25rem; }
+            #resultCard .grid > div p:last-child { font-size: 1rem; }
+            #resultCard #outEntryPrice, #resultCard #outTargetPrice { font-size: 1.05rem; }
         }
     </style>
 </head>
@@ -255,6 +275,7 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10 mt-2">
+                                <div><p class="text-xs text-gray-400 mb-1">Entry Price</p><p id="outEntryPrice" class="font-semibold text-lg">₹0.00</p></div>
                                 <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500 text-lg">₹0.00</p></div>
                                 <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold text-lg">₹0.00</p></div>
                                 <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold text-lg">₹0.00</p></div>
@@ -267,7 +288,6 @@
                                     </div>
                                 </div>
                                 <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold text-lg">0.00%</p></div>
-                                <div><p class="text-xs text-gray-400 mb-1">Constraint</p><p id="outTradeType" class="font-semibold text-lg text-gray-300">-</p></div>
                             </div>
                             
                             <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
@@ -816,11 +836,34 @@
         </div>
     </div>
 
+    <!-- Legal / informational modals -->
+    <div id="legalOverlay" class="fixed inset-0 z-[300] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-200" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
+        <div id="legalCard" class="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 md:p-8 relative transform scale-95 transition-transform duration-200">
+            <button type="button" onclick="closeLegalModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition" aria-label="Close">✕</button>
+            <div class="pr-10">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-brand-400 font-bold mb-2">PositionLab</p>
+                <h2 id="legalTitle" class="text-2xl font-bold text-white mb-5"></h2>
+                <div id="legalContent" class="text-sm text-gray-300 leading-7 space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
     <footer class="mt-auto py-8 border-t border-white/10 text-center relative z-10 w-full">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center gap-4">
-            <div class="flex items-center gap-2 opacity-80"><img src="icon.svg" class="w-5 h-5 grayscale" alt="Logo grayscale"><span class="text-sm font-bold tracking-widest text-gray-300">POSITIONLAB</span></div>
-            <p class="text-xs text-gray-500 max-w-xl mx-auto leading-relaxed px-2">A platform for Indian stock market traders. Features position value calculation based on risk profile, trade journaling, and powerful growth analytics.</p>
-            <p class="text-[10px] text-gray-700 mt-2 tracking-wide">&copy; 2026 PositionLab. All rights reserved.</p>
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center gap-5">
+            <div class="flex items-center gap-2 opacity-80">
+                <img src="icon.svg" class="w-5 h-5 grayscale" alt="PositionLab logo">
+                <span class="text-sm font-bold tracking-widest text-gray-300">POSITIONLAB</span>
+            </div>
+            <p class="text-xs text-gray-500 max-w-xl mx-auto leading-relaxed px-2">A browser-first trading utility for position sizing, trade journaling, capital tracking and performance analytics. PositionLab is not a broker and does not execute trades.</p>
+            <nav class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[11px] text-gray-400" aria-label="Footer">
+                <a href="privacy.html" class="hover:text-white transition">Privacy Policy</a>
+                <a href="terms.html" class="hover:text-white transition">Terms of Use</a>
+                <a href="disclaimer.html" class="hover:text-white transition">Risk Disclaimer</a>
+                <a href="about.html" class="hover:text-white transition">About</a>
+                <a href="https://www.instagram.com/madhavology_/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition" aria-label="Instagram">Instagram</a>
+                <a href="https://github.com/Madhav-S-S" target="_blank" rel="noopener noreferrer" class="hover:text-white transition" aria-label="GitHub">GitHub</a>
+            </nav>
+            <p class="text-[10px] text-gray-700 tracking-wide">&copy; 2026 PositionLab. All rights reserved.</p>
         </div>
     </footer>
 
@@ -829,10 +872,24 @@
         const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile';
         const FILE_NAME = 'positionlab_data.json';
         
-        let tokenClient, accessToken = null, driveFileId = null;
+        function safeStorageParse(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch (error) {
+                console.warn(`PositionLab: reset invalid local storage entry ${key}`, error);
+                localStorage.removeItem(key);
+                return fallback;
+            }
+        }
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>'\"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[char]));
+        }
+        
+        let tokenClient, accessToken = null, tokenExpiresAt = 0, driveFileId = null;
 
-        let balances = JSON.parse(localStorage.getItem('pt_balances')) || { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 };
-        let tradesDB = JSON.parse(localStorage.getItem('pt_trades')) || [];
+        let balances = safeStorageParse('pt_balances', { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 });
+        let tradesDB = safeStorageParse('pt_trades', []);
 
         function migrateBreakevenFields(list) {
             return list.map(t => {
@@ -856,7 +913,7 @@
 
         tradesDB = migrateBreakevenFields(tradesDB);
         localStorage.setItem('pt_trades', JSON.stringify(tradesDB));
-        let capitalLedger = JSON.parse(localStorage.getItem('pt_capital')) || [];
+        let capitalLedger = safeStorageParse('pt_capital', []);
 
         const DEFAULT_STRATEGIES = ["Trend Reversal", "Breakout", "Pullback"];
         const DEFAULT_VERDICTS = ["Followed Rules", "FOMO", "Early Exit"];
@@ -866,9 +923,9 @@
             return [...new Set(arr.map(v => String(v).trim()).filter(Boolean))];
         }
         function loadModeOptionSets(baseKey, fallback) {
-            const oldShared = JSON.parse(localStorage.getItem(baseKey));
-            const oldIntraday = JSON.parse(localStorage.getItem(`${baseKey}_intraday`));
-            const oldSwing = JSON.parse(localStorage.getItem(`${baseKey}_swing`));
+            const oldShared = safeStorageParse(baseKey, null);
+            const oldIntraday = safeStorageParse(`${baseKey}_intraday`, null);
+            const oldSwing = safeStorageParse(`${baseKey}_swing`, null);
             const hadModeSpecific = Array.isArray(oldIntraday) || Array.isArray(oldSwing);
             const seed = normalizeOptionSet(oldShared, fallback);
             const sets = {
@@ -888,9 +945,9 @@
         let customVerdictsByMode = loadModeOptionSets('pt_verdicts', DEFAULT_VERDICTS);
         let customStrategies = [...customStrategiesByMode.intraday];
         let customVerdicts = [...customVerdictsByMode.intraday];
-        let globalAllocSettings = JSON.parse(localStorage.getItem('pt_alloc_settings')) || { intraday: 100, swing: 100 };
+        let globalAllocSettings = safeStorageParse('pt_alloc_settings', { intraday: 100, swing: 100 });
         
-        let savedCols = JSON.parse(localStorage.getItem('pt_visible_cols'));
+        let savedCols = safeStorageParse('pt_visible_cols', null);
         if (savedCols && savedCols.entryInfo !== undefined) { 
             savedCols.entryExit = savedCols.entryInfo; 
             savedCols.sl = false; 
@@ -898,7 +955,7 @@
             localStorage.setItem('pt_visible_cols', JSON.stringify(savedCols)); 
         }
         let tradeTableColumns = savedCols || { strategy: false, entryExit: true, sl: false, pnl: true, charges: false, result: false, pctChange: true, corpus: true, remarks: true };
-        let capTableColumns = JSON.parse(localStorage.getItem('pt_visible_cap_cols')) || { netCorpus: true, ledgerBal: false, remarks: true };
+        let capTableColumns = safeStorageParse('pt_visible_cap_cols', { netCorpus: true, ledgerBal: false, remarks: true });
 
         let activeCalcMode = 'intraday', activeJourMode = 'intraday', activeDashMode = 'both';
         let currentExchange = localStorage.getItem('pt_exchange') || 'NSE';
@@ -1121,8 +1178,21 @@
             });
         }
 
-        function setToken(token, expiresIn) { accessToken = token; localStorage.setItem('pt_gdrive_token', token); localStorage.setItem('pt_gdrive_expiry', Date.now() + (expiresIn * 1000)); updateSyncUI(true); fetchUserProfile(); }
-        function checkToken() { const token = localStorage.getItem('pt_gdrive_token'), expiry = localStorage.getItem('pt_gdrive_expiry'); if (token && expiry && Date.now() < (parseInt(expiry) - 300000)) { accessToken = token; updateSyncUI(true); fetchUserProfile(); return true; } return false; }
+        // OAuth access tokens stay in memory only. Never persist bearer tokens in localStorage.
+        function setToken(token, expiresIn) {
+            accessToken = token;
+            tokenExpiresAt = Date.now() + ((Number(expiresIn) || 3600) * 1000);
+            updateSyncUI(true);
+            fetchUserProfile();
+        }
+        function checkToken() {
+            if (accessToken && tokenExpiresAt && Date.now() < tokenExpiresAt - 300000) {
+                updateSyncUI(true);
+                fetchUserProfile();
+                return true;
+            }
+            return false;
+        }
         
         function updateSyncUI(isConnected) {
             const btn = document.getElementById('driveSyncBtn'), status = document.getElementById('syncStatus'), statusMobile = document.getElementById('syncStatusMobile'), profileDiv = document.getElementById('userProfile'), logoutBtn = document.getElementById('logoutBtn');
@@ -1141,7 +1211,7 @@
         async function apiFetch(url, options = {}) {
             if(!options.headers) options.headers = {}; options.headers['Authorization'] = `Bearer ${accessToken}`;
             const res = await fetch(url, options);
-            if(res.status === 401) { accessToken = null; localStorage.removeItem('pt_gdrive_token'); localStorage.removeItem('pt_gdrive_expiry'); updateSyncUI(false); document.getElementById('syncStatus').textContent = "Session Expired"; document.getElementById('syncStatusMobile').textContent = "Expired"; throw new Error("Unauthorized"); }
+            if(res.status === 401) { accessToken = null; tokenExpiresAt = 0; updateSyncUI(false); document.getElementById('syncStatus').textContent = "Session Expired"; document.getElementById('syncStatusMobile').textContent = "Expired"; throw new Error("Unauthorized"); }
             return res;
         }
 
@@ -1150,7 +1220,7 @@
             try { let res = await apiFetch('https://www.googleapis.com/oauth2/v3/userinfo'); let user = await res.json(); document.getElementById('profileName').textContent = user.name; document.getElementById('profileImg').src = user.picture; document.getElementById('userProfile').classList.remove('hidden'); document.getElementById('userProfile').classList.add('flex'); } catch(e) { console.error("Profile fetch error", e); }
         }
 
-        function logoutDrive() { if (accessToken) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked'); }); accessToken = null; localStorage.removeItem('pt_gdrive_token'); localStorage.removeItem('pt_gdrive_expiry'); updateSyncUI(false); } }
+        function logoutDrive() { if (accessToken && window.google?.accounts?.oauth2) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Google session revoked'); }); } accessToken = null; tokenExpiresAt = 0; driveFileId = null; updateSyncUI(false); }
 
         function initGoogleDrive() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error) { console.error(resp); return; } setToken(resp.access_token, resp.expires_in); await loadFromDrive(); }, }); }
         function handleAuthClick() { if (!tokenClient) initGoogleDrive(); if(accessToken) { loadFromDrive(); return; } tokenClient.requestAccessToken({ prompt: 'consent' }); }
@@ -1244,8 +1314,8 @@
                 }
                 const uiSettings = {
                     tradeTableColumns, capTableColumns, currentExchange, currentBroker,
-                    calcIntraday: JSON.parse(localStorage.getItem('riskCalcSettings_intraday') || '{}'),
-                    calcSwing: JSON.parse(localStorage.getItem('riskCalcSettings_swing') || '{}')
+                    calcIntraday: safeStorageParse('riskCalcSettings_intraday', {}),
+                    calcSwing: safeStorageParse('riskCalcSettings_swing', {})
                 };
                 persistModeOptionSets();
                 const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategiesByMode, customVerdictsByMode, customStrategies, customVerdicts, brokerProfiles, globalAllocSettings, uiSettings });
@@ -1436,13 +1506,13 @@
                 if(!e.target.closest('#brokerModalCard') && e.target.id === 'brokerModal') closeBrokerModal();
                 if(!e.target.closest('#closeTradeModalCard') && e.target.id === 'closeTradeModal') closeCloseTradeModal();
             });
-            if (checkToken()) loadFromDrive();
+            checkToken();
         });
         
         function loadCalcState() {
             let savedState = {};
             try {
-                savedState = JSON.parse(localStorage.getItem('riskCalcSettings_' + activeCalcMode) || '{}') || {};
+                savedState = safeStorageParse('riskCalcSettings_' + activeCalcMode, {}) || {};
             } catch (_) {
                 savedState = {};
             }
@@ -1558,7 +1628,7 @@
                 filtered.forEach(o => {
                     let delBtn = allowAdd ? `<span class="delete-opt text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${o}" title="Delete">✕</span>` : '';
                     let isSelected = currentSelected.includes(o); let bgClass = isSelected ? 'bg-brand-500/20 text-brand-400 font-bold' : ''; let checkmark = isSelected ? '✓ ' : '';
-                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${bgClass}" data-val="${o}"><span class="pointer-events-none">${checkmark}${o}</span>${delBtn}</li>`;
+                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${bgClass}" data-val="${escapeHtml(o)}"><span class="pointer-events-none">${checkmark}${escapeHtml(o)}</span>${delBtn}</li>`;
                 });
             };
             input.addEventListener('focus', () => { renderList(""); list.classList.add('active'); focusedIndex = -1; });
@@ -1763,7 +1833,7 @@
             const exitPriceInput = document.getElementById('ctm-exit-price');
             const chargesInput = document.getElementById('ctm-charges');
             const pnlInput = document.getElementById('ctm-pnl');
-            document.getElementById('ctm-symbol').textContent = `${t.symbol} (${t.mode.toUpperCase()})`;
+            document.getElementById('ctm-symbol').textContent = `${escapeHtml(t.symbol)} (${t.mode.toUpperCase()})`;
             exitPriceInput.value = ''; chargesInput.value = ''; pnlInput.value = '';
             refreshJournalModeOptionArrays(t.mode);
             document.getElementById('ctm-verdict').value = ''; document.getElementById('ctm-remarks').value = '';
@@ -1839,7 +1909,7 @@
         window.openTradeModal = function(id) {
             const t=tradesDB.find(x=>x.id===id); if(!t)return;
             const modal=document.getElementById('tradeModal'),card=document.getElementById('tradeModalCard');
-            document.getElementById('tm-symbol').textContent=`${t.symbol} (${formatToDDMMYYYY(t.date)})`; document.getElementById('tm-remarks').textContent=t.remarks||"No remarks provided."; document.getElementById('tm-mode-badge').textContent=t.mode.toUpperCase();
+            document.getElementById('tm-symbol').textContent=`${escapeHtml(t.symbol)} (${formatToDDMMYYYY(t.date)})`; document.getElementById('tm-remarks').textContent=t.remarks||"No remarks provided."; document.getElementById('tm-mode-badge').textContent=t.mode.toUpperCase();
             const badge=document.getElementById('tm-result-badge'); if(t.status==='OPEN'){badge.textContent='OPEN';badge.className='px-3 py-1 rounded text-xs font-bold text-white shadow bg-brand-500 shadow-brand-500/20';}else{badge.textContent=t.result;badge.className=`px-3 py-1 rounded text-xs font-bold text-white shadow ${t.result==='WIN'?'bg-long shadow-long/20':(t.result==='LOSS'?'bg-short shadow-short/20':'bg-gray-600 shadow-gray-500/20')}`;}
             const addField=(label,val,color='text-gray-200')=>`<div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">${label}</p><p class="font-semibold ${color} text-sm md:text-base">${val}</p></div>`;
             let html=''; if(t.status==='CLOSED'){html+=addField('Net P&L',formatMoney(t.netPnl),t.netPnl>0?'text-long':(t.netPnl<0?'text-short':'text-gray-400'));html+=addField('Charges',formatMoney(t.charges||0));html+=addField('Exit Price',t.exitPrice?formatMoney(t.exitPrice):'-');html+=addField('% Change',`${t.pctChange>0?'+':''}${(t.pctChange||0).toFixed(2)}%`,t.pctChange>0?'text-long':(t.pctChange<0?'text-short':'text-gray-400'));html+=addField('End Corpus',formatMoney(t.endCorpus));}else{html+=`<div class="col-span-full mb-2"><p class="text-xs text-brand-400 italic">This trade is currently OPEN. Capital is reserved but P&amp;L is unrealized.</p></div>`;}
@@ -2091,20 +2161,20 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 let rowHTML = `
                 <tr class="clickable-row align-top group ${t.status === 'OPEN' ? 'bg-brand-500/5 hover:bg-brand-500/10' : ''}" onclick="openTradeModal(${t.id})">
                     <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades w-3 h-3 md:w-4 md:h-4" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
-                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300 leading-tight">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${dispSession}</span></td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300 leading-tight">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${escapeHtml(dispSession)}</span></td>
                     <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm text-gray-100 group-hover:text-brand-400 transition-colors flex items-center gap-2">
-                        ${t.symbol}
+                        ${escapeHtml(t.symbol)}
                         ${t.status === 'OPEN' ? `<span class="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-brand-500 text-white shadow shadow-brand-500/20">${t.status}</span>` : ''}
                     </td>`;
-                if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${normalizeStrategyList(t.strategy).join(', ') || '-'}</td>`;
-                if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
-                if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${t.sl || '-'}</td>`;
+                if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${escapeHtml(normalizeStrategyList(t.strategy).join(', ') || '-')}</td>`;
+                if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${escapeHtml(t.entry || '-')}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
+                if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${escapeHtml(t.sl || '-')}</td>`;
                 if (cols.pnl) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`; }
                 if (cols.charges) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-500 whitespace-nowrap font-medium text-[9px] md:text-sm italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`; }
-                if (cols.result) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`; }
+                if (cols.result) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${escapeHtml(t.result)}</span></td>`; }
                 if (cols.pctChange) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${(t.pctChange || 0).toFixed(2)}%</td>`; }
                 if (cols.corpus) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-300">${formatMoney(t.endCorpus)}</td>`; }
-                if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${t.remarks || '-'}</td>`;
+                if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${escapeHtml(t.remarks || '-')}</td>`;
                 
                 rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap"><div class="flex items-center justify-end gap-1 md:gap-2">${t.status === 'OPEN' ? `<button onclick="openCloseTradeModal(${t.id}, event)" class="text-long hover:text-white bg-long/10 hover:bg-long/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition border border-long/20" title="Close Trade">Finish</button>` : ''}<button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button><button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`;
                 return rowHTML;
@@ -2155,7 +2225,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                     <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm ${amountColor}">${formattedAmount}</td>`;
                 if (capTableColumns.netCorpus) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-200 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(c.netCorpus)}</td>`;
                 if (capTableColumns.ledgerBal) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap text-[8px] md:text-[10px] leading-tight">T: ${formatMoney(c.tradeLedger)}<br>L: ${formatMoney(c.liquidFund)}<br>R: ${formatMoney(c.sliceReserve)}</td>`;
-                if (capTableColumns.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${c.remarks || '-'}</td>`;
+                if (capTableColumns.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${escapeHtml(c.remarks || '-')}</td>`;
                 rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap" onclick="event.stopPropagation()"><div class="flex items-center justify-end gap-1 md:gap-2"><button onclick="editRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button><button onclick="deleteRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`;
                 return rowHTML;
             }).join('');
@@ -2801,7 +2871,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 
                 const clear = () => {
                     cInputs.sharesOut.value = '0'; document.getElementById('outDirection').textContent = 'WAITING'; document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase"; document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-40";
-                    document.getElementById('outTargetPrice').textContent = '₹0.00'; ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00'); document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
+                    document.getElementById('outTargetPrice').textContent = '₹0.00'; ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00'); document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outEntryPrice').textContent = '₹0.00'; document.getElementById('marginBlock').classList.add('hidden');
                     document.getElementById('outBreakevenPrice').textContent='₹0.00';document.getElementById('outBreakevenNet').textContent='Net: ₹0.00';
                     document.getElementById('chargesContainer').classList.add('opacity-50'); ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slIPFT', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00'); ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgIPFT', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
                     document.getElementById('recSlBlock').classList.add('hidden');
@@ -2899,8 +2969,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1); if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-                document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
-                let constraintReason = "-"; if(manualSharesOverride !== null) constraintReason = "Manual Override"; else if(finalShares === allocQ) constraintReason = "Alloc Available Limit"; else constraintReason = "Risk Budget Limit"; document.getElementById('outTradeType').textContent = constraintReason;
+                document.getElementById('outEntryPrice').textContent = formatMoney(entry); document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
                 const breakevenValues={b0,b3,b10,b20}; window.calculatorBreakevenValues=breakevenValues; window.renderCalculatorBreakevenValues=()=>renderCalculatorBreakeven(breakevenValues); renderCalculatorBreakeven(breakevenValues);
                 document.getElementById('chargesContainer').classList.remove('opacity-50');
                 document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker); document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt; document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt); document.getElementById('slSTTTxt').innerHTML = `STT<br>${estChargesSL.sttTxt}`; document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch); document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi); document.getElementById('slSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('slIPFT').textContent = formatMoney(estChargesSL.ipft); document.getElementById('slIPFTTxt').innerHTML = `IPFT<br>${activeBrokerConfig.ipft}% on Total`; document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst); document.getElementById('slGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S+I`; document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp); document.getElementById('slStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
@@ -2965,6 +3034,90 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
             });
         }
+    
+        const LEGAL_CONTENT = {
+            privacy: {
+                title: 'Privacy Policy',
+                html: `
+                    <p><strong>Last updated:</strong> September 1, 2026</p>
+                    <p>PositionLab is designed to keep your trading journal and calculator data primarily in your browser. Depending on the features you use, data may also be stored in your own Google Drive through Google OAuth.</p>
+                    <p><strong>What we store:</strong> trade entries, capital records, calculator preferences, strategy/verdict lists, broker settings and interface preferences that you enter or configure.</p>
+                    <p><strong>Where data is stored:</strong> browser storage on your device, and optionally a JSON data file in your Google Drive when Drive Sync is connected. PositionLab does not need your Google account password.</p>
+                    <p><strong>Google services:</strong> Drive Sync uses Google OAuth and Google Drive APIs. Google may process authentication and service data according to Google's own policies. PositionLab only requests the permissions needed by the integration.</p>
+                    <p><strong>Access tokens:</strong> Google OAuth access tokens are held in memory during the active browser session and are not intentionally written to PositionLab local storage.</p>
+                    <p><strong>Third parties:</strong> The site loads selected libraries and fonts from third-party CDNs and Google services. Those providers may process technical request data according to their own policies.</p>
+                    <p><strong>Analytics and advertising:</strong> PositionLab does not intentionally sell personal data or use your journal data for advertising.</p>
+                    <p><strong>Data control:</strong> You can disconnect Drive Sync, delete records from the app, clear browser site data, or remove the PositionLab data file from your Google Drive.</p>
+                    <p>This policy is written for the current client-side implementation and is not legal advice. Review it with qualified counsel before commercial deployment.</p>
+                `
+            },
+            terms: {
+                title: 'Terms of Use',
+                html: `
+                    <p><strong>Effective:</strong> September 1, 2026</p>
+                    <p>PositionLab is a software utility for personal trade planning, journaling, capital tracking and analytics. By using the site, you agree to use it lawfully and at your own risk.</p>
+                    <p>You are responsible for the accuracy of data you enter, the security of your device and Google account, and any trading decisions you make.</p>
+                    <p>PositionLab does not place orders, hold customer funds, provide brokerage services, or guarantee trading outcomes.</p>
+                    <p>The software may contain calculation assumptions, configurable brokerage rates and third-party service dependencies. Verify important figures against your broker or exchange before acting on them.</p>
+                    <p>You must not attempt to disrupt the service, bypass security controls, abuse third-party APIs, or use the site for unlawful activity.</p>
+                    <p>The service is provided on an “as available” basis without a guarantee that it will always be error-free, uninterrupted or suitable for a particular purpose, to the extent permitted by law.</p>
+                `
+            },
+            disclaimer: {
+                title: 'Risk Disclaimer',
+                html: `
+                    <p><strong>Important:</strong> PositionLab is a calculator and record-keeping tool, not an investment adviser.</p>
+                    <p>Nothing on this website is a recommendation to buy, sell or hold any security, derivative or other financial instrument. Trading and investing involve substantial risk, including the risk of losing some or all of your capital.</p>
+                    <p>Position-size, target, stop-loss, breakeven, P&amp;L and brokerage calculations are estimates based on the inputs and assumptions available in the application. Actual execution prices, taxes, charges, slippage, liquidity and broker rules may differ.</p>
+                    <p>Always independently verify calculations and current charges with your broker, exchange and applicable official sources before placing a trade.</p>
+                    <p>Past performance shown in a journal or dashboard is not a guarantee of future results.</p>
+                `
+            },
+            about: {
+                title: 'About PositionLab',
+                html: `
+                    <p><strong>PositionLab</strong> is built by <strong>Madhav</strong> as a practical toolkit for Indian stock market traders.</p>
+                    <p>The app combines risk-based position sizing, trade journaling, capital ledger management, brokerage estimation and performance analytics in one browser-first interface.</p>
+                    <p>Source and project updates: <a class="text-brand-400 hover:text-brand-300 underline" href="https://github.com/Madhav-S-S" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+                    <p>Creator: <a class="text-brand-400 hover:text-brand-300 underline" href="https://www.instagram.com/madhavology_/" target="_blank" rel="noopener noreferrer">Instagram @madhavology_</a>.</p>
+                `
+            }
+        };
+
+        let legalLastFocused = null;
+        function openLegalModal(type) {
+            const content = LEGAL_CONTENT[type];
+            const overlay = document.getElementById('legalOverlay');
+            if (!content || !overlay) return;
+            legalLastFocused = document.activeElement;
+            document.getElementById('legalTitle').textContent = content.title;
+            document.getElementById('legalContent').innerHTML = content.html;
+            overlay.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                overlay.classList.remove('opacity-0');
+                document.getElementById('legalCard').classList.remove('scale-95');
+                document.getElementById('legalCard').classList.add('scale-100');
+                overlay.querySelector('button')?.focus();
+            });
+            document.body.classList.add('overflow-hidden');
+        }
+        function closeLegalModal() {
+            const overlay = document.getElementById('legalOverlay');
+            if (!overlay) return;
+            overlay.classList.add('opacity-0');
+            document.getElementById('legalCard').classList.remove('scale-100');
+            document.getElementById('legalCard').classList.add('scale-95');
+            setTimeout(() => overlay.classList.add('hidden'), 180);
+            document.body.classList.remove('overflow-hidden');
+            legalLastFocused?.focus?.();
+        }
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeLegalModal();
+        });
+        document.getElementById('legalOverlay')?.addEventListener('click', event => {
+            if (event.target.id === 'legalOverlay') closeLegalModal();
+        });
+
     </script>
 </body>
 </html>
