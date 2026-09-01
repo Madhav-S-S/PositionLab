@@ -1,0 +1,9 @@
+# PositionLab — optional Netlify configuration
+[build]
+  publish = "."
+
+# Serve the security.txt file from the standard path.
+[[redirects]]
+  from = "/.well-known/security.txt"
+  to = "/.well-known/security.txt"
+  status = 200

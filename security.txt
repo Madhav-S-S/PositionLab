@@ -1,0 +1,3 @@
+Contact: https://github.com/Madhav-S-S
+Preferred-Languages: en
+Policy: /terms.html
