@@ -3,24 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title></title>
+    <title>PositionLab - by Madhav</title>
     
-    <meta name="description" content="PositionLab — risk-based position sizing, trade journaling, portfolio analytics and capital tracking for Indian stock market traders.">
-    <meta name="application-name" content="PositionLab">
-    <meta name="author" content="Madhav">
-    <meta name="robots" content="index,follow">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="description" content="PositionLab - A free, open-source platform for Indian stock market traders. Features position value calculation based on risk profile, trade journaling, and powerful growth analytics.">
     <meta name="theme-color" content="#0a0a0a">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="PositionLab">
-    <meta property="og:description" content="Risk-based position sizing, trade journaling and growth analytics for Indian stock market traders.">
-    <meta property="og:image" content="icon-192.png">
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="PositionLab">
-    <meta name="twitter:description" content="Risk-based position sizing, trade journaling and growth analytics for Indian stock market traders.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -34,12 +20,12 @@
         }
     </script>
          
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/dark.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://s.google.com/js/api.js" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
 
     <style>
         :root { color-scheme: dark; }
@@ -70,69 +56,6 @@
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
         .privacy-enabled .sensitive-data { filter: blur(6px); opacity: 0.35; pointer-events: none; user-select: none; }
         .sensitive-data { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .social-instagram {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(131,58,180,.95), rgba(225,48,108,.95) 52%, rgba(245,96,64,.95));
-            border: 1px solid rgba(255,255,255,.18);
-            box-shadow: 0 12px 30px rgba(225,48,108,.18);
-        }
-        .social-instagram::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,.13) 50%, transparent 75%);
-            transform: translateX(-120%);
-            transition: transform .55s ease;
-        }
-        .social-instagram:hover::before { transform: translateX(120%); }
-        .social-instagram:hover { box-shadow: 0 16px 36px rgba(225,48,108,.28); }
-        .social-icon { flex: 0 0 auto; width: 28px; height: 28px; display: grid; place-items: center; }
-        .social-icon svg { width: 100%; height: 100%; display: block; }
-        .social-github { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.1); }
-        .social-github:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
-        /* Social placement only — the original card styling above remains untouched. */
-        .footer-main {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: start;
-            gap: 1.5rem;
-        }
-        .footer-identity { grid-column: 2; margin-top: 0 !important; }
-        .footer-social-wrap {
-            grid-column: 3;
-            justify-self: end;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: .5rem;
-            padding-top: .15rem;
-        }
-        .footer-social-label { color: #6b7280; margin: 0 !important; }
-        .footer-social {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: .75rem;
-            width: auto;
-        }
-        .footer-social .social-instagram { width: 205px; flex: 0 0 205px; padding-left: 1rem; padding-right: 1rem; padding-top: .7rem; padding-bottom: .7rem; gap: .6rem; }
-        .footer-social .social-github { flex: 0 0 auto; padding-left: .8rem; padding-right: .8rem; padding-top: .7rem; padding-bottom: .7rem; }
-        .footer-social .social-icon { width: 24px; height: 24px; }
-        @media (max-width: 767px) {
-            .footer-main { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-            .footer-identity { order: 1; width: 100%; }
-            .footer-social-wrap { order: 2; align-items: center; width: 100%; padding-top: 0; }
-            .footer-social { width: 100%; max-width: 340px; justify-content: center; }
-            .footer-social .social-instagram { width: 205px; flex: 0 1 205px; }
-        }
-        @media (max-width: 420px) {
-            .footer-social { gap: .5rem; }
-            .footer-social .social-instagram { width: 190px; flex-basis: 190px; }
-            .footer-social .social-icon { width: 22px; height: 22px; }
-            .footer-social .social-github { padding-left: .8rem; padding-right: .8rem; }
-        }
         .privacy-btn { cursor: pointer; padding: 0.4rem; border-radius: 0.375rem; color: #9ca3af; transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
         .privacy-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
         tr.clickable-row { cursor: pointer; transition: background 0.2s; }
@@ -171,76 +94,6 @@
         }
         @media (max-width: 640px) {
             #openTradeTools .tm-calculator-grid { grid-template-columns: 1fr; }
-        }
-        /* Chart maximize: in-page TradingView-style chart mode. The global header/footer
-           and dashboard performance controls are removed from view; the chart takes the
-           entire browser viewport without using the browser Fullscreen API. */
-        body.pnl-chart-modal-open > nav,
-        body.pnl-chart-modal-open > footer { display: none !important; }
-        body.pnl-chart-modal-open { padding-bottom: 0 !important; overflow: hidden !important; }
-        html.pnl-chart-modal-open, body.pnl-chart-modal-open { overflow: hidden !important; }
-        body.pnl-chart-modal-open #view-dashboard > * { visibility: hidden !important; }
-        body.pnl-chart-modal-open #view-dashboard #pnlChartCard { visibility: visible !important; }
-        #pnlChartCard.pnl-maximized {
-            position: fixed !important;
-            inset: 0 !important;
-            z-index: 10000 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-            width: 100vw !important;
-            height: 100dvh !important;
-            max-width: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
-            border: 0 !important;
-            background: #0b0b0b !important;
-            box-shadow: none !important;
-        }
-        #pnlChartCard.pnl-maximized > div:first-child {
-            flex: 0 0 auto !important;
-            padding: 12px 14px 10px !important;
-            margin: 0 !important;
-            border-bottom: 1px solid rgba(255,255,255,.06);
-            background: #0b0b0b !important;
-        }
-        #pnlChartCard.pnl-maximized #pnlChartPanel {
-            flex: 1 1 auto !important;
-            min-height: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-            padding: 0 14px 10px !important;
-        }
-        #pnlChartCard.pnl-maximized #pnlChartPanel > div:first-child {
-            flex: 0 0 auto !important;
-        }
-        #pnlChartCard.pnl-maximized #pnlChartOhlc {
-            flex: 0 0 auto !important;
-        }
-        #pnlChartCard.pnl-maximized #pnlChartHost {
-            flex: 1 1 auto !important;
-            min-height: 0 !important;
-            height: auto !important;
-            width: 100% !important;
-        }
-        #pnlChartCard.pnl-maximized .pnl-chart-footer { display: none !important; }
-        #pnlIndicatorsMenu { max-height: 420px; overflow-y: auto; }
-        .pnl-indicator-row { display:flex; align-items:center; gap:.5rem; padding:.5rem .45rem; border-radius:.5rem; }
-        .pnl-indicator-row:hover { background:rgba(255,255,255,.04); }
-        .pnl-indicator-dot { width:7px; height:7px; border-radius:999px; flex:0 0 auto; }
-        .pnl-indicator-length { width:56px !important; padding:.35rem .45rem !important; text-align:center; font-size:11px !important; }
-        .pnl-indicator-settings { display:none; grid-template-columns:90px 1fr; gap:.45rem .7rem; padding:.65rem .45rem .75rem; border-top:1px solid rgba(255,255,255,.06); margin-top:.15rem; }
-        .pnl-indicator-settings.open { display:grid; }
-        .pnl-indicator-settings label { align-self:center; color:#9ca3af; font-size:10px; font-weight:600; }
-        .pnl-indicator-settings select, .pnl-indicator-settings input { min-width:0; }
-        .pnl-chart-range.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.25); }
-        #legalOverlay a:focus-visible, #legalOverlay button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
-        @media (max-width: 640px) {
-            #resultCard .grid { gap: 1rem 1.25rem; }
-            #resultCard .grid > div p:last-child { font-size: 1rem; }
-            #resultCard #outEntryPrice, #resultCard #outTargetPrice { font-size: 1.05rem; }
         }
     </style>
 </head>
@@ -402,7 +255,6 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10 mt-2">
-                                <div><p class="text-xs text-gray-400 mb-1">Entry Price</p><p id="outEntryPrice" class="font-semibold text-lg">₹0.00</p></div>
                                 <div><p class="text-xs text-gray-400 mb-1">Target Price</p><p id="outTargetPrice" class="font-semibold text-brand-500 text-lg">₹0.00</p></div>
                                 <div><p class="text-xs text-gray-400 mb-1">Risk Per Share</p><p id="outRiskShare" class="font-semibold text-lg">₹0.00</p></div>
                                 <div><p class="text-xs text-gray-400 mb-1">Position Value</p><p id="outPosValue" class="font-semibold text-lg">₹0.00</p></div>
@@ -415,6 +267,7 @@
                                     </div>
                                 </div>
                                 <div><p class="text-xs text-gray-400 mb-1">Actual Risk</p><p id="outActualRisk" class="font-semibold text-lg">0.00%</p></div>
+                                <div><p class="text-xs text-gray-400 mb-1">Constraint</p><p id="outTradeType" class="font-semibold text-lg text-gray-300">-</p></div>
                             </div>
                             
                             <div class="mt-6 pt-4 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
@@ -599,85 +452,9 @@
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10 relative">
-                <div id="pnlChartCard" class="glass-card rounded-2xl p-5 lg:col-span-2">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-sm font-semibold text-gray-200 uppercase tracking-wider">P&amp;L Candlestick</h3>
-                                <span class="text-[9px] uppercase font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">Realized P&amp;L</span>
-                            </div>
-                            <p id="pnlChartSubtitle" class="text-[10px] text-gray-500 mt-1">Realized cumulative P&amp;L. Drag, zoom and inspect each candle's OHLC.</p>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button id="pnlChartToggleBtn" type="button" class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/30 text-brand-400 hover:bg-brand-500/20 text-xs font-semibold transition">Show Chart</button>
-                            <button id="pnlChartMaxBtn" type="button" class="hidden p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition" title="Maximize chart" aria-label="Maximize chart">
-                                <svg id="pnlChartMaxIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="pnlChartPanel" class="hidden">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                            <div class="flex items-center gap-1.5 bg-black/30 p-1 rounded-lg border border-white/10" id="pnlChartRangeBtns">
-                                <button type="button" data-pnl-range="1m" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">1M</button>
-                                <button type="button" data-pnl-range="3m" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">3M</button>
-                                <button type="button" data-pnl-range="6m" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">6M</button>
-                                <button type="button" data-pnl-range="1y" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">1Y</button>
-                                <button type="button" data-pnl-range="3y" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">3Y</button>
-                                <button type="button" data-pnl-range="all" class="pnl-chart-range px-2.5 py-1 rounded-md text-[10px] font-bold uppercase text-gray-400 hover:text-white transition">All</button>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="relative">
-                                    <button id="pnlIndicatorsBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-black/30 border border-white/10 text-[11px] font-bold text-gray-300 hover:text-white hover:bg-white/5 transition" aria-expanded="false" aria-haspopup="true" title="Indicators">ƒx</button>
-                                    <div id="pnlIndicatorsMenu" class="hidden absolute right-0 top-full mt-2 z-[120] w-72 rounded-xl border border-white/10 bg-[#141414] shadow-2xl p-2">
-                                        <div class="px-2 py-1 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Indicators</div>
-                                        <div class="pnl-indicator-row">
-                                            <input id="pnlEma5Toggle" type="checkbox" class="custom-checkbox" />
-                                            <span class="pnl-indicator-dot bg-blue-500"></span>
-                                            <button id="pnlEma5Name" type="button" class="text-xs text-gray-200 font-semibold flex-1 text-left">5 EMA</button>
-                                            <input id="pnlEma5Length" type="number" min="1" step="1" value="5" class="input-field pnl-indicator-length" aria-label="5 EMA length" />
-                                            <button id="pnlEma5SettingsBtn" type="button" class="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-white/5" title="5 EMA settings">⚙</button>
-                                        </div>
-                                        <div id="pnlEma5Settings" class="pnl-indicator-settings">
-                                            <label for="pnlEma5Source">Source</label><select id="pnlEma5Source" class="input-field py-1.5 text-[10px] bg-black/30"><option value="close">Close</option><option value="open">Open</option><option value="high">High</option><option value="low">Low</option></select>
-                                            <label for="pnlEma5Offset">Offset</label><input id="pnlEma5Offset" type="number" value="0" step="1" class="input-field py-1.5 text-[10px] bg-black/30" />
-                                            <label for="pnlEma5SmoothType">Smoothing Line</label><select id="pnlEma5SmoothType" class="input-field py-1.5 text-[10px] bg-black/30"><option>SMA</option><option>EMA</option><option>RMA</option><option>WMA</option><option>VWMA</option></select>
-                                            <label for="pnlEma5SmoothLen">Smoothing Length</label><input id="pnlEma5SmoothLen" type="number" min="1" step="1" value="9" class="input-field py-1.5 text-[10px] bg-black/30" />
-                                        </div>
-                                        <div class="pnl-indicator-row mt-1">
-                                            <input id="pnlEma20Toggle" type="checkbox" class="custom-checkbox" />
-                                            <span class="pnl-indicator-dot bg-yellow-400"></span>
-                                            <button id="pnlEma20Name" type="button" class="text-xs text-gray-200 font-semibold flex-1 text-left">20 EMA</button>
-                                            <input id="pnlEma20Length" type="number" min="1" step="1" value="20" class="input-field pnl-indicator-length" aria-label="20 EMA length" />
-                                            <button id="pnlEma20SettingsBtn" type="button" class="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-white/5" title="20 EMA settings">⚙</button>
-                                        </div>
-                                        <div id="pnlEma20Settings" class="pnl-indicator-settings">
-                                            <label for="pnlEma20Source">Source</label><select id="pnlEma20Source" class="input-field py-1.5 text-[10px] bg-black/30"><option value="close">Close</option><option value="open">Open</option><option value="high">High</option><option value="low">Low</option></select>
-                                            <label for="pnlEma20Offset">Offset</label><input id="pnlEma20Offset" type="number" value="0" step="1" class="input-field py-1.5 text-[10px] bg-black/30" />
-                                            <label for="pnlEma20SmoothType">Smoothing Line</label><select id="pnlEma20SmoothType" class="input-field py-1.5 text-[10px] bg-black/30"><option>SMA</option><option>EMA</option><option>RMA</option><option>WMA</option><option>VWMA</option></select>
-                                            <label for="pnlEma20SmoothLen">Smoothing Length</label><input id="pnlEma20SmoothLen" type="number" min="1" step="1" value="9" class="input-field py-1.5 text-[10px] bg-black/30" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Interval</span>
-                                <select id="pnlChartInterval" class="input-field py-1.5 px-2 text-[10px] font-semibold bg-black/30 w-auto">
-                                    <option value="day">1D</option>
-                                    <option value="week">1W</option>
-                                    <option value="month">1M</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div id="pnlChartOhlc" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2 text-[10px]">
-                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">O</span><strong id="pnlO">—</strong></div>
-                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">H</span><strong id="pnlH">—</strong></div>
-                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">L</span><strong id="pnlL">—</strong></div>
-                            <div class="rounded-lg bg-black/20 border border-white/5 px-3 py-2"><span class="text-gray-500 mr-1">C</span><strong id="pnlC">—</strong></div>
-                        </div>
-                        <div id="pnlChartHost" class="h-80 w-full relative rounded-xl overflow-hidden bg-black/20"></div>
-                        <div class="pnl-chart-footer mt-2 flex items-center justify-between gap-3 text-[9px] text-gray-600">
-                            <span>Drag to pan • Mouse wheel to zoom • Crosshair shows OHLC</span>
-                            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-400 transition">Lightweight Charts by TradingView</a>
-                        </div>
-                    </div>
+                <div class="glass-card rounded-2xl p-6 lg:col-span-2">
+                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Net P&L Over Time</h3>
+                    <div class="h-64 relative sensitive-data"><canvas id="equityChart"></canvas></div>
                 </div>
                 <div class="glass-card rounded-2xl p-6 lg:col-span-1">
                     <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Win / Loss Ratio</h3>
@@ -1039,73 +816,11 @@
         </div>
     </div>
 
-    <!-- Legal / informational modals -->
-    <div id="legalOverlay" class="fixed inset-0 z-[300] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-200" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
-        <div id="legalCard" class="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 md:p-8 relative transform scale-95 transition-transform duration-200">
-            <button type="button" onclick="closeLegalModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition" aria-label="Close">✕</button>
-            <div class="pr-10">
-                <p class="text-[10px] uppercase tracking-[0.2em] text-brand-400 font-bold mb-2">PositionLab</p>
-                <h2 id="legalTitle" class="text-2xl font-bold text-white mb-5"></h2>
-                <div id="legalContent" class="text-sm text-gray-300 leading-7 space-y-4"></div>
-            </div>
-        </div>
-    </div>
-
-    <footer class="mt-auto py-7 border-t border-white/10 text-center relative z-10 w-full">
-        <div class="footer-inner max-w-7xl mx-auto px-4">
-            <div class="footer-main">
-                <div class="footer-identity flex flex-col items-center gap-3">
-                    <div class="flex items-center gap-2 opacity-80">
-                        <img src="icon.svg" class="w-5 h-5 grayscale" alt="PositionLab logo">
-                        <span class="text-sm font-bold tracking-widest text-gray-300">POSITIONLAB</span>
-                    </div>
-                    <p class="footer-description text-xs text-gray-500 max-w-xl mx-auto leading-relaxed px-2">An Open-Source platform for professional Indian stock market traders featuring position value calculation based on risk profile, trade journaling, and powerful growth analytics.</p>
-                </div>
-
-                <!-- Creator / Social Links -->
-                <div class="footer-social-wrap" aria-label="Connect with Madhav">
-                    <p class="footer-social-label text-[10px] font-bold uppercase tracking-[0.2em]">Connect with Madhav</p>
-                    <div class="footer-social">
-                    <a href="https://www.instagram.com/madhavology_/" target="_blank" rel="noopener noreferrer"
-                       class="social-instagram group inline-flex items-center justify-center gap-3 rounded-xl px-5 py-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-400/60"
-                       aria-label="Follow Madhav on Instagram @madhavology_">
-                        <span class="social-icon instagram-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/>
-                                <circle cx="12" cy="12" r="4.25" stroke="currentColor" stroke-width="2"/>
-                                <circle cx="17.35" cy="6.65" r="1.15" fill="currentColor"/>
-                            </svg>
-                        </span>
-                        <span class="flex flex-col items-start leading-tight">
-                            <span class="text-[9px] uppercase tracking-[0.16em] opacity-75">Follow on Instagram</span>
-                            <span>@madhavology_</span>
-                        </span>
-                        <svg class="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </a>
-                    <a href="https://github.com/Madhav-S-S" target="_blank" rel="noopener noreferrer"
-                       class="social-github group inline-flex items-center justify-center gap-2.5 rounded-xl px-4 py-3.5 text-sm font-semibold text-gray-200 transition-all duration-200 hover:-translate-y-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400/50"
-                       aria-label="View Madhav's GitHub">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M12 .6a11.4 11.4 0 0 0-3.61 22.21c.57.1.78-.25.78-.55v-2.02c-3.17.69-3.84-1.34-3.84-1.34-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.67 1.25 3.32.96.1-.74.4-1.25.73-1.54-2.53-.29-5.19-1.27-5.19-5.65 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.15 1.17a10.93 10.93 0 0 1 5.73 0c2.19-1.48 3.15-1.17 3.15-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.39-2.67 5.35-5.21 5.64.41.35.78 1.05.78 2.12v3.14c0 .3.21.65.79.54A11.4 11.4 0 0 0 12 .6Z"/>
-                        </svg>
-                        <span>GitHub</span>
-                    </a>
-                </div>
-                </div>
-            </div>
-
-            <nav class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[11px] text-gray-500 pt-5" aria-label="Legal and site links">
-                <a href="privacy.html" class="hover:text-white transition">Privacy Policy</a>
-                <span class="text-gray-800" aria-hidden="true">•</span>
-                <a href="terms.html" class="hover:text-white transition">Terms of Use</a>
-                <span class="text-gray-800" aria-hidden="true">•</span>
-                <a href="disclaimer.html" class="hover:text-white transition">Risk Disclaimer</a>
-                <span class="text-gray-800" aria-hidden="true">•</span>
-                <a href="about.html" class="hover:text-white transition">About</a>
-            </nav>
-            <p class="text-[10px] text-gray-700 tracking-wide mt-3">&copy; 2026 PositionLab. All Rights Reserved.</p>
+    <footer class="mt-auto py-8 border-t border-white/10 text-center relative z-10 w-full">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center gap-4">
+            <div class="flex items-center gap-2 opacity-80"><img src="icon.svg" class="w-5 h-5 grayscale" alt="Logo grayscale"><span class="text-sm font-bold tracking-widest text-gray-300">POSITIONLAB</span></div>
+            <p class="text-xs text-gray-500 max-w-xl mx-auto leading-relaxed px-2">A free, open-source platform for Indian stock market traders. Features position value calculation based on risk profile, trade journaling, and powerful growth analytics.</p>
+            <p class="text-[10px] text-gray-700 mt-2 tracking-wide">&copy; 2026 Madhav S S. All rights reserved.</p>
         </div>
     </footer>
 
@@ -1114,24 +829,10 @@
         const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile';
         const FILE_NAME = 'positionlab_data.json';
         
-        function safeStorageParse(key, fallback) {
-            try {
-                const raw = localStorage.getItem(key);
-                return raw ? JSON.parse(raw) : fallback;
-            } catch (error) {
-                console.warn(`PositionLab: reset invalid local storage entry ${key}`, error);
-                localStorage.removeItem(key);
-                return fallback;
-            }
-        }
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>'\"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[char]));
-        }
-        
-        let tokenClient, accessToken = null, tokenExpiresAt = 0, driveFileId = null;
+        let tokenClient, accessToken = null, driveFileId = null;
 
-        let balances = safeStorageParse('pt_balances', { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 });
-        let tradesDB = safeStorageParse('pt_trades', []);
+        let balances = JSON.parse(localStorage.getItem('pt_balances')) || { tradeLedger: 0, liquidFund: 0, sliceReserve: 0 };
+        let tradesDB = JSON.parse(localStorage.getItem('pt_trades')) || [];
 
         function migrateBreakevenFields(list) {
             return list.map(t => {
@@ -1155,7 +856,7 @@
 
         tradesDB = migrateBreakevenFields(tradesDB);
         localStorage.setItem('pt_trades', JSON.stringify(tradesDB));
-        let capitalLedger = safeStorageParse('pt_capital', []);
+        let capitalLedger = JSON.parse(localStorage.getItem('pt_capital')) || [];
 
         const DEFAULT_STRATEGIES = ["Trend Reversal", "Breakout", "Pullback"];
         const DEFAULT_VERDICTS = ["Followed Rules", "FOMO", "Early Exit"];
@@ -1165,9 +866,9 @@
             return [...new Set(arr.map(v => String(v).trim()).filter(Boolean))];
         }
         function loadModeOptionSets(baseKey, fallback) {
-            const oldShared = safeStorageParse(baseKey, null);
-            const oldIntraday = safeStorageParse(`${baseKey}_intraday`, null);
-            const oldSwing = safeStorageParse(`${baseKey}_swing`, null);
+            const oldShared = JSON.parse(localStorage.getItem(baseKey));
+            const oldIntraday = JSON.parse(localStorage.getItem(`${baseKey}_intraday`));
+            const oldSwing = JSON.parse(localStorage.getItem(`${baseKey}_swing`));
             const hadModeSpecific = Array.isArray(oldIntraday) || Array.isArray(oldSwing);
             const seed = normalizeOptionSet(oldShared, fallback);
             const sets = {
@@ -1187,9 +888,9 @@
         let customVerdictsByMode = loadModeOptionSets('pt_verdicts', DEFAULT_VERDICTS);
         let customStrategies = [...customStrategiesByMode.intraday];
         let customVerdicts = [...customVerdictsByMode.intraday];
-        let globalAllocSettings = safeStorageParse('pt_alloc_settings', { intraday: 100, swing: 100 });
+        let globalAllocSettings = JSON.parse(localStorage.getItem('pt_alloc_settings')) || { intraday: 100, swing: 100 };
         
-        let savedCols = safeStorageParse('pt_visible_cols', null);
+        let savedCols = JSON.parse(localStorage.getItem('pt_visible_cols'));
         if (savedCols && savedCols.entryInfo !== undefined) { 
             savedCols.entryExit = savedCols.entryInfo; 
             savedCols.sl = false; 
@@ -1197,7 +898,7 @@
             localStorage.setItem('pt_visible_cols', JSON.stringify(savedCols)); 
         }
         let tradeTableColumns = savedCols || { strategy: false, entryExit: true, sl: false, pnl: true, charges: false, result: false, pctChange: true, corpus: true, remarks: true };
-        let capTableColumns = safeStorageParse('pt_visible_cap_cols', { netCorpus: true, ledgerBal: false, remarks: true });
+        let capTableColumns = JSON.parse(localStorage.getItem('pt_visible_cap_cols')) || { netCorpus: true, ledgerBal: false, remarks: true };
 
         let activeCalcMode = 'intraday', activeJourMode = 'intraday', activeDashMode = 'both';
         let currentExchange = localStorage.getItem('pt_exchange') || 'NSE';
@@ -1324,11 +1025,7 @@
             }
         });
 
-        let calculatorCloudSyncTimer = null;
-        let calculatorCloudSyncPending = false;
-        let driveUploadPromise = null;
-
-        function saveCalculatorModeState(mode = activeCalcMode, syncCloud = false) {
+        function saveCalculatorModeState(mode = activeCalcMode) {
             const state = {
                 corpus: document.getElementById('corpus')?.value ?? '',
                 margin: document.getElementById('margin')?.value ?? '',
@@ -1338,27 +1035,6 @@
                 sl: document.getElementById('stopLoss')?.value ?? ''
             };
             localStorage.setItem('riskCalcSettings_' + mode, JSON.stringify(state));
-            if (syncCloud) queueCalculatorCloudSync();
-        }
-
-        function getCalculatorCloudState(mode) {
-            const state = safeStorageParse('riskCalcSettings_' + mode, {}) || {};
-            return {
-                margin: state.margin ?? '',
-                riskPct: state.riskPct ?? '',
-                targetPct: state.targetPct ?? ''
-            };
-        }
-
-        function queueCalculatorCloudSync() {
-            calculatorCloudSyncPending = true;
-            if (calculatorCloudSyncTimer) clearTimeout(calculatorCloudSyncTimer);
-            calculatorCloudSyncTimer = setTimeout(async () => {
-                calculatorCloudSyncTimer = null;
-                if (!accessToken || !calculatorCloudSyncPending) return;
-                calculatorCloudSyncPending = false;
-                await uploadToDrive();
-            }, 1200);
         }
 
         function initGlobalModes() {
@@ -1445,110 +1121,8 @@
             });
         }
 
-        // Keep the short-lived bearer token in sessionStorage so a normal page refresh
-        // does not force a fresh Google login. sessionStorage survives reloads in the same
-        // tab but is cleared when the tab/session is closed.
-        let tokenRefreshTimer = null;
-        let silentAuthAttempted = false;
-        let silentAuthInFlight = false;
-
-        function saveSessionToken() {
-            try {
-                if (accessToken && tokenExpiresAt) {
-                    sessionStorage.setItem('pt_google_access_token', accessToken);
-                    sessionStorage.setItem('pt_google_token_expires_at', String(tokenExpiresAt));
-                }
-            } catch (err) {
-                console.warn('Could not persist Google session token:', err);
-            }
-        }
-
-        function clearSessionToken() {
-            try {
-                sessionStorage.removeItem('pt_google_access_token');
-                sessionStorage.removeItem('pt_google_token_expires_at');
-            } catch (_) {}
-        }
-
-        function setToken(token, expiresIn, shouldLoadDrive = false) {
-            if (!token) return;
-            accessToken = token;
-            const lifetimeMs = Math.max(300000, (Number(expiresIn) || 3600) * 1000);
-            tokenExpiresAt = Date.now() + lifetimeMs;
-            saveSessionToken();
-            silentAuthAttempted = false;
-            silentAuthInFlight = false;
-            updateSyncUI(true);
-            fetchUserProfile();
-            if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
-            // Renew before expiry while the page remains open. Google may still reject
-            // silent renewal when its own authorization/session has expired, but we do
-            // not force an interactive Google page during automatic renewal.
-            tokenRefreshTimer = setTimeout(() => {
-                restoreDriveSessionSilently();
-            }, Math.max(60000, lifetimeMs - 300000));
-            if (shouldLoadDrive) loadFromDrive();
-        }
-
-        function restoreSessionTokenFromTab() {
-            try {
-                const token = sessionStorage.getItem('pt_google_access_token');
-                const expiresAt = Number(sessionStorage.getItem('pt_google_token_expires_at') || 0);
-                if (!token || !expiresAt) return false;
-                if (Date.now() >= expiresAt - 15000) {
-                    clearSessionToken();
-                    return false;
-                }
-                accessToken = token;
-                tokenExpiresAt = expiresAt;
-                updateSyncUI(true);
-                fetchUserProfile();
-                if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
-                tokenRefreshTimer = setTimeout(() => restoreDriveSessionSilently(), Math.max(60000, expiresAt - Date.now() - 300000));
-                loadFromDrive();
-                return true;
-            } catch (err) {
-                console.warn('Could not restore Google session from this tab:', err);
-                clearSessionToken();
-                return false;
-            }
-        }
-
-        function checkToken() {
-            if (accessToken && tokenExpiresAt && Date.now() < tokenExpiresAt - 300000) {
-                updateSyncUI(true);
-                return true;
-            }
-            return false;
-        }
-
-        // Automatic renewal is strictly non-interactive. No account chooser or consent
-        // dialog is requested here. If the Google session cannot be renewed silently, the
-        // user can explicitly reconnect using the normal Connect Drive button.
-        function restoreDriveSessionSilently(retries = 20) {
-            if (accessToken && tokenExpiresAt && Date.now() < tokenExpiresAt - 15000) return;
-            if (silentAuthInFlight) return;
-            const googleOAuth = window.google?.accounts?.oauth2;
-            if (!googleOAuth) {
-                if (retries > 0) setTimeout(() => restoreDriveSessionSilently(retries - 1), 300);
-                return;
-            }
-            if (!tokenClient) {
-                initGoogleDrive();
-                if (!tokenClient) {
-                    if (retries > 0) setTimeout(() => restoreDriveSessionSilently(retries - 1), 300);
-                    return;
-                }
-            }
-            silentAuthInFlight = true;
-            const loginHint = localStorage.getItem('pt_google_email') || undefined;
-            try {
-                tokenClient.requestAccessToken({ prompt: 'none', ...(loginHint ? { login_hint: loginHint } : {}) });
-            } catch (err) {
-                silentAuthInFlight = false;
-                console.warn('Silent Drive session renewal failed:', err);
-            }
-        }
+        function setToken(token, expiresIn) { accessToken = token; localStorage.setItem('pt_gdrive_token', token); localStorage.setItem('pt_gdrive_expiry', Date.now() + (expiresIn * 1000)); updateSyncUI(true); fetchUserProfile(); }
+        function checkToken() { const token = localStorage.getItem('pt_gdrive_token'), expiry = localStorage.getItem('pt_gdrive_expiry'); if (token && expiry && Date.now() < (parseInt(expiry) - 300000)) { accessToken = token; updateSyncUI(true); fetchUserProfile(); return true; } return false; }
         
         function updateSyncUI(isConnected) {
             const btn = document.getElementById('driveSyncBtn'), status = document.getElementById('syncStatus'), statusMobile = document.getElementById('syncStatusMobile'), profileDiv = document.getElementById('userProfile'), logoutBtn = document.getElementById('logoutBtn');
@@ -1567,51 +1141,19 @@
         async function apiFetch(url, options = {}) {
             if(!options.headers) options.headers = {}; options.headers['Authorization'] = `Bearer ${accessToken}`;
             const res = await fetch(url, options);
-            if(res.status === 401) { clearSessionToken(); accessToken = null; tokenExpiresAt = 0; updateSyncUI(false); document.getElementById('syncStatus').textContent = "Session Expired"; document.getElementById('syncStatusMobile').textContent = "Expired"; throw new Error("Unauthorized"); }
+            if(res.status === 401) { accessToken = null; localStorage.removeItem('pt_gdrive_token'); localStorage.removeItem('pt_gdrive_expiry'); updateSyncUI(false); document.getElementById('syncStatus').textContent = "Session Expired"; document.getElementById('syncStatusMobile').textContent = "Expired"; throw new Error("Unauthorized"); }
             return res;
         }
 
         async function fetchUserProfile() {
             if (!accessToken) return;
-            try {
-                let res = await apiFetch('https://www.googleapis.com/oauth2/v3/userinfo');
-                let user = await res.json();
-                if (user.email) localStorage.setItem('pt_google_email', user.email);
-                document.getElementById('profileName').textContent = user.name;
-                document.getElementById('profileImg').src = user.picture;
-                document.getElementById('userProfile').classList.remove('hidden');
-                document.getElementById('userProfile').classList.add('flex');
-            } catch(e) { console.error('Profile fetch error', e); }
+            try { let res = await apiFetch('https://www.googleapis.com/oauth2/v3/userinfo'); let user = await res.json(); document.getElementById('profileName').textContent = user.name; document.getElementById('profileImg').src = user.picture; document.getElementById('userProfile').classList.remove('hidden'); document.getElementById('userProfile').classList.add('flex'); } catch(e) { console.error("Profile fetch error", e); }
         }
 
-        function logoutDrive() {
-            if (tokenRefreshTimer) { clearTimeout(tokenRefreshTimer); tokenRefreshTimer = null; }
-            if (accessToken && window.google?.accounts?.oauth2) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Google session revoked'); }); }
-            clearSessionToken();
-            localStorage.removeItem('pt_google_email');
-            accessToken = null; tokenExpiresAt = 0; driveFileId = null; silentAuthAttempted = false; silentAuthInFlight = false;
-            updateSyncUI(false);
-        }
+        function logoutDrive() { if (accessToken) { google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked'); }); accessToken = null; localStorage.removeItem('pt_gdrive_token'); localStorage.removeItem('pt_gdrive_expiry'); updateSyncUI(false); } }
 
-        function initGoogleDrive() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: async (resp) => {
-                    silentAuthInFlight = false;
-                    if (resp.error) {
-                        console.warn('Google token request did not complete silently:', resp.error);
-                        return;
-                    }
-                    setToken(resp.access_token, resp.expires_in, true);
-                },
-            });
-        }
-        function handleAuthClick() {
-            if (!tokenClient) initGoogleDrive();
-            if(accessToken) { loadFromDrive(); return; }
-            tokenClient.requestAccessToken({ prompt: 'consent' });
-        }
+        function initGoogleDrive() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error) { console.error(resp); return; } setToken(resp.access_token, resp.expires_in); await loadFromDrive(); }, }); }
+        function handleAuthClick() { if (!tokenClient) initGoogleDrive(); if(accessToken) { loadFromDrive(); return; } tokenClient.requestAccessToken({ prompt: 'consent' }); }
 
         async function loadFromDrive() {
             if (!accessToken) return;
@@ -1658,19 +1200,8 @@
                             if (cloudData.uiSettings.capTableColumns) capTableColumns = cloudData.uiSettings.capTableColumns;
                             if (cloudData.uiSettings.currentExchange) currentExchange = cloudData.uiSettings.currentExchange;
                             if (cloudData.uiSettings.currentBroker && brokerProfiles[cloudData.uiSettings.currentBroker]) currentBroker = cloudData.uiSettings.currentBroker;
-                            // Merge only Drive-backed calculator settings. Keep Entry, Stop Loss, and
-                            // Calculator Total Corpus from this browser untouched.
-                            ['intraday', 'swing'].forEach(mode => {
-                                const cloudCalc = cloudData.uiSettings[mode === 'intraday' ? 'calcIntraday' : 'calcSwing'];
-                                if (!cloudCalc || typeof cloudCalc !== 'object') return;
-                                const localCalc = safeStorageParse('riskCalcSettings_' + mode, {}) || {};
-                                localStorage.setItem('riskCalcSettings_' + mode, JSON.stringify({
-                                    ...localCalc,
-                                    margin: cloudCalc.margin ?? localCalc.margin ?? '',
-                                    riskPct: cloudCalc.riskPct ?? localCalc.riskPct ?? '',
-                                    targetPct: cloudCalc.targetPct ?? localCalc.targetPct ?? ''
-                                }));
-                            });
+                            if (cloudData.uiSettings.calcIntraday) localStorage.setItem('riskCalcSettings_intraday', JSON.stringify(cloudData.uiSettings.calcIntraday));
+                            if (cloudData.uiSettings.calcSwing) localStorage.setItem('riskCalcSettings_swing', JSON.stringify(cloudData.uiSettings.calcSwing));
                             
                             localStorage.setItem('pt_visible_cols', JSON.stringify(tradeTableColumns));
                             localStorage.setItem('pt_visible_cap_cols', JSON.stringify(capTableColumns));
@@ -1704,13 +1235,8 @@
 
         async function uploadToDrive() {
             if (!accessToken) return;
-            if (calculatorCloudSyncTimer) { clearTimeout(calculatorCloudSyncTimer); calculatorCloudSyncTimer = null; }
-            calculatorCloudSyncPending = false;
-            if (driveUploadPromise) return driveUploadPromise;
-
-            driveUploadPromise = (async () => {
-                document.getElementById('syncStatus').textContent = "Saving..."; document.getElementById('syncStatusMobile').textContent = "Saving...";
-                try {
+            document.getElementById('syncStatus').textContent = "Saving..."; document.getElementById('syncStatusMobile').textContent = "Saving...";
+            try {
                 if (!driveFileId) {
                     const qParams = new URLSearchParams({ q: `name='${FILE_NAME}' and trashed=false`, orderBy: 'modifiedTime desc' }).toString();
                     let searchRes = await apiFetch(`https://www.googleapis.com/drive/v3/files?${qParams}`); let searchData = await searchRes.json();
@@ -1718,9 +1244,8 @@
                 }
                 const uiSettings = {
                     tradeTableColumns, capTableColumns, currentExchange, currentBroker,
-                    // Only Margin, Risk %, and Target (R) are backed up to Drive.
-                    calcIntraday: getCalculatorCloudState('intraday'),
-                    calcSwing: getCalculatorCloudState('swing')
+                    calcIntraday: JSON.parse(localStorage.getItem('riskCalcSettings_intraday') || '{}'),
+                    calcSwing: JSON.parse(localStorage.getItem('riskCalcSettings_swing') || '{}')
                 };
                 persistModeOptionSets();
                 const content = JSON.stringify({ balances, tradesDB, capitalLedger, customStrategiesByMode, customVerdictsByMode, customStrategies, customVerdicts, brokerProfiles, globalAllocSettings, uiSettings });
@@ -1731,15 +1256,8 @@
                     let res = await apiFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', body: form });
                     let fileData = await res.json(); driveFileId = fileData.id;
                 }
-                    document.getElementById('syncStatus').textContent = "Synced"; document.getElementById('syncStatusMobile').textContent = "Synced";
-                } catch (err) { console.error("Upload error:", err); if(accessToken) { document.getElementById('syncStatus').textContent = "Sync Error"; document.getElementById('syncStatusMobile').textContent = "Error"; } }
-            })();
-
-            try {
-                await driveUploadPromise;
-            } finally {
-                driveUploadPromise = null;
-            }
+                document.getElementById('syncStatus').textContent = "Synced"; document.getElementById('syncStatusMobile').textContent = "Synced";
+            } catch (err) { console.error("Upload error:", err); if(accessToken) { document.getElementById('syncStatus').textContent = "Sync Error"; document.getElementById('syncStatusMobile').textContent = "Error"; } }
         }
 
         function saveGlobalState(syncCloud = true) {
@@ -1897,7 +1415,7 @@
             setupCustomDropdown('ctm-verdict', 'ctm-verdict-list', 'pt_verdicts_mode', journalVerdictOptions, true, closeTradeFlow, true);
             setupCapitalTransfers();
             initBreakevenSelectors();
-            bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); initPnlChartControls(); loadCalcState();
+            bindKeyboardFlows(); bindSelectAllOnFocus(); updateViews(); initDashboardFilters(); loadCalcState();
             setTimeout(() => {
                 const slInput = document.getElementById('stopLoss');
                 if (slInput) {
@@ -1918,18 +1436,13 @@
                 if(!e.target.closest('#brokerModalCard') && e.target.id === 'brokerModal') closeBrokerModal();
                 if(!e.target.closest('#closeTradeModalCard') && e.target.id === 'closeTradeModal') closeCloseTradeModal();
             });
-            const restored = restoreSessionTokenFromTab();
-            if (!restored) {
-                // No usable token remains in this tab. Do not automatically open a Google
-                // authorization window on every refresh; the user can connect explicitly.
-                updateSyncUI(false);
-            }
+            if (checkToken()) loadFromDrive();
         });
         
         function loadCalcState() {
             let savedState = {};
             try {
-                savedState = safeStorageParse('riskCalcSettings_' + activeCalcMode, {}) || {};
+                savedState = JSON.parse(localStorage.getItem('riskCalcSettings_' + activeCalcMode) || '{}') || {};
             } catch (_) {
                 savedState = {};
             }
@@ -2045,7 +1558,7 @@
                 filtered.forEach(o => {
                     let delBtn = allowAdd ? `<span class="delete-opt text-gray-500 hover:text-short ml-2 px-1 rounded z-10" data-del="${o}" title="Delete">✕</span>` : '';
                     let isSelected = currentSelected.includes(o); let bgClass = isSelected ? 'bg-brand-500/20 text-brand-400 font-bold' : ''; let checkmark = isSelected ? '✓ ' : '';
-                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${bgClass}" data-val="${escapeHtml(o)}"><span class="pointer-events-none">${checkmark}${escapeHtml(o)}</span>${delBtn}</li>`;
+                    list.innerHTML += `<li class="custom-dropdown-item flex justify-between items-center ${bgClass}" data-val="${o}"><span class="pointer-events-none">${checkmark}${o}</span>${delBtn}</li>`;
                 });
             };
             input.addEventListener('focus', () => { renderList(""); list.classList.add('active'); focusedIndex = -1; });
@@ -2250,7 +1763,7 @@
             const exitPriceInput = document.getElementById('ctm-exit-price');
             const chargesInput = document.getElementById('ctm-charges');
             const pnlInput = document.getElementById('ctm-pnl');
-            document.getElementById('ctm-symbol').textContent = `${escapeHtml(t.symbol)} (${t.mode.toUpperCase()})`;
+            document.getElementById('ctm-symbol').textContent = `${t.symbol} (${t.mode.toUpperCase()})`;
             exitPriceInput.value = ''; chargesInput.value = ''; pnlInput.value = '';
             refreshJournalModeOptionArrays(t.mode);
             document.getElementById('ctm-verdict').value = ''; document.getElementById('ctm-remarks').value = '';
@@ -2326,7 +1839,7 @@
         window.openTradeModal = function(id) {
             const t=tradesDB.find(x=>x.id===id); if(!t)return;
             const modal=document.getElementById('tradeModal'),card=document.getElementById('tradeModalCard');
-            document.getElementById('tm-symbol').textContent=`${escapeHtml(t.symbol)} (${formatToDDMMYYYY(t.date)})`; document.getElementById('tm-remarks').textContent=t.remarks||"No remarks provided."; document.getElementById('tm-mode-badge').textContent=t.mode.toUpperCase();
+            document.getElementById('tm-symbol').textContent=`${t.symbol} (${formatToDDMMYYYY(t.date)})`; document.getElementById('tm-remarks').textContent=t.remarks||"No remarks provided."; document.getElementById('tm-mode-badge').textContent=t.mode.toUpperCase();
             const badge=document.getElementById('tm-result-badge'); if(t.status==='OPEN'){badge.textContent='OPEN';badge.className='px-3 py-1 rounded text-xs font-bold text-white shadow bg-brand-500 shadow-brand-500/20';}else{badge.textContent=t.result;badge.className=`px-3 py-1 rounded text-xs font-bold text-white shadow ${t.result==='WIN'?'bg-long shadow-long/20':(t.result==='LOSS'?'bg-short shadow-short/20':'bg-gray-600 shadow-gray-500/20')}`;}
             const addField=(label,val,color='text-gray-200')=>`<div><p class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">${label}</p><p class="font-semibold ${color} text-sm md:text-base">${val}</p></div>`;
             let html=''; if(t.status==='CLOSED'){html+=addField('Net P&L',formatMoney(t.netPnl),t.netPnl>0?'text-long':(t.netPnl<0?'text-short':'text-gray-400'));html+=addField('Charges',formatMoney(t.charges||0));html+=addField('Exit Price',t.exitPrice?formatMoney(t.exitPrice):'-');html+=addField('% Change',`${t.pctChange>0?'+':''}${(t.pctChange||0).toFixed(2)}%`,t.pctChange>0?'text-long':(t.pctChange<0?'text-short':'text-gray-400'));html+=addField('End Corpus',formatMoney(t.endCorpus));}else{html+=`<div class="col-span-full mb-2"><p class="text-xs text-brand-400 italic">This trade is currently OPEN. Capital is reserved but P&amp;L is unrealized.</p></div>`;}
@@ -2578,20 +2091,20 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 let rowHTML = `
                 <tr class="clickable-row align-top group ${t.status === 'OPEN' ? 'bg-brand-500/5 hover:bg-brand-500/10' : ''}" onclick="openTradeModal(${t.id})">
                     <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap" onclick="event.stopPropagation()"><input type="checkbox" class="custom-checkbox chk-trades w-3 h-3 md:w-4 md:h-4" onclick="toggleSelection(${t.id}, 'trades')" ${selectedTrades.has(t.id) ? 'checked' : ''}></td>
-                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300 leading-tight">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${escapeHtml(dispSession)}</span></td>
+                    <td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-[9px] md:text-sm text-gray-300 leading-tight">${formatToDDMMYYYY(t.date)} <br><span class="text-gray-500 text-[8px] md:text-[10px] uppercase font-bold">${dispSession}</span></td>
                     <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm text-gray-100 group-hover:text-brand-400 transition-colors flex items-center gap-2">
-                        ${escapeHtml(t.symbol)}
+                        ${t.symbol}
                         ${t.status === 'OPEN' ? `<span class="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-brand-500 text-white shadow shadow-brand-500/20">${t.status}</span>` : ''}
                     </td>`;
-                if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${escapeHtml(normalizeStrategyList(t.strategy).join(', ') || '-')}</td>`;
-                if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${escapeHtml(t.entry || '-')}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
-                if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${escapeHtml(t.sl || '-')}</td>`;
+                if (cols.strategy) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs text-brand-500 whitespace-nowrap font-medium">${normalizeStrategyList(t.strategy).join(', ') || '-'}</td>`;
+                if (cols.entryExit) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap"><div class="flex flex-col gap-0.5"><span class="text-[9px] md:text-xs text-gray-300 font-medium">E: ${t.entry || '-'}</span><span class="text-[8px] md:text-[10px] text-gray-500">Ex: ${t.status === 'CLOSED' ? (t.exitPrice || '-') : '-'}</span></div></td>`;
+                if (cols.sl) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-[9px] md:text-xs whitespace-nowrap text-gray-400 font-medium">${t.sl || '-'}</td>`;
                 if (cols.pnl) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 font-semibold whitespace-nowrap text-[10px] md:text-sm ${t.netPnl > 0 ? 'text-long' : (t.netPnl < 0 ? 'text-short' : 'text-gray-400')}">${formatMoney(t.netPnl)}</td>`; }
                 if (cols.charges) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-500 whitespace-nowrap font-medium text-[9px] md:text-sm italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(t.charges || 0)}</td>`; }
-                if (cols.result) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${escapeHtml(t.result)}</span></td>`; }
+                if (cols.result) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap text-center"><span class="text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${t.result==='WIN'?'text-long border border-long/20':(t.result==='LOSS'?'text-short border border-short/20':'text-gray-400 border border-gray-700')}">${t.result}</span></td>`; }
                 if (cols.pctChange) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-semibold text-[9px] md:text-sm ${t.pctChange > 0 ? 'text-long' : (t.pctChange < 0 ? 'text-short' : 'text-gray-500')}">${t.pctChange > 0 ? '+' : ''}${(t.pctChange || 0).toFixed(2)}%</td>`; }
                 if (cols.corpus) { if (t.status === 'OPEN') rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-500 italic">-</td>`; else rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 whitespace-nowrap font-medium text-[9px] md:text-sm text-gray-300">${formatMoney(t.endCorpus)}</td>`; }
-                if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${escapeHtml(t.remarks || '-')}</td>`;
+                if (cols.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${t.remarks || '-'}</td>`;
                 
                 rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap"><div class="flex items-center justify-end gap-1 md:gap-2">${t.status === 'OPEN' ? `<button onclick="openCloseTradeModal(${t.id}, event)" class="text-long hover:text-white bg-long/10 hover:bg-long/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition border border-long/20" title="Close Trade">Finish</button>` : ''}<button onclick="editRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button><button onclick="deleteRecord(${t.id}, 'trade', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`;
                 return rowHTML;
@@ -2642,7 +2155,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                     <td class="px-1 py-2 md:px-4 md:py-3 font-bold whitespace-nowrap text-[10px] md:text-sm ${amountColor}">${formattedAmount}</td>`;
                 if (capTableColumns.netCorpus) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-200 whitespace-nowrap font-medium text-[9px] md:text-sm">${formatMoney(c.netCorpus)}</td>`;
                 if (capTableColumns.ledgerBal) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-gray-400 whitespace-nowrap text-[8px] md:text-[10px] leading-tight">T: ${formatMoney(c.tradeLedger)}<br>L: ${formatMoney(c.liquidFund)}<br>R: ${formatMoney(c.sliceReserve)}</td>`;
-                if (capTableColumns.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${escapeHtml(c.remarks || '-')}</td>`;
+                if (capTableColumns.remarks) rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 max-w-[60px] sm:max-w-[80px] md:max-w-none md:w-full md:min-w-[200px] text-[9px] md:text-xs text-gray-400 leading-relaxed truncate md:whitespace-normal md:break-words">${c.remarks || '-'}</td>`;
                 rowHTML += `<td class="px-1 py-2 md:px-4 md:py-3 text-right whitespace-nowrap" onclick="event.stopPropagation()"><div class="flex items-center justify-end gap-1 md:gap-2"><button onclick="editRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-brand-400 p-0.5 md:p-1 transition" title="Edit"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button><button onclick="deleteRecord(${c.id}, 'cap', event)" class="text-gray-500 hover:text-red-500 p-0.5 md:p-1 transition" title="Delete"><svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`;
                 return rowHTML;
             }).join('');
@@ -2976,311 +2489,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
         }
 
         let equityChartInstance, winChartInstance;
-        let pnlChartInstance = null, pnlCandleSeries = null, pnlEma5Series = null, pnlEma20Series = null;
-        let pnlChartLibraryPromise = null, pnlChartVisible = false, pnlChartMaximized = false;
-        let pnlChartRange = 'all', pnlChartInterval = 'day';
-        let pnlChartDataCache = [];
-        let pnlChartAllCandles = [], pnlChartLoadedStart = 0;
-        let pnlEma5Enabled = false, pnlEma20Enabled = false;
-
-        function loadPnlChartLibrary() {
-            if (window.LightweightCharts) return Promise.resolve(window.LightweightCharts);
-            if (pnlChartLibraryPromise) return pnlChartLibraryPromise;
-            pnlChartLibraryPromise = new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                const sources = [
-                    'https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js',
-                    'https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js'
-                ];
-                let sourceIndex = 0;
-                const tryNext = () => {
-                    script.src = sources[sourceIndex++];
-                    script.onload = () => window.LightweightCharts ? resolve(window.LightweightCharts) : (sourceIndex < sources.length ? tryNext() : reject(new Error('Lightweight Charts failed to initialize')));
-                    script.onerror = () => sourceIndex < sources.length ? tryNext() : reject(new Error('Could not load Lightweight Charts'));
-                    if (!script.parentNode) document.head.appendChild(script);
-                };
-                script.async = true;
-                tryNext();
-            });
-            return pnlChartLibraryPromise;
-        }
-
-        function formatPnlChartMoney(v) {
-            const n = Number(v) || 0;
-            return `${n >= 0 ? '+' : '-'}₹${Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        }
-
-        function pnlBucketKey(date, interval) {
-            const d = new Date(date); d.setHours(0,0,0,0);
-            if (interval === 'month') return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
-            if (interval === 'week') { const day = d.getDay() || 7; d.setDate(d.getDate() - day + 1); }
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        }
-
-        function getPnlChartRangeStart(trades) {
-            if (!trades.length || pnlChartRange === 'all') return null;
-            const lastDate = new Date(trades[trades.length - 1].date);
-            const months = ({'1m':1,'3m':3,'6m':6,'1y':12,'3y':36})[pnlChartRange];
-            if (!months) return null;
-            const start = new Date(lastDate); start.setHours(0,0,0,0); start.setMonth(start.getMonth() - months); return start;
-        }
-
-        function buildPnlCandles(trades) {
-            const sorted = [...trades].filter(t => t && t.status === 'CLOSED').sort((a,b) => new Date(a.date) - new Date(b.date) || Number(a.id || 0) - Number(b.id || 0));
-            if (!sorted.length) return [];
-            const rangeStart = getPnlChartRangeStart(sorted);
-            let running = 0; const buckets = new Map();
-            for (const t of sorted) {
-                const d = new Date(t.date), pnl = Number(t.netPnl) || 0;
-                if (rangeStart && d < rangeStart) { running += pnl; continue; }
-                const key = pnlBucketKey(d, pnlChartInterval);
-                let b = buckets.get(key);
-                if (!b) { b = { time:key, open:running, high:running, low:running, close:running }; buckets.set(key,b); }
-                running += pnl; b.high = Math.max(b.high, running); b.low = Math.min(b.low, running); b.close = running;
-            }
-            return [...buckets.values()].sort((a,b) => a.time.localeCompare(b.time));
-        }
-
-        const pnlEmaConfig = {
-            ema5: { length: 5, source: 'close', offset: 0, smoothType: 'SMA', smoothLength: 9 },
-            ema20: { length: 20, source: 'close', offset: 0, smoothType: 'SMA', smoothLength: 9 }
-        };
-
-        function getPnlSourceValue(candle, source) {
-            const v = Number(candle?.[source || 'close']);
-            return Number.isFinite(v) ? v : Number(candle?.close) || 0;
-        }
-
-        function buildRawEmaData(candles, period, source='close') {
-            if (!Array.isArray(candles) || candles.length === 0 || period < 1) return [];
-            const alpha = 2 / (period + 1);
-            let ema = null;
-            const out = [];
-            for (const c of candles) {
-                const src = getPnlSourceValue(c, source);
-                ema = ema === null ? src : (src * alpha) + (ema * (1 - alpha));
-                out.push({ time: c.time, value: ema });
-            }
-            return out;
-        }
-
-        function buildSmoothingData(points, type, length) {
-            const n = Math.max(1, Number(length) || 1);
-            if (!Array.isArray(points) || !points.length || n === 1) return points || [];
-            const out = [];
-            if (type === 'EMA' || type === 'RMA') {
-                const alpha = type === 'EMA' ? 2 / (n + 1) : 1 / n;
-                let avg = null;
-                for (const p of points) { avg = avg === null ? p.value : p.value * alpha + avg * (1 - alpha); out.push({ time:p.time, value:avg }); }
-                return out;
-            }
-            if (type === 'WMA') {
-                const den = n * (n + 1) / 2;
-                for (let i=0;i<points.length;i++) { let sum=0; let wsum=0; const start=Math.max(0,i-n+1); let w=1; for(let j=start;j<=i;j++,w++) { sum += points[j].value*w; wsum += w; } out.push({ time:points[i].time, value:sum/(wsum||den) }); }
-                return out;
-            }
-            if (type === 'VWMA') { return buildSmaLikeData(points, n); }
-            return buildSmaLikeData(points, n);
-        }
-
-        function buildSmaLikeData(points, n) {
-            const out = []; let sum=0;
-            for (let i=0;i<points.length;i++) { sum += points[i].value; if(i>=n) sum -= points[i-n].value; out.push({ time:points[i].time, value:sum/Math.min(i+1,n) }); }
-            return out;
-        }
-
-        function applyPnlEmaConfig(candles, key) {
-            const cfg = pnlEmaConfig[key];
-            const raw = buildRawEmaData(candles, Math.max(1, Number(cfg.length)||1), cfg.source);
-            const smoothed = buildSmoothingData(raw, cfg.smoothType, Math.max(1, Number(cfg.smoothLength)||1));
-            const offset = Number(cfg.offset)||0;
-            if (!offset) return smoothed;
-            return smoothed.map((p,i)=>({ ...p, _i:i+offset })).filter(p=>p._i>=0 && p._i<candles.length).map(p=>({ time:candles[p._i].time, value:p.value }));
-        }
-
-        function setPnlIndicatorVisibility() {
-            if (pnlEma5Series) pnlEma5Series.applyOptions({ visible: pnlEma5Enabled });
-            if (pnlEma20Series) pnlEma20Series.applyOptions({ visible: pnlEma20Enabled });
-        }
-
-        function updatePnlOhlc(candle) {
-            if (!candle) return;
-            document.getElementById('pnlO').textContent = formatPnlChartMoney(candle.open);
-            document.getElementById('pnlH').textContent = formatPnlChartMoney(candle.high);
-            document.getElementById('pnlL').textContent = formatPnlChartMoney(candle.low);
-            document.getElementById('pnlC').textContent = formatPnlChartMoney(candle.close);
-        }
-
-        function resizePnlChart() {
-            if (!pnlChartInstance) return;
-            const host = document.getElementById('pnlChartHost'); if (!host) return;
-            pnlChartInstance.applyOptions({ width: host.clientWidth, height: Math.max(260, host.clientHeight || 320) });
-        }
-
-        async function renderPnlChart(forceFit = true) {
-            const host = document.getElementById('pnlChartHost'); if (!host || !pnlChartVisible) return;
-            try {
-                const LW = await loadPnlChartLibrary();
-                const currentTrades = window.__pnlFilteredTrades || [];
-                pnlChartAllCandles = buildPnlCandles(currentTrades);
-                pnlChartLoadedStart = Math.max(0, pnlChartAllCandles.length - Math.min(pnlChartAllCandles.length, 220));
-                pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
-                if (!pnlChartDataCache.length) {
-                    if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; pnlEma5Series = null; pnlEma20Series = null; }
-                    host.innerHTML = '<div class="h-full flex items-center justify-center text-sm text-gray-500">No closed trades match the current dashboard filters.</div>';
-                    return;
-                }
-                if (pnlChartInstance) { pnlChartInstance.remove(); pnlChartInstance = null; pnlCandleSeries = null; pnlEma5Series = null; pnlEma20Series = null; }
-                host.innerHTML = '';
-                pnlChartInstance = LW.createChart(host, {
-                    width: host.clientWidth, height: Math.max(260, host.clientHeight || 320),
-                    layout: { background: { type: 'solid', color: '#0b0b0b' }, textColor: '#9ca3af', attributionLogo: false },
-                    grid: { vertLines: { color: 'rgba(255,255,255,0.045)' }, horzLines: { color: 'rgba(255,255,255,0.045)' } },
-                    crosshair: { mode: LW.CrosshairMode.Normal },
-                    rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
-                    timeScale: { borderColor: 'rgba(255,255,255,0.08)', timeVisible: false, secondsVisible: false, rightOffset: 5, barSpacing: 9, minBarSpacing: 3 },
-                    handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
-                    handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: true }
-                });
-                const candleOptions = { upColor:'#10b981', downColor:'#ef4444', borderVisible:false, wickUpColor:'#10b981', wickDownColor:'#ef4444' };
-                pnlCandleSeries = typeof pnlChartInstance.addSeries === 'function' && LW.CandlestickSeries
-                    ? pnlChartInstance.addSeries(LW.CandlestickSeries, candleOptions)
-                    : pnlChartInstance.addCandlestickSeries(candleOptions);
-                pnlCandleSeries.setData(pnlChartDataCache);
-                const line5Options = { color: '#3b82f6', lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: true, visible: pnlEma5Enabled };
-                const line20Options = { color: '#facc15', lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: true, visible: pnlEma20Enabled };
-                if (typeof pnlChartInstance.addSeries === 'function' && LW.LineSeries) {
-                    pnlEma5Series = pnlChartInstance.addSeries(LW.LineSeries, line5Options);
-                    pnlEma20Series = pnlChartInstance.addSeries(LW.LineSeries, line20Options);
-                } else if (typeof pnlChartInstance.addLineSeries === 'function') {
-                    pnlEma5Series = pnlChartInstance.addLineSeries(line5Options);
-                    pnlEma20Series = pnlChartInstance.addLineSeries(line20Options);
-                }
-                if (pnlEma5Series) pnlEma5Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema5'));
-                if (pnlEma20Series) pnlEma20Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema20'));
-                setPnlIndicatorVisibility();
-                pnlChartInstance.subscribeCrosshairMove(param => {
-                    if (!param || !param.seriesData || !pnlCandleSeries) return;
-                    const c = param.seriesData.get(pnlCandleSeries); if (c) updatePnlOhlc(c);
-                });
-                pnlChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
-                    if (!range || pnlChartLoadedStart <= 0 || pnlChartAllCandles.length <= 220) return;
-                    if (range.from < 12) {
-                        const loadCount = Math.min(180, pnlChartLoadedStart);
-                        const previousStart = pnlChartLoadedStart;
-                        pnlChartLoadedStart -= loadCount;
-                        pnlChartDataCache = pnlChartAllCandles.slice(pnlChartLoadedStart);
-                        pnlCandleSeries.setData(pnlChartDataCache);
-                        if (pnlEma5Series) pnlEma5Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema5'));
-                        if (pnlEma20Series) pnlEma20Series.setData(applyPnlEmaConfig(pnlChartDataCache, 'ema20'));
-                        requestAnimationFrame(() => {
-                            const nextRange = { from: range.from + loadCount, to: range.to + loadCount };
-                            try { pnlChartInstance.timeScale().setVisibleLogicalRange(nextRange); } catch (_) {}
-                        });
-                    }
-                });
-                updatePnlOhlc(pnlChartDataCache[pnlChartDataCache.length - 1]);
-                if (forceFit) pnlChartInstance.timeScale().fitContent();
-            } catch (err) {
-                console.error('P&L chart error:', err);
-                host.innerHTML = '<div class="h-full flex items-center justify-center text-sm text-red-400">Unable to load the P&amp;L chart.</div>';
-            }
-        }
-
-        function togglePnlChart() {
-            pnlChartVisible = !pnlChartVisible;
-            const panel = document.getElementById('pnlChartPanel'), btn = document.getElementById('pnlChartToggleBtn'), max = document.getElementById('pnlChartMaxBtn');
-            panel.classList.toggle('hidden', !pnlChartVisible); btn.textContent = pnlChartVisible ? 'Hide Chart' : 'Show Chart'; max.classList.toggle('hidden', !pnlChartVisible);
-            if (pnlChartVisible) renderPnlChart();
-        }
-
-        function updatePnlMaximizeButton() {
-            const btn = document.getElementById('pnlChartMaxBtn');
-            const icon = document.getElementById('pnlChartMaxIcon');
-            if (!btn) return;
-            const path = icon?.querySelector('path');
-            if (pnlChartMaximized) {
-                btn.title = 'Minimize chart';
-                btn.setAttribute('aria-label', 'Minimize chart');
-                if (path) path.setAttribute('d', 'M8 3v5H3M3 3l6 6M16 3v5h5M21 3l-6 6M8 21v-5H3M3 21l6-6M16 21v-5h5M21 21l-6-6');
-            } else {
-                btn.title = 'Maximize chart';
-                btn.setAttribute('aria-label', 'Maximize chart');
-                if (path) path.setAttribute('d', 'M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6');
-            }
-        }
-
-        function togglePnlChartMaximize() {
-            const card = document.getElementById('pnlChartCard');
-            if (!card) return;
-            pnlChartMaximized = !pnlChartMaximized;
-            card.classList.toggle('pnl-maximized', pnlChartMaximized);
-            document.body.classList.toggle('pnl-chart-modal-open', pnlChartMaximized);
-            updatePnlMaximizeButton();
-            requestAnimationFrame(() => requestAnimationFrame(resizePnlChart));
-        }
-
-        function refreshPnlChart() { if (pnlChartVisible) renderPnlChart(); }
-
         
-        function initPnlChartControls() {
-            document.getElementById('pnlChartToggleBtn')?.addEventListener('click', togglePnlChart);
-            document.getElementById('pnlChartMaxBtn')?.addEventListener('click', togglePnlChartMaximize);
-            document.querySelectorAll('.pnl-chart-range').forEach(btn => btn.addEventListener('click', () => {
-                pnlChartRange = btn.getAttribute('data-pnl-range') || 'all';
-                document.querySelectorAll('.pnl-chart-range').forEach(b => b.classList.toggle('active', b === btn)); refreshPnlChart();
-            }));
-            document.getElementById('pnlChartInterval')?.addEventListener('change', e => { pnlChartInterval = e.target.value || 'day'; refreshPnlChart(); });
-            const indicatorsBtn = document.getElementById('pnlIndicatorsBtn');
-            const indicatorsMenu = document.getElementById('pnlIndicatorsMenu');
-            const ema5Toggle = document.getElementById('pnlEma5Toggle');
-            const ema20Toggle = document.getElementById('pnlEma20Toggle');
-            indicatorsBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                indicatorsMenu?.classList.toggle('hidden');
-                indicatorsBtn.setAttribute('aria-expanded', String(!indicatorsMenu?.classList.contains('hidden')));
-            });
-            if (ema5Toggle) ema5Toggle.checked = pnlEma5Enabled;
-            if (ema20Toggle) ema20Toggle.checked = pnlEma20Enabled;
-            ema5Toggle?.addEventListener('change', e => { pnlEma5Enabled = e.target.checked; setPnlIndicatorVisibility(); });
-            ema20Toggle?.addEventListener('change', e => { pnlEma20Enabled = e.target.checked; setPnlIndicatorVisibility(); });
-
-            const bindEmaControl = (key, prefix, seriesGetter) => {
-                const lengthEl = document.getElementById(prefix + 'Length');
-                const nameEl = document.getElementById(prefix + 'Name');
-                const settingsBtn = document.getElementById(prefix + 'SettingsBtn');
-                const settings = document.getElementById(prefix + 'Settings');
-                const cfg = pnlEmaConfig[key];
-                const refresh = () => {
-                    cfg.length = Math.max(1, parseInt(lengthEl?.value || cfg.length, 10) || 1);
-                    cfg.source = document.getElementById(prefix + 'Source')?.value || 'close';
-                    cfg.offset = parseInt(document.getElementById(prefix + 'Offset')?.value || 0, 10) || 0;
-                    cfg.smoothType = document.getElementById(prefix + 'SmoothType')?.value || 'SMA';
-                    cfg.smoothLength = Math.max(1, parseInt(document.getElementById(prefix + 'SmoothLen')?.value || 9, 10) || 9);
-                    if (nameEl) nameEl.textContent = `${cfg.length} EMA`;
-                    const series = seriesGetter();
-                    if (series && pnlChartDataCache.length) series.setData(applyPnlEmaConfig(pnlChartDataCache, key));
-                };
-                [lengthEl, document.getElementById(prefix + 'Source'), document.getElementById(prefix + 'Offset'), document.getElementById(prefix + 'SmoothType'), document.getElementById(prefix + 'SmoothLen')].forEach(el => el?.addEventListener('change', refresh));
-                [lengthEl, document.getElementById(prefix + 'Offset'), document.getElementById(prefix + 'SmoothLen')].forEach(el => el?.addEventListener('input', refresh));
-                settingsBtn?.addEventListener('click', e => { e.stopPropagation(); settings?.classList.toggle('open'); });
-            };
-            bindEmaControl('ema5','pnlEma5',() => pnlEma5Series);
-            bindEmaControl('ema20','pnlEma20',() => pnlEma20Series);
-            document.addEventListener('click', e => {
-                if (!e.target.closest('#pnlIndicatorsBtn') && !e.target.closest('#pnlIndicatorsMenu')) {
-                    indicatorsMenu?.classList.add('hidden');
-                    indicatorsBtn?.setAttribute('aria-expanded', 'false');
-                }
-            });
-            document.querySelector('.pnl-chart-range[data-pnl-range="all"]')?.classList.add('active');
-            window.addEventListener('resize', () => { resizePnlChart(); });
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Escape' && pnlChartMaximized) togglePnlChartMaximize();
-            });
-            updatePnlMaximizeButton();
-        }
-
         function updateDashboard() {
             const netCorpus = balances.tradeLedger + balances.liquidFund + balances.sliceReserve;
             const calcPct = (val) => netCorpus > 0 ? ((val / netCorpus) * 100).toFixed(1) + '%' : '0.0%';
@@ -3296,7 +2505,6 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             let filteredTrades = tradesDB.filter(t => t.status === 'CLOSED');
             if (activeDashMode !== 'both') filteredTrades = filteredTrades.filter(t => t.mode === activeDashMode);
             filteredTrades = filteredTrades.filter(t => strategiesMatchFilter(t, dashStrategyFilter) && verdictsMatchFilter(t, dashVerdictFilter));
-            window.__pnlFilteredTrades = filteredTrades;
 
             let rangeLabel = "", rangeStart = null, rangeEnd = null;
             const btnPrev = document.getElementById('dash-prev-btn'), btnNext = document.getElementById('dash-next-btn'), lbl = document.getElementById('dash-period-label');
@@ -3356,8 +2564,40 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             avgLossEl.textContent = formatMoney(avgLoss);
             avgLossEl.className = `text-4xl md:text-5xl font-bold tracking-tight sensitive-data leading-none break-words ${avgLoss < 0 ? 'text-short' : 'text-gray-500'}`;
             
-            refreshPnlChart();
-            const tColor = '#9ca3af';
+            let formatStr;
+            if (['today', 'week', 'month', 'custom'].includes(dashFilterMode)) formatStr = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+            else if (['3months', '6months', 'year', '3years'].includes(dashFilterMode)) formatStr = d => `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            else formatStr = d => d.getFullYear().toString();
+            
+            let grouped = {}; 
+            [...filteredTrades].sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => { 
+                let key = formatStr(new Date(t.date)); 
+                if(!grouped[key]) grouped[key] = 0; 
+                grouped[key] += t.netPnl; 
+            });
+            const tColor = '#9ca3af', gColor = 'rgba(255,255,255,0.05)';
+            if (equityChartInstance) equityChartInstance.destroy();
+            equityChartInstance = new Chart(document.getElementById('equityChart'), { 
+                type: 'bar', 
+                data: { 
+                    labels: Object.keys(grouped), 
+                    datasets: [{ 
+                        label: 'Net P&L', 
+                        data: Object.values(grouped), 
+                        backgroundColor: Object.values(grouped).map(v => v >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'), 
+                        borderRadius: 4 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { grid: { color: gColor }, ticks: { color: tColor } }, 
+                        x: { grid: { display: false }, ticks: { color: tColor } } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                } 
+            });
             if (winChartInstance) winChartInstance.destroy();
             winChartInstance = new Chart(document.getElementById('winChart'), { 
                 type: 'doughnut', 
@@ -3561,7 +2801,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 
                 const clear = () => {
                     cInputs.sharesOut.value = '0'; document.getElementById('outDirection').textContent = 'WAITING'; document.getElementById('outDirection').className = "text-sm font-bold px-2 py-1 rounded mb-2 bg-gray-800 text-gray-300 uppercase"; document.getElementById('resultCard').className = "glass-card rounded-2xl p-6 lg:p-8 relative overflow-hidden transition-all border-l-4 border-l-transparent z-40";
-                    document.getElementById('outTargetPrice').textContent = '₹0.00'; ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00'); document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outEntryPrice').textContent = '₹0.00'; document.getElementById('marginBlock').classList.add('hidden');
+                    document.getElementById('outTargetPrice').textContent = '₹0.00'; ['outRiskShare', 'outPosValue', 'outMaxLoss', 'outMarginReq'].forEach(id => document.getElementById(id).textContent = '₹0.00'); document.getElementById('outActualRisk').textContent = '0.00%'; document.getElementById('outTradeType').textContent = '-'; document.getElementById('marginBlock').classList.add('hidden');
                     document.getElementById('outBreakevenPrice').textContent='₹0.00';document.getElementById('outBreakevenNet').textContent='Net: ₹0.00';
                     document.getElementById('chargesContainer').classList.add('opacity-50'); ['slBrokerage', 'slSTT', 'slExch', 'slSebi', 'slGST', 'slStamp', 'slIPFT', 'slTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00'); ['tgBrokerage', 'tgSTT', 'tgExch', 'tgSebi', 'tgGST', 'tgStamp', 'tgIPFT', 'tgTotal'].forEach(id => document.getElementById(id).innerHTML = '₹0.00');
                     document.getElementById('recSlBlock').classList.add('hidden');
@@ -3659,7 +2899,8 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 document.getElementById('outTargetPrice').textContent = formatMoney(targetPrice); document.getElementById('outRiskShare').textContent = formatMoney(riskPerShare); document.getElementById('outPosValue').textContent = formatMoney(finalShares * entry);
                 document.getElementById('marginBlock').classList.toggle('hidden', marginMult <= 1); if (marginMult > 1) document.getElementById('outMarginReq').textContent = formatMoney(actualMarginReq);
                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-                document.getElementById('outEntryPrice').textContent = formatMoney(entry); document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
+                document.getElementById('outMaxLoss').textContent = formatMoney(totalRiskWithCharges); document.getElementById('outActualRisk').textContent = ((totalRiskWithCharges / corpus) * 100).toFixed(4) + '%'; 
+                let constraintReason = "-"; if(manualSharesOverride !== null) constraintReason = "Manual Override"; else if(finalShares === allocQ) constraintReason = "Alloc Available Limit"; else constraintReason = "Risk Budget Limit"; document.getElementById('outTradeType').textContent = constraintReason;
                 const breakevenValues={b0,b3,b10,b20}; window.calculatorBreakevenValues=breakevenValues; window.renderCalculatorBreakevenValues=()=>renderCalculatorBreakeven(breakevenValues); renderCalculatorBreakeven(breakevenValues);
                 document.getElementById('chargesContainer').classList.remove('opacity-50');
                 document.getElementById('slBrokerage').textContent = formatMoney(estChargesSL.broker); document.getElementById('slBrokerageTxt').textContent = estChargesSL.brokerTxt; document.getElementById('slSTT').textContent = formatMoney(estChargesSL.stt); document.getElementById('slSTTTxt').innerHTML = `STT<br>${estChargesSL.sttTxt}`; document.getElementById('slExch').textContent = formatMoney(estChargesSL.exch); document.getElementById('slExchTxt').innerHTML = `Exchange<br>${(estChargesSL.exchRate * 100).toFixed(5)}% on Total`; document.getElementById('slSebi').textContent = formatMoney(estChargesSL.sebi); document.getElementById('slSebiTxt').innerHTML = `SEBI<br>${activeBrokerConfig.sebi}%`; document.getElementById('slIPFT').textContent = formatMoney(estChargesSL.ipft); document.getElementById('slIPFTTxt').innerHTML = `IPFT<br>${activeBrokerConfig.ipft}% on Total`; document.getElementById('slGST').textContent = formatMoney(estChargesSL.gst); document.getElementById('slGSTTxt').innerHTML = `GST<br>${activeBrokerConfig.gst}% on B+E+S+I`; document.getElementById('slStamp').textContent = formatMoney(estChargesSL.stamp); document.getElementById('slStampTxt').innerHTML = `Stamp Duty<br>${activeBrokerConfig.stamp}% on Buy`; document.getElementById('slTotal').textContent = formatMoney(estChargesSL.total);
@@ -3714,16 +2955,7 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => { cInputs.entry.value=''; cInputs.sl.value=''; clearAttachedSL(); focusCalculatorInput(cInputs.sl); calculate(); });
-            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); saveCalculatorModeState(activeCalcMode, false); });
-
-            // All calculator fields are stored in browser localStorage. Only Margin, Risk %,
-            // and Target (R) changes additionally trigger a Drive backup.
-            [cInputs.corpus, cInputs.margin, cInputs.risk, cInputs.target, cInputs.entry, cInputs.sl].forEach(input => {
-                input.addEventListener('change', () => {
-                    const cloudBacked = [cInputs.margin, cInputs.risk, cInputs.target].includes(input);
-                    saveCalculatorModeState(activeCalcMode, cloudBacked);
-                });
-            });
+            document.getElementById('syncCorpusBtn').addEventListener('click', () => { cInputs.corpus.value = balances.tradeLedger + balances.liquidFund + balances.sliceReserve; manualSharesOverride = null; clearAttachedSL(); calculate(); });
             
             document.getElementById('logJournalBtn').addEventListener('click', () => {
                 document.querySelector(`.jour-mode-btn[data-mode="${activeCalcMode}"]`).click(); document.querySelector('.nav-btn[data-target="view-trades"]').click();
@@ -3733,90 +2965,6 @@ window.closeTradeModal = function() { const modal = document.getElementById('tra
                 setTimeout(() => document.getElementById('tj-entry-time').focus(), 100);
             });
         }
-    
-        const LEGAL_CONTENT = {
-            privacy: {
-                title: 'Privacy Policy',
-                html: `
-                    <p><strong>Last updated:</strong> September 1, 2026</p>
-                    <p>PositionLab is designed to keep your trading journal and calculator data primarily in your browser. Depending on the features you use, data may also be stored in your own Google Drive through Google OAuth.</p>
-                    <p><strong>What we store:</strong> trade entries, capital records, calculator preferences, strategy/verdict lists, broker settings and interface preferences that you enter or configure.</p>
-                    <p><strong>Where data is stored:</strong> browser storage on your device, and optionally a JSON data file in your Google Drive when Drive Sync is connected. PositionLab does not need your Google account password.</p>
-                    <p><strong>Google services:</strong> Drive Sync uses Google OAuth and Google Drive APIs. Google may process authentication and service data according to Google's own policies. PositionLab only requests the permissions needed by the integration.</p>
-                    <p><strong>Access tokens:</strong> Google OAuth access tokens are held in memory during the active browser session and are not intentionally written to PositionLab local storage.</p>
-                    <p><strong>Third parties:</strong> The site loads selected libraries and fonts from third-party CDNs and Google services. Those providers may process technical request data according to their own policies.</p>
-                    <p><strong>Analytics and advertising:</strong> PositionLab does not intentionally sell personal data or use your journal data for advertising.</p>
-                    <p><strong>Data control:</strong> You can disconnect Drive Sync, delete records from the app, clear browser site data, or remove the PositionLab data file from your Google Drive.</p>
-                    <p>This policy is written for the current client-side implementation and is not legal advice. Review it with qualified counsel before commercial deployment.</p>
-                `
-            },
-            terms: {
-                title: 'Terms of Use',
-                html: `
-                    <p><strong>Effective:</strong> September 1, 2026</p>
-                    <p>PositionLab is a software utility for personal trade planning, journaling, capital tracking and analytics. By using the site, you agree to use it lawfully and at your own risk.</p>
-                    <p>You are responsible for the accuracy of data you enter, the security of your device and Google account, and any trading decisions you make.</p>
-                    <p>PositionLab does not place orders, hold customer funds, provide brokerage services, or guarantee trading outcomes.</p>
-                    <p>The software may contain calculation assumptions, configurable brokerage rates and third-party service dependencies. Verify important figures against your broker or exchange before acting on them.</p>
-                    <p>You must not attempt to disrupt the service, bypass security controls, abuse third-party APIs, or use the site for unlawful activity.</p>
-                    <p>The service is provided on an “as available” basis without a guarantee that it will always be error-free, uninterrupted or suitable for a particular purpose, to the extent permitted by law.</p>
-                `
-            },
-            disclaimer: {
-                title: 'Risk Disclaimer',
-                html: `
-                    <p><strong>Important:</strong> PositionLab is a calculator and record-keeping tool, not an investment adviser.</p>
-                    <p>Nothing on this website is a recommendation to buy, sell or hold any security, derivative or other financial instrument. Trading and investing involve substantial risk, including the risk of losing some or all of your capital.</p>
-                    <p>Position-size, target, stop-loss, breakeven, P&amp;L and brokerage calculations are estimates based on the inputs and assumptions available in the application. Actual execution prices, taxes, charges, slippage, liquidity and broker rules may differ.</p>
-                    <p>Always independently verify calculations and current charges with your broker, exchange and applicable official sources before placing a trade.</p>
-                    <p>Past performance shown in a journal or dashboard is not a guarantee of future results.</p>
-                `
-            },
-            about: {
-                title: 'About PositionLab',
-                html: `
-                    <p><strong>PositionLab</strong> is built by <strong>Madhav</strong> as a practical toolkit for Indian stock market traders.</p>
-                    <p>The app combines risk-based position sizing, trade journaling, capital ledger management, brokerage estimation and performance analytics in one browser-first interface.</p>
-                    <p>Source and project updates: <a class="text-brand-400 hover:text-brand-300 underline" href="https://github.com/Madhav-S-S" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
-                    <p>Creator: <a class="text-brand-400 hover:text-brand-300 underline" href="https://www.instagram.com/madhavology_/" target="_blank" rel="noopener noreferrer">Instagram @madhavology_</a>.</p>
-                `
-            }
-        };
-
-        let legalLastFocused = null;
-        function openLegalModal(type) {
-            const content = LEGAL_CONTENT[type];
-            const overlay = document.getElementById('legalOverlay');
-            if (!content || !overlay) return;
-            legalLastFocused = document.activeElement;
-            document.getElementById('legalTitle').textContent = content.title;
-            document.getElementById('legalContent').innerHTML = content.html;
-            overlay.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                overlay.classList.remove('opacity-0');
-                document.getElementById('legalCard').classList.remove('scale-95');
-                document.getElementById('legalCard').classList.add('scale-100');
-                overlay.querySelector('button')?.focus();
-            });
-            document.body.classList.add('overflow-hidden');
-        }
-        function closeLegalModal() {
-            const overlay = document.getElementById('legalOverlay');
-            if (!overlay) return;
-            overlay.classList.add('opacity-0');
-            document.getElementById('legalCard').classList.remove('scale-100');
-            document.getElementById('legalCard').classList.add('scale-95');
-            setTimeout(() => overlay.classList.add('hidden'), 180);
-            document.body.classList.remove('overflow-hidden');
-            legalLastFocused?.focus?.();
-        }
-        document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') closeLegalModal();
-        });
-        document.getElementById('legalOverlay')?.addEventListener('click', event => {
-            if (event.target.id === 'legalOverlay') closeLegalModal();
-        });
-
     </script>
 </body>
 </html>
